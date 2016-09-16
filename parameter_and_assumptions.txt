@@ -1,0 +1,18 @@
+
+
+
+Corn + soybean (Status quo):
+Years: 2011-2014 (actual crop rotations)
+Yields: ISPAID adjusted by NASS county averages
+N rates: constant, from N rate calculator for each year (based on best return on N)
+
+Switchgrass (Liberty):
+Years: Spinup rotation: 4 years corn + soybean. 2005-2014 in switchgrass
+Yields: scenario 1 (low): 7,500 kg/ha
+		scenario 2 (med): 10,000 kg/ha
+		scenario 3 (high): 12,500 kg/ha
+		year 1: 25% of established yield
+		year 2: 50% of established yield
+N rates: constant, 50 kg/ha
+C/N above ground biomass: 75
+C/N below ground biomass: 60
