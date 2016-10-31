@@ -1,0 +1,79 @@
+---
+title: "Connect to PostgreSQL database"
+author: "Elke Brandes"
+date: "Monday, October 31, 2016"
+output: html_document
+---
+
+With the package RPostgreSQL it is possible to access and work in the PostgreSQL database out of R. THis is the code needed to connect to the database:
+
+```{r}
+# install.packages("RPostgreSQL")
+require("RPostgreSQL")
+ 
+# create a connection
+# save the password that we can "hide" it as best as we can by collapsing it
+pw <- {
+  "5QUXJHTbxj"
+}
+ 
+# loads the PostgreSQL driver
+drv <- dbDriver("PostgreSQL")
+# creates a connection to the postgres database
+# note that "con" will be used later in each connection to the database
+con <- dbConnect(drv, dbname = "isuag",
+                 host = "isu-ag-db.agsolver.com", port = 5432,
+                 user = "isuag", password = pw)
+rm(pw) # removes the password
+ 
+# check for an existing table in the database
+dbExistsTable(con, "clumu_cgsb_profit_2012_2015")
+
+```
+
+Then, we can query data or read out an entire table from the database. The result is saved as a dataframe that can then be manipulated or analyzed in R.
+```{r}
+df_postgres <- dbGetQuery(con, "SELECT * from ssurgo_ia_csr2")
+head(df_postgres) 
+```
+
+But - we don't even need to use the RPostgreSQL package if we use dplyr. 
+```{r}
+library('dplyr')
+
+# Connect to local PostgreSQL via dplyr
+localdb <- src_postgres(dbname = '',
+                           host = 'localhost',
+                           port = 5432,
+                           user = 'ninazumel',
+                           password = '')
+
+# cheat and access the db connection directly
+# assume we have made the colnames db safe
+dbWriteTable(localdb$con,'iris',iris, row.names=FALSE)
+
+## [1] TRUE
+
+The tbl() command lets you access tables in the database remotely, and sql() lets you send queries.
+
+# this is not a data frame; it's a dplyr PostgreSQL handle into the database
+d = tbl(localdb, "iris") 
+
+# this is a data frame
+dtab = as.data.frame(d)
+
+# send a query through dplyr
+query = "select avg(sepal_length) avg_sepal_length, 
+                species 
+         from iris
+         group by species"
+dsub = tbl(localdb, sql(query))
+
+# make it local
+dsub = as.data.frame(dsub)
+
+# shuts down database
+rm(list=c('d','localdb')); gc() 
+
+```
+
