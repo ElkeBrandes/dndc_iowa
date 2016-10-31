@@ -16,3 +16,5 @@ Yields: scenario 1 (low): 7,500 kg/ha
 N rates: constant, 50 kg/ha
 C/N above ground biomass: 75
 C/N below ground biomass: 60
+
+SSURGO 2016 data used.
