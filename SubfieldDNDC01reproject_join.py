@@ -38,6 +38,10 @@ fieldList = arcpy.ListFields(featureClass)
 # loop through each field in the list and print the name
 for field in fieldList:
     print field.name
+
+# import txt file into database
+# Documents/DNDC/tables/05_dndc_clumu_cgsb_swg/
+
     
 print("Joining with corn yield data ...")
 
