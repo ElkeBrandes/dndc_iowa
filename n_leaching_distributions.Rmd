@@ -1,0 +1,118 @@
+---
+title: "Distributions of NO3 leaching in Iowa, from row cropped and switchgrass fields"
+author: "Elke Brandes"
+date: "Tuesday, November 01, 2016"
+output: html_document
+---
+This paper describes the calculation of NO3 leaching distributions in Iowa.
+
+Using dplyr, I can access the PostgreSQL datbase to import the tables I need to produce the histograms. 
+
+1. Connect to the isuag database and load tables:
+```{r}
+library('dplyr')
+
+# Connect to local PostgreSQL via dplyr
+pw <- {
+  "5QUXJHTbxj"
+}
+isuag_db <- src_postgres(dbname = 'isuag',
+                           host = 'isu-ag-db.agsolver.com',
+                           port = 5432,
+                           user = 'isuag',
+                           password = pw)
+
+```
+Use the dplyr PostgreSQL handle into the database and create a data frame:
+```{r}
+
+cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_low <-tbl(isuag_db, "06_swg_7500_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_med <-tbl(isuag_db, "06_swg_10000_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_hi <-tbl(isuag_db, "06_swg_12500_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+```
+I can run some test here (to be added):
+```{r}
+# send a query through dplyr
+#query = "SELECT SUM(sum_ha) FROM \"01_profit_mean_2012_2015_aggregated\" WHERE profit_mean_ha_rounded < 0"
+#sum = tbl(isuag_db, sql(query))
+#sum
+```
+
+After retrieving all tables I need, I shut the database down.
+```{r}
+rm(list=c('profit_mean_2012_2015','isuag_db')); gc() 
+```
+Create a list of data frames:
+```{r}
+
+data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
+str(data_list[[1]])
+```
+Packages needed for the plots:
+```{r}
+library("ggplot2")
+library("gridGraphics") # needed for the function unit
+```
+
+I am using a modified theme for ggplot that has black border, white background, and inward facing tick marks:
+```{r}
+theme_b_border_inward <- function (base_size = 12, base_family = "") 
+{
+  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      axis.text = element_text(size = rel(0.8), margin=unit(0.5, "cm")), 
+      axis.ticks = element_line(colour = "black"),
+          axis.ticks.length=unit(-0.15, "cm"),
+#      axis.ticks.margin=unit(0.5, "cm"),
+          legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
+           colour = NA), panel.border = element_rect(fill = NA, 
+           colour = "black"), panel.grid.major = element_line(colour = NA, 
+           size = 0.2), panel.grid.minor = element_line(colour = NA, 
+           size = 0.5), strip.background = element_rect(fill = "grey80", 
+           colour = "grey50", size = 0.2))
+}
+```
+
+I prepare a data frame to be used for the facet plot:
+```{r}
+leaching <- vector(mode="numeric", length=0)
+ for (i in seq(data_list))
+   leaching <- append(leaching, data_list[[i]][,1])
+  
+area <- vector(mode="numeric", length=0)
+ for (i in seq(data_list))
+   area <- append(area, data_list[[i]][,2])
+
+   
+leach <- data.frame(scenario = c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))),
+                                            rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))
+                                            ),
+                              leaching,                             
+                              area = area*1e-6) # this factor to show Mha
+
+head(leach)
+```
+
+Then I plot the distributions:
+```{r}
+hi_profit <- ggplot(leach, aes(leaching, weight = area)) + 
+  geom_histogram(binwidth=5, alpha = .5, position="identity") +
+  theme_b_border_inward() +
+#  ylim(0,1500000) + xlim(-1500,1800) +
+ scale_x_continuous(name="Profitability [US$/ha]") +
+  scale_y_continuous(name="Area [Mha]") +
+  theme(legend.position="bottom") +
+  facet_wrap( ~ scenario, ncol=2) 
+
+hi_profit 
+#  scale_fill_manual(values=c("#E69F00", "#56B4E9"), name="", labels=c("Maize","Soybean")) +
+#  geom_vline(aes(xintercept= -250, linetype= "dashed"),  show.legend = FALSE) +
+#  geom_vline(aes(xintercept= 0, linetype= "dotted"),  show.legend = FALSE) 
+
+```
+
