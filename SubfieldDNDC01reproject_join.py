@@ -3,18 +3,16 @@
 import sys
 print "Running script against: {}".format(sys.version)
 
-# the arguments noted below as sys.argv[1] and sys.argv[2] are passed in the cmd script "SubfieldSwg.cmd".
+# the arguments noted below as sys.argv[1] and sys.argv[2] are passed in the cmd script "SubfieldDNDC01_reproject_join.cmd".
 # They refer to the two files, the Iowa subfield feature class and the txt file containing the
-# attributes (yield data)
+# attributes (profit and DNDC data)
 
 import arcpy
+from arcpy import env
 # set the environment so that output data are being overwritten
 arcpy.env.overwriteOutput=True
 # specify the workspace to avoid having to write the path for each feature class
 arcpy.env.workspace = "C:\\Users\\ebrandes\\Documents\\ia_clumu\\ia_clumu.gdb"
-
-
-
 
 print("Reprojecting feature class " + str(sys.argv[1]) + " ...")
 
@@ -39,19 +37,23 @@ fieldList = arcpy.ListFields(featureClass)
 for field in fieldList:
     print field.name
 
+print("Saving table " + str(sys.argv[2]) + " to Geodatabase...")     
 # import txt file into database
-# Documents/DNDC/tables/05_dndc_clumu_cgsb_swg/
+in_table = "C:/Users/ebrandes/Documents/dndc/tables/05_dndc_clumu_cgsb_swg.txt"
+out_path = "C:/Users/ebrandes/Documents/ia_clumu/ia_clumu.gdb"
+out_name = "ProfitDNDC"
+TableToTable_conversion(in_table, out_path, out_name)
 
-    
-print("Joining with corn yield data ...")
 
-# join with corn yield data
+print("Joining with profit and DNDC data ...")
+
+# join with the imported table data
 in_feature_class = featureClass
 in_field = "cluid_mukey" 
-join_table = sys.argv[2]
-join_field = "cluid_mukey11"
-field_list = ["crop11", "yield11", "crop12", "yield12", "crop13",
-              "yield13", "crop14", "yield14", "clumuha"]  # is "clumuha" needed?
+join_table = out_name
+join_field = "cluid_mukey"
+field_list = ["fips", "mukey", "clumuha	mean_profit_ha", "ave_no3_leach_ha_cgsb", "ave_no3_leach_ha_swg_7500",
+              "ave_no3_leach_ha_swg_10000", "ave_no3_leach_ha_swg_12500"]  
 
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field_list)
 
