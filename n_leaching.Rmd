@@ -6,20 +6,11 @@ output: html_document
 ---
 This paper describes the data analysis of NO3 leaching results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr`).
 
-##1. Distributions of NO3 leaching in Iowa, from row cropped and switchgrass fields##
-
-Connect to the isuag database and load tables that contain the rounded average NO3 leaching values (in kg/ha) for the **four scenarios**:
-
-1. Status quo (row cropped areas in corn or soybean as is from 2012-2015)
-2. Switchgrass low yield (all areas that were continuously in corn/soy from 2012-2015 were planted to switchgrass in 2006 for 10 years, assuming switchgrass yield is 7000 kg/ha)
-3. Switchgrass medium yield (assuming a yield of 10000 kg/ha)
-4. Switchgrass high yield (assuming a yield of 12500 kg/ha)
-
-The leaching values and respective patch areas were aggregated to the same leaching values, and for each scenario, one table was created.
+### Connect to the PostgreSQL datbase###
+With dplyr:
 ```{r connect, message=FALSE, }
 library('dplyr')
 
-# Connect to local PostgreSQL via dplyr
 pw <- {
   "5QUXJHTbxj"
 }
@@ -30,6 +21,35 @@ isuag_db <- src_postgres(dbname = 'isuag',
                            password = pw)
 
 ```
+With DBI:
+```{r, message=FALSE}
+# install.packages("RPostgreSQL")
+require("RPostgreSQL")
+pw <- {
+  "5QUXJHTbxj"
+}
+ 
+# loads the PostgreSQL driver
+drv <- dbDriver("PostgreSQL")
+# creates a connection to the postgres database
+# note that "con" will be used later in each connection to the database
+con <- dbConnect(drv, dbname = "isuag",
+                 host = "isu-ag-db.agsolver.com", port = 5432,
+                 user = "isuag", password = pw)
+```
+
+##1. Distributions of NO3 leaching in Iowa, from row cropped and switchgrass fields##
+
+Connect to the isuag database and load tables that contain the rounded average NO3 leaching values (in kg/ha) for the **four scenarios**:
+
+1. Status quo (row cropped areas in corn or soybean as is from 2012-2015)
+2. Switchgrass low yield (all areas that were continuously in corn/soy from 2012-2015 were planted to switchgrass in 2006 for 10 years, assuming switchgrass yield is 7000 kg/ha)
+3. Switchgrass medium yield (assuming a yield of 10000 kg/ha)
+4. Switchgrass high yield (assuming a yield of 12500 kg/ha)
+
+The leaching values and respective patch areas were aggregated to the same leaching values, and for each scenario, one table was created.
+
+
 Use the dplyr PostgreSQL handle into the database and create a data frame:
 ```{r fetch_distr}
 
@@ -122,10 +142,19 @@ First, access the table with the `tbl()` function
 ```{r fetch_leaching}
 clumu <-tbl(isuag_db, "05_dndc_clumu_cgsb_swg") 
 ```
+
+```{sql connection=con, message=FALSE}
+SELECT setseed(0.5)
+```
+```{sql connection=con, message=FALSE}
+SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 1
+```
+
+
 Run SQL queries:
-```{r data_sample, cache=TRUE}
-set.seed(15) # makes r pull in the same sample everytime I re-run the script
-query = "SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM \"05_dndc_clumu_cgsb_swg\" ORDER BY random() LIMIT 10000"
+```{r data_sample}
+#set.seed(15) # makes r pull in the same sample every time I re-run the script
+query = "SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM \"05_dndc_clumu_cgsb_swg\" ORDER BY random() LIMIT 1"
 sample = tbl(isuag_db, sql(query)) %>%
   as.data.frame(sample)
 
@@ -138,7 +167,9 @@ ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
   scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
-  scale_y_continuous(name="Mean NO3 leaching 2012-2015 (kg N/ha)")
+  scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
+  geom_vline(aes(xintercept= -250, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 100, linetype= "dotted", color = "red"),  show.legend = FALSE) 
   
 ```
 Shut the database down:
@@ -146,3 +177,6 @@ Shut the database down:
 rm(list='isuag_db'); gc() 
 ```
 
+##3. Switchgrass integration scenarios##
+
+From figure 2 we can see that the relation between NO3 leaching and profitability is not completely random. At higher profitability, the number of subfield patches with high NO3 leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
