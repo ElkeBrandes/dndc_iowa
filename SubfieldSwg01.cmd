@@ -1,1 +1,0 @@
-C:\Python27\ArcGISx6410.3\python.exe C:\Users\ebrandes\Documents\DNDC\dndc_iowa\SubfieldDNDC01reproject_join.py "ia_clumu_2016" "05_dndc_clumu_cgsb_swg.txt"
