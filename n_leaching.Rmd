@@ -21,7 +21,7 @@ isuag_db <- src_postgres(dbname = 'isuag',
                            password = pw)
 
 ```
-With DBI:
+With RPostgreSQL:
 ```{r, message=FALSE}
 # install.packages("RPostgreSQL")
 require("RPostgreSQL")
@@ -72,7 +72,6 @@ sum
 
 Create a list of data frames:
 ```{r list}
-
 data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
 str(data_list[[1]])
 ```
@@ -81,7 +80,6 @@ Packages needed for the plots:
 library("ggplot2")
 library("gridGraphics") # needed for the function unit
 ```
-
 I am using a modified theme for ggplot that has a black borde and white background:
 ```{r theme}
 theme_b_border <- function (base_size = 12, base_family = "") 
@@ -138,24 +136,22 @@ ggplot(leach, aes(leaching, weight = area)) +
 
 I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete dataset contains more than 3 million records, I want to randomly select a subsample for the correlation.
 
-First, access the table with the `tbl()` function
-```{r fetch_leaching}
-clumu <-tbl(isuag_db, "05_dndc_clumu_cgsb_swg") 
-```
 
-```{sql connection=con, message=FALSE}
+Using a SQL chunk, create a table from a subsample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+```{sql, connection=con, message=FALSE}
 SELECT setseed(0.5)
 ```
-```{sql connection=con, message=FALSE}
-SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 1
+```{sql, connection=con, message=FALSE}
+DROP TABLE IF EXISTS "05_dndc_clumu_cgsb_swg_sample";
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "05_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
 ```
 
 
-Run SQL queries:
+Pull the new table into R:
 ```{r data_sample}
-#set.seed(15) # makes r pull in the same sample every time I re-run the script
-query = "SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM \"05_dndc_clumu_cgsb_swg\" ORDER BY random() LIMIT 1"
-sample = tbl(isuag_db, sql(query)) %>%
+sample = tbl(isuag_db, "05_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
 
 head(sample)
