@@ -1,15 +1,22 @@
 ---
-title: "Distributions of NO3 leaching in Iowa, from row cropped and switchgrass fields"
+title: "Modelled NO3 leaching in Iowa from row cropped and switchgrass fields"
 author: "Elke Brandes"
 date: "Tuesday, November 01, 2016"
 output: html_document
 ---
-This paper describes the calculation of NO3 leaching distributions in Iowa.
+This paper describes the data analysis of NO3 leaching results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr`).
 
-Using dplyr, I can access the PostgreSQL datbase to import the tables I need to produce the histograms. 
+##1. Distributions of NO3 leaching in Iowa, from row cropped and switchgrass fields##
 
-1. Connect to the isuag database and load tables:
-```{r}
+Connect to the isuag database and load tables that contain the rounded average NO3 leaching values (in kg/ha) for the **four scenarios**:
+
+1. Status quo (row cropped areas in corn or soybean as is from 2012-2015)
+2. Switchgrass low yield (all areas that were continuously in corn/soy from 2012-2015 were planted to switchgrass in 2006 for 10 years, assuming switchgrass yield is 7000 kg/ha)
+3. Switchgrass medium yield (assuming a yield of 10000 kg/ha)
+4. Switchgrass high yield (assuming a yield of 12500 kg/ha)
+
+The leaching values and respective patch areas were aggregated to the same leaching values, and for each scenario, one table was created.
+```{r connect, message=FALSE, }
 library('dplyr')
 
 # Connect to local PostgreSQL via dplyr
@@ -24,7 +31,7 @@ isuag_db <- src_postgres(dbname = 'isuag',
 
 ```
 Use the dplyr PostgreSQL handle into the database and create a data frame:
-```{r}
+```{r fetch_distr}
 
 cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
   as.data.frame()
@@ -36,83 +43,106 @@ swg_hi <-tbl(isuag_db, "06_swg_12500_ave_no3_leach_rounded_aggr")  %>%
   as.data.frame()
 ```
 I can run some test here (to be added):
-```{r}
+```{r test_distr}
 # send a query through dplyr
-#query = "SELECT SUM(sum_ha) FROM \"01_profit_mean_2012_2015_aggregated\" WHERE profit_mean_ha_rounded < 0"
-#sum = tbl(isuag_db, sql(query))
-#sum
+query = "SELECT SUM(area_ha) FROM \"06_cgsb_ave_no3_leach_rounded_aggr\" WHERE ave_no3_leach_cgsb_round > 60"
+sum = tbl(isuag_db, sql(query))
+sum
 ```
 
-After retrieving all tables I need, I shut the database down.
-```{r}
-rm(list=c('profit_mean_2012_2015','isuag_db')); gc() 
-```
 Create a list of data frames:
-```{r}
+```{r list}
 
 data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
 str(data_list[[1]])
 ```
 Packages needed for the plots:
-```{r}
+```{r ggplot, message=FALSE}
 library("ggplot2")
 library("gridGraphics") # needed for the function unit
 ```
 
-I am using a modified theme for ggplot that has black border, white background, and inward facing tick marks:
-```{r}
-theme_b_border_inward <- function (base_size = 12, base_family = "") 
+I am using a modified theme for ggplot that has a black borde and white background:
+```{r theme}
+theme_b_border <- function (base_size = 12, base_family = "") 
 {
   theme_grey(base_size = base_size, base_family = base_family) %+replace% 
     theme(
-      axis.text = element_text(size = rel(0.8), margin=unit(0.5, "cm")), 
+      axis.text = element_text(size = rel(0.8), margin = margin(r=10)), #margin 
       axis.ticks = element_line(colour = "black"),
-          axis.ticks.length=unit(-0.15, "cm"),
-#      axis.ticks.margin=unit(0.5, "cm"),
-          legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
-           colour = NA), panel.border = element_rect(fill = NA, 
-           colour = "black"), panel.grid.major = element_line(colour = NA, 
-           size = 0.2), panel.grid.minor = element_line(colour = NA, 
-           size = 0.5), strip.background = element_rect(fill = "grey80", 
-           colour = "grey50", size = 0.2))
+      axis.ticks.length = unit(0.15, "cm"),
+      legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
+      colour = NA), panel.border = element_rect(fill = NA, 
+      colour = "black"), panel.grid.major = element_line(colour = NA, 
+      size = 0.2), panel.grid.minor = element_line(colour = NA, 
+      size = 0.5), strip.background = element_rect(fill = "grey80", 
+      colour = "grey50", size = 0.2))
 }
 ```
 
-I prepare a data frame to be used for the facet plot:
-```{r}
+Prepare a data frame to be used for the facet plot:
+```{r data}
+scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
+factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi'))
+str(scenario)   
+
 leaching <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
    leaching <- append(leaching, data_list[[i]][,1])
-  
+str(leaching)  
 area <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
    area <- append(area, data_list[[i]][,2])
-
+str(area)
    
-leach <- data.frame(scenario = c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))),
-                                            rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))
-                                            ),
-                              leaching,                             
-                              area = area*1e-6) # this factor to show Mha
+leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show Mha
 
 head(leach)
 ```
 
-Then I plot the distributions:
-```{r}
-hi_profit <- ggplot(leach, aes(leaching, weight = area)) + 
+Plot the distributions:
+```{r histograms, fig.cap="Figure 1: Distributions of NO3 leaching"}
+
+scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
+
+ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=5, alpha = .5, position="identity") +
-  theme_b_border_inward() +
-#  ylim(0,1500000) + xlim(-1500,1800) +
- scale_x_continuous(name="Profitability [US$/ha]") +
-  scale_y_continuous(name="Area [Mha]") +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability (US$/ha)") +
+  scale_y_continuous(name="Area (Mha)") +
   theme(legend.position="bottom") +
-  facet_wrap( ~ scenario, ncol=2) 
+  facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
+```
 
-hi_profit 
-#  scale_fill_manual(values=c("#E69F00", "#56B4E9"), name="", labels=c("Maize","Soybean")) +
-#  geom_vline(aes(xintercept= -250, linetype= "dashed"),  show.legend = FALSE) +
-#  geom_vline(aes(xintercept= 0, linetype= "dotted"),  show.legend = FALSE) 
+##2. Correlation between profitability and NO3 leaching in corn and soybean fields##
 
+I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete dataset contains more than 3 million records, I want to randomly select a subsample for the correlation.
+
+First, access the table with the `tbl()` function
+```{r fetch_leaching}
+clumu <-tbl(isuag_db, "05_dndc_clumu_cgsb_swg") 
+```
+Run SQL queries:
+```{r data_sample, cache=TRUE}
+set.seed(15) # makes r pull in the same sample everytime I re-run the script
+query = "SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM \"05_dndc_clumu_cgsb_swg\" ORDER BY random() LIMIT 10000"
+sample = tbl(isuag_db, sql(query)) %>%
+  as.data.frame(sample)
+
+head(sample)
+str(sample)
+```
+Plot the sample:
+```{r scatterplot, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa"}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Mean NO3 leaching 2012-2015 (kg N/ha)")
+  
+```
+Shut the database down:
+```{r}
+rm(list='isuag_db'); gc() 
 ```
 
