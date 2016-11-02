@@ -42,7 +42,7 @@ print("Saving table " + str(sys.argv[2]) + " to Geodatabase...")
 in_table = "C:/Users/ebrandes/Documents/dndc/tables/05_dndc_clumu_cgsb_swg.txt"
 out_path = "C:/Users/ebrandes/Documents/ia_clumu/ia_clumu.gdb"
 out_name = "ProfitDNDC"
-TableToTable_conversion(in_table, out_path, out_name)
+arcpy.TableToTable_conversion(in_table, out_path, out_name)
 
 
 print("Joining with profit and DNDC data ...")
@@ -52,7 +52,7 @@ in_feature_class = featureClass
 in_field = "cluid_mukey" 
 join_table = out_name
 join_field = "cluid_mukey"
-field_list = ["fips", "mukey", "clumuha	mean_profit_ha", "ave_no3_leach_ha_cgsb", "ave_no3_leach_ha_swg_7500",
+field_list = ["fips", "mukey", "mean_profit_ha", "ave_no3_leach_ha_cgsb", "ave_no3_leach_ha_swg_7500",
               "ave_no3_leach_ha_swg_10000", "ave_no3_leach_ha_swg_12500"]  
 
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field_list)
