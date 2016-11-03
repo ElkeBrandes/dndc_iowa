@@ -231,17 +231,9 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
   theme_b_border() +
   scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
   scale_y_continuous(name="Area (Mha)") +
-  geom_vline(aes(xintercept= -500, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= -350, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= -250, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= -100, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= -50, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= 50, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= 100, linetype= "dashed"),  show.legend = FALSE) +
-  geom_vline(aes(xintercept= 150, linetype= "dashed"),  show.legend = FALSE)
+  geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) 
 ```
+
 I want to select the total area of polygons that fall under specific profitability thresholds.
 ```{r swg_areas, cache=TRUE}
 swg_areas <- vector(mode="numeric", length=0)
@@ -252,10 +244,33 @@ cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
     sum_area <- tbl(isuag_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
-    print(sum_area)
     swg_areas <- append(swg_areas, sum_area) 
   }
   swg_areas
+```
+
+```{r no3_leaching_sums, cache=TRUE}
+library("tidyverse")
+sum_leaching <- tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_dispr_benefits") %>%
+  as.data.frame() %>%
+  gather(corn_soybeans, swg_7500_1, swg_7500_2, swg_7500_3, swg_7500_4, swg_7500_5, swg_7500_6, swg_7500_7, swg_7500_8, swg_7500_9, swg_7500_10, swg_7500_11, swg_10000_1, swg_10000_2, swg_10000_3, swg_10000_4, swg_10000_5, swg_10000_6, swg_10000_7, swg_10000_8, swg_10000_9, swg_10000_10, swg_10000_11, swg_12500_1, swg_12500_2, swg_12500_3, swg_12500_4, swg_12500_5, swg_12500_6, swg_12500_7, swg_12500_8, swg_12500_9, swg_12500_10, swg_12500_11, key = swg_scenarios, value=ave_no2_leach)
+```
+
+```{sql connection=con, message=FALSE, cache=TRUE}
+select sum(clumuha) from "05_dndc_clumu_cgsb_swg";
+```
+
+
+Create data frame for figure:
+```{r data_dispr_benefits, cache=TRUE}
+swg_yield <- c(0,rep(7500,11), rep(10000,11),rep(12500,11))
+profit_cutoff <- c(0,rep(cutoffs,3))
+swg_area <- c(0,rep(swg_areas,3))
+swg_area_percent <- (swg_area/9374362)*100
+N_leaching <- sum_leaching[,2]
+N_reduction <- abs((N_leaching - N_leaching[1])/N_leaching[1])*100
+
+relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
 ```
 
 
