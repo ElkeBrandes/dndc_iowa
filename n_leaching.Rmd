@@ -8,7 +8,7 @@ This paper describes the data analysis of NO3 leaching results in Iowa. The init
 
 ### Connect to the PostgreSQL datbase###
 With dplyr:
-```{r connect, message=FALSE, }
+```{r connect_dplyr, message=FALSE}
 library('dplyr')
 
 pw <- {
@@ -22,7 +22,7 @@ isuag_db <- src_postgres(dbname = 'isuag',
 
 ```
 With RPostgreSQL:
-```{r, message=FALSE}
+```{r, connect_rpostgres, message=FALSE, cache=TRUE}
 # install.packages("RPostgreSQL")
 require("RPostgreSQL")
 pw <- {
@@ -51,7 +51,7 @@ The leaching values and respective patch areas were aggregated to the same leach
 
 
 Use the dplyr PostgreSQL handle into the database and create a data frame:
-```{r fetch_distr}
+```{r fetch_distr, cache=TRUE}
 
 cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
   as.data.frame()
@@ -81,7 +81,7 @@ library("ggplot2")
 library("gridGraphics") # needed for the function unit
 ```
 I am using a modified theme for ggplot that has a black border and white background:
-```{r theme}
+```{r theme, cache=TRUE}
 theme_b_border <- function (base_size = 12, base_family = "") 
 {
   theme_grey(base_size = base_size, base_family = base_family) %+replace% 
@@ -99,7 +99,7 @@ theme_b_border <- function (base_size = 12, base_family = "")
 ```
 
 Prepare a data frame to be used for the facet plot:
-```{r data}
+```{r data, cache=TRUE}
 scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
 factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
 str(scenario)   
@@ -119,7 +119,7 @@ head(leach)
 ```
 
 Plot the distributions:
-```{r histograms, fig.cap="Figure 1: Distributions of NO3 leaching"}
+```{r histograms, cache=TRUE, fig.cap="Figure 1: Distributions of NO3 leaching"}
 
 scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
@@ -151,14 +151,14 @@ CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_le
 
 Pull the new table into R:
 ```{r data_sample}
-sample = tbl(isuag_db, "05_dndc_clumu_cgsb_swg_sample") %>%
+sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
 
 head(sample)
 str(sample)
 ```
 Plot the sample:
-```{r scatterplot, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -250 US$/ha for profitability (solid) and 100 kg N/ha for NO3 leaching (dashed)."}
+```{r scatterplot, cache=TRUE, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -250 US$/ha for profitability (solid) and 100 kg N/ha for NO3 leaching (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -169,7 +169,7 @@ ggplot() +
   
 ```
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on hte y axis to see this better:
-```{r scatterplot_zoom, fig.cap="Figure 3: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N/ha to better see the low leaching values. The red line indicates a possible cut off value of -250 US$/ha for profitability."}
+```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 3: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N/ha to better see the low leaching values. The red line indicates a possible cut off value of -250 US$/ha for profitability."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -209,12 +209,58 @@ Comparison criteria:
 Improvement of total N leaching in form of NO3 state wide and on the county level (in % of status quo values).
 
 Leaching sums are calculated in PostgreSQL. Access the results:
-```{r}
-
+```{r scenarios}
+scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+  as.data.frame()
+scen_areas
 ```
+
+
+
+##4. Disproportionate benefits?##
+
+I want to see how NO3 leaching reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
+Plot the mean profitability distribution to identify profitability cut off values:
+```{r profit_distribution}
+profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
+  as.data.frame()
+str(profit)
+
+ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
+  geom_histogram(binwidth=20, alpha = .5, position="identity") +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Area (Mha)") +
+  geom_vline(aes(xintercept= -500, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= -350, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= -250, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= -100, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= -50, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= 50, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= 100, linetype= "dashed"),  show.legend = FALSE) +
+  geom_vline(aes(xintercept= 150, linetype= "dashed"),  show.legend = FALSE)
+```
+I want to select the total area of polygons that fall under specific profitability thresholds.
+```{r swg_areas, cache=TRUE}
+swg_areas <- vector(mode="numeric", length=0)
+profit <- tbl(isuag_db, "05_dndc_clumu_cgsb_swg")
+cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
+ for (i in 1:length(cutoffs)) {
+    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE mean_profit_ha < ", as.character(cutoffs[i]))
+    sum_area <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_area <- sum_area[1,1]
+    print(sum_area)
+    swg_areas <- append(swg_areas, sum_area) 
+  }
+  swg_areas
+```
+
 
 
 Shut the database down:
 ```{r shut, message=FALSE}
-rm(list='isuag_db'); gc() 
+# rm(list='isuag_db'); gc() 
 ```
