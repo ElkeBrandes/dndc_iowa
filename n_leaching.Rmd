@@ -22,7 +22,7 @@ isuag_db <- src_postgres(dbname = 'isuag',
 
 ```
 With RPostgreSQL:
-```{r, connect_rpostgres, message=FALSE, cache=TRUE}
+```{r, connect_rpostgres, message=FALSE}
 # install.packages("RPostgreSQL")
 require("RPostgreSQL")
 pw <- {
@@ -263,8 +263,8 @@ select sum(clumuha) from "05_dndc_clumu_cgsb_swg";
 
 Create data frame for figure:
 ```{r data_dispr_benefits, cache=TRUE}
-swg_yield <- c(0,rep(7500,11), rep(10000,11),rep(12500,11))
-profit_cutoff <- c(0,rep(cutoffs,3))
+swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
+profit_cutoff <- c(NA, rep(cutoffs,3))
 swg_area <- c(0,rep(swg_areas,3))
 swg_area_percent <- (swg_area/9374362)*100
 N_leaching <- sum_leaching[,2]
@@ -273,9 +273,38 @@ N_reduction <- abs((N_leaching - N_leaching[1])/N_leaching[1])*100
 relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
 ```
 
+Plot the relationship between percent of area in switchgrass and percent of NO3 leaching reduction:
+```{r cache=TRUE}
+ggplot() +
+  geom_point(data = relation, aes(x = swg_area_percent, y = N_reduction, color=swg_yield)) +
+  theme_b_border() +
+  scale_x_continuous(name="Area in switchgrass (%)") +
+  scale_y_continuous(name="NO3 leaching reduction (% N)") +
+  scale_color_discrete(name="Switchgrass\nYield")
+```
+
+Plot the relationship between profitability cut off and percent of NO3 leaching reduction:
+```{r cache=TRUE}
+ggplot() +
+  geom_point(data = relation, aes(x = profit_cutoff, y = N_reduction, color=swg_yield)) +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(name="NO3 leaching reduction (% N)") +
+  scale_color_discrete(name="Switchgrass\nYield")
+```
+
+Plot the relationship between profitability cut off and percent area in switchgrass:
+
+```{r cache=TRUE}
+ggplot() +
+  geom_point(data = relation, aes(x = profit_cutoff, y = swg_area_percent)) +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(name="Area in switchgrass (%)")
+```
 
 
 Shut the database down:
 ```{r shut, message=FALSE}
-# rm(list='isuag_db'); gc() 
+ rm(list='isuag_db'); gc() 
 ```
