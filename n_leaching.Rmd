@@ -80,7 +80,7 @@ Packages needed for the plots:
 library("ggplot2")
 library("gridGraphics") # needed for the function unit
 ```
-I am using a modified theme for ggplot that has a black borde and white background:
+I am using a modified theme for ggplot that has a black border and white background:
 ```{r theme}
 theme_b_border <- function (base_size = 12, base_family = "") 
 {
@@ -101,7 +101,7 @@ theme_b_border <- function (base_size = 12, base_family = "")
 Prepare a data frame to be used for the facet plot:
 ```{r data}
 scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
-factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi'))
+factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
 str(scenario)   
 
 leaching <- vector(mode="numeric", length=0)
@@ -142,10 +142,10 @@ Using a SQL chunk, create a table from a subsample (n=10000) *within* the Postgr
 SELECT setseed(0.5)
 ```
 ```{sql, connection=con, message=FALSE, cache=TRUE}
-DROP TABLE IF EXISTS "05_dndc_clumu_cgsb_swg_sample";
+DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_sample";
 ```
 ```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "05_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
+CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
 ```
 
 
@@ -192,11 +192,29 @@ SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 
 ```{sql, connection=con, message=FALSE, cache=TRUE}
 SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
 ```
-Shut the database down:
-```{r shut, message=FALSE}
-rm(list='isuag_db'); gc() 
-```
 
 ##3. Switchgrass integration scenarios##
 
 From figure 2 we can see that the relation between NO3 leaching and profitability is not completely random. At higher profitability, the number of subfield patches with high NO3 leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
+
+I am chosing -250 US$/ha as a profitability cut off and 1-- kg N/ha as an NO3 leaching cut off. That means, I produce two switchgrass integration scenarios:
+
+1. Profit-optimized (PO): Switchgrass is grown on the subfield areas where mean profitability is below -250 US$/ha
+2. Water quality-optimized (WO): Switchgrass is grown on the subfield areas where NO3 leaching is above 100 kg N/ha
+
+Each of those scenario has three "sub-scenarios" assuming the three different switchgrass yields, so I end up having 6 scenarios that I want to compare to the status quo.
+
+Comparison criteria:
+
+Improvement of total N leaching in form of NO3 state wide and on the county level (in % of status quo values).
+
+Leaching sums are calculated in PostgreSQL. Access the results:
+```{r}
+
+```
+
+
+Shut the database down:
+```{r shut, message=FALSE}
+rm(list='isuag_db'); gc() 
+```
