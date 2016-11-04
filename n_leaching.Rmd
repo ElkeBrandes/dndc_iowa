@@ -10,6 +10,7 @@ This paper describes the data analysis of NO3 leaching results in Iowa. The init
 ```{r packages, message=FALSE}
 library('RPostgreSQL') # PostgreSQL database connection
 library("ggplot2") # for the figures
+library("maps") # to plot maps
 library("gridGraphics") # needed for the function unit in ggplot
 library("tidyverse") # to make tidy tables, includes dplyr needed for PostgreSQL database connection
 library('knitr') # to use kable() function
@@ -45,7 +46,7 @@ con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres 
 
 ##1. Distributions of NO~3~ leaching in Iowa, from row cropped and switchgrass fields##
 
-Connect to the isuag database and load tables that contain the rounded average NO3 leaching values (in kg/ha) for the **four scenarios**:
+Connect to the isuag database and load tables that contain the rounded average NO~3~ leaching values (in kg/ha) for the **four scenarios**:
 
 1. Status quo (row cropped areas in corn or soybean as is from 2012-2015)
 2. Switchgrass low yield (all areas that were continuously in corn/soy from 2012-2015 were planted to switchgrass in 2006 for 10 years, assuming switchgrass yield is 7000 kg/ha)
@@ -259,12 +260,12 @@ sum_leaching <- tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_dispr_benefits") %>%
 select sum(clumuha) from "05_dndc_clumu_cgsb_swg";
 ```
 
-I want to select the total area of polygons that fall over specific N leaching thresholds (WO scenario).
-```{r swg_areas_po, cache=TRUE}
+I want to select the total area of polygons that fall above specific N leaching thresholds (WO scenario).
+```{r swg_areas_wo, cache=TRUE}
 swg_areas_wo <- vector(mode="numeric", length=0)
-leach_cutoffs <- c(100, 90, 80, 70, 60, 50)
- for (i in 1:length(leach_cutoffs)) {
-    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE mean_profit_ha > ", as.character(leach_cutoffs[i]))
+leach_cutoff <- c(100, 90, 80, 70, 60, 50)
+ for (i in 1:length(leach_cutoff)) {
+    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE ave_no3_leach_ha_cgsb > ", as.character(leach_cutoff[i]))
     sum_area <- tbl(isuag_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
@@ -273,42 +274,74 @@ leach_cutoffs <- c(100, 90, 80, 70, 60, 50)
 ```
 
 Create data frames for figures:
-```{r data_dispr_benefits, cache=TRUE}
+```{r data_dispr_benefits}
 swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
 profit_cutoff <- c(NA, rep(profit_cutoffs,3))
-swg_area <- c(0,rep(swg_areas_po,3))
-swg_area_percent <- (swg_area/9374362)*100
+swg_area_po <- c(0,rep(swg_areas_po,3))
+swg_area_po_percent <- (swg_area_po/9374362)*100
 N_leaching <- sum_leaching[,2]
 N_reduction <- abs((N_leaching - N_leaching[1])/N_leaching[1])*100
 
-relation_po <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
+relation_po <- data.frame(swg_yield, profit_cutoff, swg_area_po_percent, N_reduction)
 
-relation_wo <- data.frame(leach_cutoffs, swg_areas_wo)
+swg_area_wo_percent <- (swg_areas_wo/9374362)*100
+
+relation_wo <- data.frame(leach_cutoff, swg_area_wo_percent)
 ```
 
-Plot relationships:
-```{r cache=TRUE, fig.show="hold", fig.cap:"Increase in NO3 leaching reduction with increasing area in switchgrass (A), increase in NO# leaching reduciton with increasing profitability threshold (B), increase of area in switchgrass with increasing profitability threshold (C)."}
+Plot relationsships between thresholds and % area in switchgrass:
+```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5}
 ggplot() +
-  geom_point(data = relation_po, aes(x = swg_area_percent, y = N_reduction, color=swg_yield)) +
+  geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_po_percent)) +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+
+ggplot() +
+  geom_point(data = relation_wo, aes(x = leach_cutoff, y = swg_area_wo_percent)) +
+  theme_b_border() +
+  scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+
+
+```
+
+
+
+Plot relationships:
+```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Increase in NO~3~ leaching reduction with increasing area in switchgrass (A), and with increasing profitability threshold (B)."}
+
+ggplot() +
+  geom_point(data = relation_po, aes(x = swg_area_po_percent, y = N_reduction, color=swg_yield)) +
   theme_b_border() +
   scale_x_continuous(name="Area in switchgrass (%)") +
   scale_y_continuous(name="NO3 leaching reduction (% N)") +
-  scale_color_discrete(name="Switchgrass\nYield")
+  scale_color_discrete(name="Switchgrass\nYield",  guide = FALSE)
 
 ggplot() +
   geom_point(data = relation_po, aes(x = profit_cutoff, y = N_reduction, color=swg_yield)) +
   theme_b_border() +
   scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
   scale_y_continuous(name="NO3 leaching reduction (% N)") +
-  scale_color_discrete(name="Switchgrass\nYield")
-
-ggplot() +
-  geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_percent)) +
-  theme_b_border() +
-  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
-  scale_y_continuous(name="Area in switchgrass (%)")
+  scale_color_discrete(name="Switchgrass\nYield") +
+  theme(legend.position=c(0.2,0.7))
 ```
 
+##5. Spatial distribution of NO~3~ leaching changes##
+
+```{r counties}
+ counties = tbl(isuag_db, "07_dndc_counties") %>%
+   as.data.frame(counties)
+ head(counties)
+ 
+ us_counties <- map_data("county")
+ 
+ ggplot() +
+   geom_polygon(data = us_counties, aes(x = long, y = lat, group = group)) +
+#   xlim(c(-91, -80)) + ylim(c(22,32)) + 
+   coord_map()
+   
+```
 
 
 Shut the database down:
