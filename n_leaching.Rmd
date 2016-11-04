@@ -334,13 +334,18 @@ ggplot() +
    as.data.frame(counties)
  head(counties)
  
+ 
  us_counties <- map_data("county")
+ ia_counties <- subset(us_counties, region == "iowa")
+
+ us_states <- map_data("state")
  
  ggplot() +
-   geom_polygon(data = us_counties, aes(x = long, y = lat, group = group)) +
-#   xlim(c(-91, -80)) + ylim(c(22,32)) + 
-   coord_map()
-   
+   geom_polygon(data = ia_counties, aes(x = long, y = lat, group = group), fill=NA, color="grey") +
+#   geom_polygon(data = us_states, aes(x = long, y = lat, group = group), fill = NA, color = "grey") +
+#   xlim(c(-97, -90)) + ylim(c(40,44)) + 
+   coord_map() +
+   theme_b_border()
 ```
 
 
