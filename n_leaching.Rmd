@@ -21,6 +21,8 @@ library(ggmap)
 library(scales)
 library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
+
+
 ```
 
 
@@ -337,39 +339,60 @@ ggplot() +
 
 ##5. Spatial distribution of NO~3~ leaching changes##
 
-Read in the table from the isuag database that contains county identifiers ("fips") and leaching results. Then, read in a shape file with county delineations.
+Read in the table from the isuag database that contains county identifiers ("fips") and leaching results. 
 ```{r counties}
  counties_leach = tbl(isuag_db, "07_dndc_counties") %>%
    as.data.frame()
- counties_leach$fips <- as.factor(counties_leach$fips)
- names(counties_leach)
- colnames(counties_leach)[1] <- "abbr" #rename the id to match it with the spatial data frame below
- head(counties_leach)
- 
- 
-ia_counties <- readOGR("Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/iowa_cnty_reprojected.shp", layer = "iowa_cnty_reprojected")
-class(ia_counties)
-names(ia_counties)
+ # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
+ for (i in 1:length(counties_leach$fips)) {
+   counties_leach$fips[i] <- sub("IA", "19", counties_leach$fips[i])
+    }
+ # make it a factor
+  counties_leach$fips <- as.factor(counties_leach$fips)
+
+head(counties_leach, n=2)
 ```
 
-Merge the data frame to the spatial data frame
+Then, read in a shape file with county delineations.
 ```{r}
-cnty_leach <- merge(ia_counties, counties_leach, by="abbr")
+counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+class(counties)
+names(counties)
+names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
+head(counties@data, n=2) # shows only the slot "data"
+
+head(counties@polygons[[1]]@Polygons[[1]]@coords, 3) # shows the coordinates
+# to plot spatial data in ggplot, I need to make it into a data frame to get access to the longitude and latitude:
+counties_df <- fortify(counties)
+head(counties_df, n = 2)
+```
+
+Join the data frame to the spatial data frame (like a join in ArcGIS):
+```{r join_attributes}
+cnty_leach <- merge(counties, counties_leach, by="fips")
 class(cnty_leach)
-names(cnty_leach)
+head(cnty_leach@data, n=2)
 ```
 
 
 
 
-# the column "abbr" correspond to "fips" in the PostgreSQL database data.
- 
-# ggplot() +
-#   geom_polygon(data = ia_counties, aes(x = long, y = lat, group = group), fill=NA, color="grey") +
-#   geom_polygon(data = us_states, aes(x = long, y = lat, group = group), fill = NA, color = "grey") +
-#   xlim(c(-97, -90)) + ylim(c(40,44)) + 
-#   coord_map() +
-#   theme_b_border()
+
+```{r plot_map} 
+
+
+head(cnty_leach_df)
+ggplot(cnty_leach_df) +
+  geom_path(aes(long, lat, group=group), color = "white") +
+  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach_cgsb)) +
+  coord_map() +
+  theme_b_border()
+
+ggplot() +
+  geom_polygon(data = counties, aes(x = long, y = lat, group = group), fill=NA, color="grey") +
+#  xlim(c(-97, -90)) + ylim(c(40,44)) +
+  coord_map() +
+  theme_b_border()
 ```
 
 
