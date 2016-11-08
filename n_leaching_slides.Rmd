@@ -1,0 +1,163 @@
+---
+title: "State wide NO~3~ leaching results"
+author: "Elke Brandes"
+date: "November 8, 2016"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+```
+
+## DNDC - Model assumptions
+
+- Iowa, subfield resolution
+
+- 4 model runs:
+
+    1. Status quo (corn, soybean), 2012-2015
+    
+    2. Switchgrass, low yield (7,500 kg/ha), 2006-2015
+    
+    3. Switchgrass, med yield (10,000 kg/ha), 2006-2015
+    
+    4. Switchgrass, high yield (12,500 kg/ha), 2006-2015
+    
+## DNDC - Model assumptions cont'd
+
+- Row crop fertilization rates are constant, varying by year (optimal return on N)
+- Switchgrass: 50 kg N/ha
+- switchgrass C/N above ground biomass = 75
+- switchgrass C/N below ground biomass = 60
+
+## Results - Outline
+
+1. Distributions of NO~3~ leaching in Iowa
+2. Correlation between profitability and NO3 leaching in corn and soybean fields
+3. Switchgrass integration scenarios
+4. Disproportionate benefits?
+5. Spatial distribution of NO~3~ leaching changes
+
+## 1. Distributions of NO~3~ leaching in Iowa
+```{r intro, message=FALSE, warning=FALSE}
+library('RPostgreSQL') # PostgreSQL database connection
+library("ggplot2") # for the figures
+library("maps") # to plot maps, contains country/state/county outlines
+library("gridGraphics") # needed for the function unit in ggplot
+library("tidyverse") # to make tidy tables, includes dplyr needed for PostgreSQL database connection
+library('knitr') # to use kable() function
+
+library(rgdal) # to read in shape files
+library(ggmap)
+library(scales)
+library(RColorBrewer)
+library("sp") # to use merge with a spatial data frame
+
+library("tmap")
+
+pw <- {
+  "5QUXJHTbxj"
+}
+isuag_db <- src_postgres(dbname = 'isuag',
+                           host = 'isu-ag-db.agsolver.com',
+                           port = 5432,
+                           user = 'isuag',
+                           password = pw)
+pw <- {
+  "5QUXJHTbxj"
+}
+drv <- dbDriver("PostgreSQL") # loads the PostgreSQL driver
+con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres database
+                 host = "isu-ag-db.agsolver.com", port = 5432,
+                 user = "isuag", password = pw)
+# note that "con" will be used later in each connection to the database
+
+cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_low <-tbl(isuag_db, "06_swg_7500_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_med <-tbl(isuag_db, "06_swg_10000_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+swg_hi <-tbl(isuag_db, "06_swg_12500_ave_no3_leach_rounded_aggr")  %>%
+  as.data.frame()
+
+data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
+
+theme_b_border <- function (base_size = 12, base_family = "") 
+{
+  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      axis.text = element_text(size = rel(0.8), margin = margin(r=10)), #margin 
+      axis.ticks = element_line(colour = "black"),
+      axis.ticks.length = unit(0.15, "cm"),
+      legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
+      colour = NA), panel.border = element_rect(fill = NA, 
+      colour = "black"), panel.grid.major = element_line(colour = NA, 
+      size = 0.2), panel.grid.minor = element_line(colour = NA, 
+      size = 0.5), strip.background = element_rect(fill = "grey80", 
+      colour = "grey50", size = 0.2))
+}
+
+scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
+factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
+
+leaching <- vector(mode="numeric", length=0)
+ for (i in seq(data_list))
+   leaching <- append(leaching, data_list[[i]][,1])
+  
+area <- vector(mode="numeric", length=0)
+ for (i in seq(data_list))
+   area <- append(area, data_list[[i]][,2])
+
+leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show Mha
+
+```
+
+
+
+```{r histograms, warning=FALSE, message=FALSE, cache=TRUE, fig.cap="Figure 1: Distributions of NO3 leaching"}
+scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
+
+ggplot(leach, aes(leaching, weight = area)) + 
+  geom_histogram(binwidth=2, alpha = .5, position="identity") +
+  theme_b_border() +
+  scale_x_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
+  scale_y_continuous(name="Area (Mha)") +
+  theme(legend.position="bottom") +
+  facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
+```
+
+##2. Correlation between profitability and NO~3~ leaching
+
+```{sql, connection=con, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_sample";
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
+```
+
+```{r data_sample}
+sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
+  as.data.frame(sample)
+```
+
+```{r scatterplot, cache=TRUE, fig.show="hold", fig.width=4, fig.height=4, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE) 
+
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)", limits=c(0,20)) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
+  
+```
