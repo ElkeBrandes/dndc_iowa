@@ -16,12 +16,10 @@ library("tidyverse") # to make tidy tables, includes dplyr needed for PostgreSQL
 library('knitr') # to use kable() function
 
 library(rgdal) # to read in shape files
-library(Cairo)
 library(ggmap)
 library(scales)
 library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
-
 
 library("tmap")
 
@@ -222,7 +220,7 @@ Comparison criteria:
 Improvement of total N leaching in form of NO3 state wide and on the county level (in % of status quo values).
 
 Leaching sums are calculated in PostgreSQL. Access the results:
-```{r scenarios}
+```{r total_leaching}
 scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
   as.data.frame()
 perc_leach_red <- 
@@ -236,7 +234,7 @@ perc_leach_red
 
 I want to see how NO3 leaching reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
 Plot the mean profitability distribution to identify profitability cut off values:
-```{r profit_distribution}
+```{r profit_distribution, fig.cap="Figure 4: Distribution of mean profitability 2012-2015."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 str(profit)
@@ -303,7 +301,7 @@ relation_wo <- data.frame(leach_cutoff, swg_area_wo_percent)
 ```
 
 Plot relationsships between thresholds and % area in switchgrass:
-```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5}
+```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 5: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass."}
 ggplot() +
   geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_po_percent)) +
   theme_b_border() +
@@ -322,7 +320,7 @@ ggplot() +
 
 
 Plot relationships:
-```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Increase in NO~3~ leaching reduction with increasing area in switchgrass (A), and with increasing profitability threshold (B)."}
+```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 6: Increase in NO~3~ leaching reduction with increasing area in switchgrass (left panel), and with increasing profitability threshold (right panel)."}
 
 ggplot() +
   geom_point(data = relation_po, aes(x = swg_area_po_percent, y = N_reduction, color=swg_yield)) +
@@ -379,13 +377,13 @@ counties_df <- fortify(counties)
 head(counties_df, n = 2)
 counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), sarting with 0.
 head(counties@data, n = 2)
-# join the attributes back to the data frame:
-counties_df <- left_join(counties_df, counties@data)
+# join the attributes back to the data frame, to create a dataframe used to map the baseline (corn/soybean):
+counties_baseline_df <- left_join(counties_df, counties@data)
 ```
 
-```{r plot_map} 
+```{r plot_baseline_map, fig.cap="Figure 7: County mean annual NO~3~ leaching, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county."} 
 
-head(counties_df, n= 2)
+head(counties_baseline_df, n= 2)
 
 # create a theme without axes:
 ditch_the_axes <- theme(
@@ -397,11 +395,75 @@ ditch_the_axes <- theme(
   axis.title = element_blank()
   )
 
-ggplot(counties_df) +
-  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
-  coord_equal() +
-  ditch_the_axes
 
+# add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
+centroids <- getSpPPolygonsLabptSlots(counties) %>%
+  as.data.frame() 
+centroids$id <- as.character(0:98)
+
+# join the total N leaching data to the centroids 
+counties_baseline_df <- left_join(counties_baseline_df, centroids)
+
+
+ggplot() +
+  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
+  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_ave_no3_leach_cgsb), color = "dark grey") +
+  labs(size = "Total NO3 leaching (Mg N/ha)") +
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = "Average NO3 leaching (kg N/ha)") +
+  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +
+  ggtitle("Average and total annual NO3 leaching per county")
+
+head(counties_baseline_df, n=2)
+# add title and caption
+
+```
+
+Now, I want to plot two times three maps in a facet plot that show the NO~3~ leaching results and the leaching reduction, when switchgrass is grown on areas losing -150 US$/ha or more, for each of the three yield scenarios. For the facet plot in ggplot, I need to re-arrange the data, creating the variable "scenario" and adding two columns with values, one for the average leaching and one for the percent change from the baseline to the switchgrass integration scenario.
+```{r plot_leach_maps,fig.width=10, fig.height=3, fig.cap="Figure 8: County mean annual NO~3~ leaching, averaged over 2012-2015, from three switchgrass integration scenarios in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county. Switchgrass was planted on areas that lost -150 US$/ha or more on average between 2012 and 2015. The three maps refer to different yield assumptions for switchgrass (low yielding: 7,500 kg/ha, medium yielding: 10,000 kg/ha, and high yielding: 12,500 kg/ha)"}
+# set up the data frame 
+counties_swg <- data.frame(id = rep(counties$id,3),
+                         scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
+                                                                               rep("swg_12500", length(counties$id))),
+                         tot_no3_leach = c(counties$tot_ave_no3_leach_7500, counties$tot_ave_no3_leach_10000,
+                                           counties$tot_ave_no3_leach_12500),
+                         ave_no3_leach = c(counties$ave_no3_leach_7500, counties$ave_no3_leach_10000, counties$ave_no3_leach_12500),
+                         leach_red = c(counties$no3_leach_change_7500, counties$no3_leach_change_10000,
+                                       counties$no3_leach_change_12500))
+counties_swg$scenario <- factor(counties_swg$scenario, levels = c("swg_7500", "swg_10000", "swg_12500"))
+head(counties_swg, n = 2)
+# join data frame with the data frame extracted out of the spatial data frame
+counties_swg_df <- left_join(counties_df, counties_swg) %>%
+  left_join(centroids)
+head(counties_swg_df, n = 4)
+
+# plot the data
+
+swg_yield <- c('swg_7500' = "Low yielding switchgrass", 'swg_10000' = "Medium yielding switchgrass", 'swg_12500' = "High yielding switchgrass")
+
+ggplot(counties_swg_df) +
+  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "white") +
+  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +  
+  labs(fill = "Average NO3 leaching (kg N/ha)") +  
+  geom_point(aes(V1, V2, size = tot_no3_leach), color = "dark grey") +
+  labs(size = "Total NO3 leaching (Mg N)") +
+  scale_size(range = c(0, 4)) +
+  coord_equal() +
+  ditch_the_axes +
+  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
+  ggtitle("Average and total annual NO3 leaching per county")
+```
+
+```{r plot_leach_reduction_maps, fig.width=10, fig.height=3, fig.cap = "Figure 9: Reduction in total NO~3~ leaching in the switchgrass integration scenarios, as % of the status quo leaching in Figure 7."}
+ggplot(counties_swg_df) +
+  geom_polygon(aes(long, lat, group = group, fill=leach_red), color = "white") +
+  scale_fill_gradient(low = "white", high="dark green", guide = "colourbar") +  
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = "NO3 leaching reduction (%)") +
+  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
+  ggtitle("Reduction in total annual NO3 leaching per county")
 
 ```
 
