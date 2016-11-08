@@ -10,7 +10,7 @@ This paper describes the data analysis of NO3 leaching results in Iowa. The init
 ```{r packages, message=FALSE}
 library('RPostgreSQL') # PostgreSQL database connection
 library("ggplot2") # for the figures
-library("maps") # to plot maps
+library("maps") # to plot maps, contains country/state/county outlines
 library("gridGraphics") # needed for the function unit in ggplot
 library("tidyverse") # to make tidy tables, includes dplyr needed for PostgreSQL database connection
 library('knitr') # to use kable() function
@@ -21,6 +21,9 @@ library(ggmap)
 library(scales)
 library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
+
+
+library("tmap")
 
 
 ```
@@ -340,7 +343,7 @@ ggplot() +
 ##5. Spatial distribution of NO~3~ leaching changes##
 
 Read in the table from the isuag database that contains county identifiers ("fips") and leaching results. 
-```{r counties}
+```{r counties_attributes}
  counties_leach = tbl(isuag_db, "07_dndc_counties") %>%
    as.data.frame()
  # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
@@ -353,46 +356,53 @@ Read in the table from the isuag database that contains county identifiers ("fip
 head(counties_leach, n=2)
 ```
 
-Then, read in a shape file with county delineations.
-```{r}
+Read in a shape file with county delineations. I could use a map provided in the maps package or read in a file from my directory, which I do in this case:
+```{r counties_spatial}
 counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
 class(counties)
 names(counties)
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
-head(counties@data, n=2) # shows only the slot "data"
+summary(counties)
 
+head(counties@data, n=2) # shows only the slot "data"
 head(counties@polygons[[1]]@Polygons[[1]]@coords, 3) # shows the coordinates
-# to plot spatial data in ggplot, I need to make it into a data frame to get access to the longitude and latitude:
+
+# join the attribute data with the spatial data, using a left join and the identifier "fips":
+counties@data <- left_join(counties@data, counties_leach, by = "fips")
+```
+I can map the attributes using tmap, but I want to use ggplot. Therefore I am not using the following code:
+```qtm(counties, "ave_no3_leach_cgsb")```
+
+To plot spatial data in ggplot, however, I need to make a data frame out of the SpatialPolygonDataFrame to get access to the longitude and latitude. This data frame contains a row for each vertex that the polygons are made of, and an ID starting with 0 up to 98. The attribute data will be lost in this data frame. Therefore, it needs to be joined back afterwards.
+```{r join} 
 counties_df <- fortify(counties)
 head(counties_df, n = 2)
+counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), sarting with 0.
+head(counties@data, n = 2)
+# join the attributes back to the data frame:
+counties_df <- left_join(counties_df, counties@data)
 ```
-
-Join the data frame to the spatial data frame (like a join in ArcGIS):
-```{r join_attributes}
-cnty_leach <- merge(counties, counties_leach, by="fips")
-class(cnty_leach)
-head(cnty_leach@data, n=2)
-```
-
-
-
-
 
 ```{r plot_map} 
 
+head(counties_df, n= 2)
 
-head(cnty_leach_df)
-ggplot(cnty_leach_df) +
-  geom_path(aes(long, lat, group=group), color = "white") +
-  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach_cgsb)) +
-  coord_map() +
-  theme_b_border()
+# create a theme without axes:
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
 
-ggplot() +
-  geom_polygon(data = counties, aes(x = long, y = lat, group = group), fill=NA, color="grey") +
-#  xlim(c(-97, -90)) + ylim(c(40,44)) +
-  coord_map() +
-  theme_b_border()
+ggplot(counties_df) +
+  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
+  coord_equal() +
+  ditch_the_axes
+
+
 ```
 
 
