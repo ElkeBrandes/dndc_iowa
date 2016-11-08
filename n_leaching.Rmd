@@ -168,26 +168,25 @@ str(sample)
 ```
 
 Plot the sample:
-```{r scatterplot, cache=TRUE, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -250 US$/ha for profitability (solid) and 100 kg N/ha for NO3 leaching (dashed)."}
+```{r scatterplot, cache=TRUE, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$/ha for profitability (solid) and 60 kg N/ha for NO3 leaching (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
   scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
   scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
-  geom_vline(aes(xintercept= -250, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 100, linetype= "dotted", color = "red"),  show.legend = FALSE) 
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE) 
   
 ```
 
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
-```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 3: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N/ha to better see the low leaching values. The red line indicates a possible cut off value of -250 US$/ha for profitability."}
+```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 3: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N/ha to better see the low leaching values. The red line indicates a possible cut off value of -150 US$/ha for profitability."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
   scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
   scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)", limits=c(0,20)) +
-  geom_vline(aes(xintercept= -250, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 100, linetype= "dotted", color = "red"),  show.legend = FALSE) 
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
   
 ```
 In order to know how much of the area is included in those very low leaching patches, I run queries in the SQL database:
@@ -306,13 +305,15 @@ ggplot() +
   geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_po_percent)) +
   theme_b_border() +
   scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
-  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
+    geom_vline(aes(xintercept= -150, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 ggplot() +
   geom_point(data = relation_wo, aes(x = leach_cutoff, y = swg_area_wo_percent)) +
   theme_b_border() +
   scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
-  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
+    geom_vline(aes(xintercept= -60, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 
 ```
