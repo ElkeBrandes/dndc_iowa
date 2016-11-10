@@ -203,7 +203,7 @@ SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 
 SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
 ```
 
-##3. Switchgrass integration scenarios##
+##3. Switchgrass integration scenarios
 
 From figure 2 we can see that the relation between NO3 leaching and profitability is not completely random. At higher profitability, the number of sub-field patches with high NO3 leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
 
@@ -223,13 +223,13 @@ Leaching sums are calculated in PostgreSQL. Access the results:
 scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
   as.data.frame()
 perc_leach_red <- 
-kable(scen_areas, col.names=c("Status Quo","PO 7500 kg/ha", "PO 10000 kg/ha", "PO 12500 kg/ha","WO 7500 kg/ha", "WO 10000 kg/ha", "WO 12500 kg/ha"), caption="Mean annual NO3 leaching (Mg N/ha) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
+kable(scen_areas, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
 perc_leach_red
 ```
 
 
 
-##4. Disproportionate benefits?##
+##4. Disproportionate benefits?
 
 I want to see how NO3 leaching reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
 Plot the mean profitability distribution to identify profitability cut off values:
@@ -313,7 +313,7 @@ ggplot() +
   theme_b_border() +
   scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
   scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
-    geom_vline(aes(xintercept= -60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+    geom_vline(aes(xintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 
 ```
