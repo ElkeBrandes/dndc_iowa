@@ -27,13 +27,13 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 
 - Row crop fertilization rates are constant, varying by year (optimal return on N)
 - Switchgrass: 50 kg N/ha
-- switchgrass C/N above ground biomass = 75
-- switchgrass C/N below ground biomass = 60
+- Switchgrass C/N above ground biomass = 75
+- Switchgrass C/N below ground biomass = 60
 
 ## Results - Outline
 
 1. Distributions of NO~3~ leaching in Iowa
-2. Correlation between profitability and NO3 leaching in corn and soybean fields
+2. Correlation between profitability and NO~3~ leaching in corn and soybean fields
 3. Switchgrass integration scenarios
 4. Disproportionate benefits?
 5. Spatial distribution of NO~3~ leaching changes

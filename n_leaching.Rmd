@@ -313,7 +313,7 @@ ggplot() +
   theme_b_border() +
   scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
   scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
-    geom_vline(aes(xintercept= -60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+    geom_vline(aes(xintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 
 ```
