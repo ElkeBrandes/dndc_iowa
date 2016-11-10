@@ -2,7 +2,8 @@
 title: "State wide NO~3~ leaching results"
 author: "Elke Brandes"
 date: "November 8, 2016"
-output: ioslides_presentation
+output: ioslides_presentation:
+  incremental: true
 ---
 
 ```{r setup, include=FALSE}
