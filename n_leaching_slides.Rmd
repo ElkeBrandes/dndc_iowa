@@ -161,3 +161,92 @@ ggplot() +
   geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
   
 ```
+
+## 3. Switchgrass integration scenarios
+
+```{r total_leaching, cache=TRUE}
+scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+  as.data.frame()
+perc_leach_red <- 
+kable(scen_areas, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
+perc_leach_red
+```
+
+- PO scenario: Areas losing 150 US$/ha or more are in switchgrass
+- WO scenario: Areas leaching 60 kg/ha or more are in switchgrass
+
+## 4. Switchgrass integration: Disproportionate benefits?
+
+```{r profit_distribution, fig.cap="Figure 4: Distribution of mean profitability 2012-2015."}
+profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
+  as.data.frame()
+
+ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
+  geom_histogram(binwidth=20, alpha = .5, position="identity") +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Area (Mha)") +
+  geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) 
+```
+
+## 4. Switchgrass integration: Disproportionate benefits?
+```{r swg_areas_po, cache=TRUE}
+swg_areas_po <- vector(mode="numeric", length=0)
+# profit <- tbl(isuag_db, "05_dndc_clumu_cgsb_swg")
+profit_cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
+ for (i in 1:length(profit_cutoffs)) {
+    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]))
+    sum_area <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_area <- sum_area[1,1]
+    swg_areas_po <- append(swg_areas_po, sum_area) 
+  }
+
+sum_leaching <- tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_dispr_benefits") %>%
+  as.data.frame() %>%
+  gather(corn_soybeans, swg_7500_1, swg_7500_2, swg_7500_3, swg_7500_4, swg_7500_5, swg_7500_6, swg_7500_7, swg_7500_8, swg_7500_9, swg_7500_10, swg_7500_11, swg_10000_1, swg_10000_2, swg_10000_3, swg_10000_4, swg_10000_5, swg_10000_6, swg_10000_7, swg_10000_8, swg_10000_9, swg_10000_10, swg_10000_11, swg_12500_1, swg_12500_2, swg_12500_3, swg_12500_4, swg_12500_5, swg_12500_6, swg_12500_7, swg_12500_8, swg_12500_9, swg_12500_10, swg_12500_11, key = swg_scenarios, value=ave_no2_leach)
+
+```
+
+```{sql connection=con, message=FALSE, include=FALSE, cache=TRUE}
+select sum(clumuha) from "05_dndc_clumu_cgsb_swg";
+```
+```{r swg_areas_wo, cache=TRUE}
+swg_areas_wo <- vector(mode="numeric", length=0)
+leach_cutoff <- c(100, 90, 80, 70, 60, 50)
+ for (i in 1:length(leach_cutoff)) {
+    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE ave_no3_leach_ha_cgsb > ", as.character(leach_cutoff[i]))
+    sum_area <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_area <- sum_area[1,1]
+    swg_areas_wo <- append(swg_areas_wo, sum_area) 
+  }
+swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
+profit_cutoff <- c(NA, rep(profit_cutoffs,3))
+swg_area_po <- c(0,rep(swg_areas_po,3))
+swg_area_po_percent <- (swg_area_po/9374362)*100
+N_leaching <- sum_leaching[,2]
+N_reduction <- abs((N_leaching - N_leaching[1])/N_leaching[1])*100
+
+relation_po <- data.frame(swg_yield, profit_cutoff, swg_area_po_percent, N_reduction)
+
+swg_area_wo_percent <- (swg_areas_wo/9374362)*100
+
+relation_wo <- data.frame(leach_cutoff, swg_area_wo_percent)
+```
+
+```{r thresholds, fig.show="hold", fig.height= 3, fig.width=3.5, fig.cap="Figure 5: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass."}
+ggplot() +
+  geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_po_percent)) +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+
+ggplot() +
+  geom_point(data = relation_wo, aes(x = leach_cutoff, y = swg_area_wo_percent)) +
+  theme_b_border() +
+  scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
+  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
+
+
+```
