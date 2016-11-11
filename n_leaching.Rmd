@@ -417,7 +417,7 @@ ggplot() +
   ggtitle("Average and total annual NO3 leaching per county")
 
 head(counties_baseline_df, n=2)
-# add title and caption
+
 
 ```
 

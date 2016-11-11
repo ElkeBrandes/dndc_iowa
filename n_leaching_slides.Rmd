@@ -2,8 +2,8 @@
 title: "State wide NO~3~ leaching results"
 author: "Elke Brandes"
 date: "November 8, 2016"
-output: ioslides_presentation:
-  incremental: true
+output: 
+  ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
@@ -12,9 +12,9 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 
 ## DNDC - Model assumptions
 
-- Iowa, subfield resolution
+* Iowa, subfield resolution
 
-- 4 model runs:
+* 4 model runs:
 
     1. Status quo (corn, soybean), 2012-2015
     
@@ -39,7 +39,7 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 4. Disproportionate benefits?
 5. Spatial distribution of NO~3~ leaching changes
 
-## 1. Distributions of NO~3~ leaching in Iowa
+## 1. Distributions of NO~3~ leaching in Iowa: Row crops vs. switchgrass
 ```{r intro, message=FALSE, warning=FALSE}
 library('RPostgreSQL') # PostgreSQL database connection
 library("ggplot2") # for the figures
@@ -163,20 +163,8 @@ ggplot() +
   
 ```
 
-## 3. Switchgrass integration scenarios
 
-```{r total_leaching, cache=TRUE}
-scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
-  as.data.frame()
-perc_leach_red <- 
-kable(scen_areas, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
-perc_leach_red
-```
-
-- PO scenario: Areas losing 150 US$/ha or more are in switchgrass
-- WO scenario: Areas leaching 60 kg/ha or more are in switchgrass
-
-## 4. Switchgrass integration: Disproportionate benefits?
+## 3. Switchgrass integration based on mean profitability
 
 ```{r profit_distribution, fig.cap="Figure 4: Distribution of mean profitability 2012-2015."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
@@ -190,7 +178,7 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
   geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) 
 ```
 
-## 4. Switchgrass integration: Disproportionate benefits?
+## 4. Switchgrass integration: Varying the thresholds
 ```{r swg_areas_po, cache=TRUE}
 swg_areas_po <- vector(mode="numeric", length=0)
 # profit <- tbl(isuag_db, "05_dndc_clumu_cgsb_swg")
@@ -250,4 +238,144 @@ ggplot() +
   scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65))
 
 
+```
+
+## 5. Switchgrass integration: Total NO~3~ leaching
+
+```{r total_leaching, cache=TRUE}
+scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+  as.data.frame()
+perc_leach_red <- 
+kable(scen_areas, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
+perc_leach_red
+```
+
+- PO scenario: Areas losing 150 US$/ha or more are in switchgrass
+- WO scenario: Areas leaching 60 kg/ha or more are in switchgrass
+
+
+##6. Switchgrass integration: Disproportionate benefits?
+```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=3.5, fig.cap="Figure 6: Increase in NO~3~ leaching reduction with increasing area in switchgrass (left panel), and with increasing profitability threshold (right panel)."}
+
+ggplot() +
+  geom_point(data = relation_po, aes(x = swg_area_po_percent, y = N_reduction, color=swg_yield)) +
+  theme_b_border() +
+  scale_x_continuous(name="Area in switchgrass (%)") +
+  scale_y_continuous(name="NO3 leaching reduction (% N)") +
+  scale_color_discrete(name="Switchgrass\nYield",  guide = FALSE)
+
+ggplot() +
+  geom_point(data = relation_po, aes(x = profit_cutoff, y = N_reduction, color=swg_yield)) +
+  theme_b_border() +
+  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(name="NO3 leaching reduction (% N)") +
+  scale_color_discrete(name="Switchgrass\nYield") +
+  theme(legend.position=c(0.2,0.7))
+```
+
+##5. Spatial distribution of NO~3~ leaching changes##
+
+```{r counties_attributes, include=FALSE}
+ counties_leach = tbl(isuag_db, "07_dndc_counties") %>%
+   as.data.frame()
+ # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
+ for (i in 1:length(counties_leach$fips)) {
+   counties_leach$fips[i] <- sub("IA", "19", counties_leach$fips[i])
+    }
+ # make it a factor
+  counties_leach$fips <- as.factor(counties_leach$fips)
+
+  counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+  names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
+counties@data <- left_join(counties@data, counties_leach, by = "fips")
+counties_df <- fortify(counties)
+counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), sarting with 0.
+# join the attributes back to the data frame, to create a dataframe used to map the baseline (corn/soybean):
+counties_baseline_df <- left_join(counties_df, counties@data)
+  
+```
+
+
+```{r plot_baseline_map, fig.cap="Figure 7: County mean annual NO~3~ leaching, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county."} 
+
+# create a theme without axes:
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+# add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
+centroids <- getSpPPolygonsLabptSlots(counties) %>%
+  as.data.frame() 
+centroids$id <- as.character(0:98)
+
+# join the total N leaching data to the centroids 
+counties_baseline_df <- left_join(counties_baseline_df, centroids)
+
+
+ggplot() +
+  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
+  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_ave_no3_leach_cgsb), color = "dark grey") +
+  labs(size = "Total NO3 leaching (Mg N/ha)") +
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = "Average NO3 leaching (kg N/ha)") +
+  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") 
+
+```
+
+```{r plot_leach_maps,fig.width=10, fig.height=3, fig.cap="Figure 8: County mean annual NO~3~ leaching, averaged over 2012-2015, from three switchgrass integration scenarios in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county. Switchgrass was planted on areas that lost -150 US$/ha or more on average between 2012 and 2015. The three maps refer to different yield assumptions for switchgrass (low yielding: 7,500 kg/ha, medium yielding: 10,000 kg/ha, and high yielding: 12,500 kg/ha)"}
+# set up the data frame 
+counties_swg <- data.frame(id = rep(counties$id,3),
+                         scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
+                                                                               rep("swg_12500", length(counties$id))),
+                         tot_no3_leach = c(counties$tot_ave_no3_leach_7500, counties$tot_ave_no3_leach_10000,
+                                           counties$tot_ave_no3_leach_12500),
+                         ave_no3_leach = c(counties$ave_no3_leach_7500, counties$ave_no3_leach_10000, counties$ave_no3_leach_12500),
+                         leach_red = c(counties$no3_leach_change_7500, counties$no3_leach_change_10000,
+                                       counties$no3_leach_change_12500))
+counties_swg$scenario <- factor(counties_swg$scenario, levels = c("swg_7500", "swg_10000", "swg_12500"))
+head(counties_swg, n = 2)
+# join data frame with the data frame extracted out of the spatial data frame
+counties_swg_df <- left_join(counties_df, counties_swg) %>%
+  left_join(centroids)
+head(counties_swg_df, n = 4)
+
+# plot the data
+
+swg_yield <- c('swg_7500' = "Low yielding switchgrass", 'swg_10000' = "Medium yielding switchgrass", 'swg_12500' = "High yielding switchgrass")
+
+ggplot(counties_swg_df) +
+  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "white") +
+  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +  
+  labs(fill = "Average NO3 leaching (kg N/ha)") +  
+  geom_point(aes(V1, V2, size = tot_no3_leach), color = "dark grey") +
+  labs(size = "Total NO3 leaching (Mg N)") +
+  scale_size(range = c(0, 4)) +
+  coord_equal() +
+  ditch_the_axes +
+  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
+  ggtitle("Average and total annual NO3 leaching per county")
+```
+
+```{r plot_leach_reduction_maps, fig.width=10, fig.height=3, fig.cap = "Figure 9: Reduction in total NO~3~ leaching in the switchgrass integration scenarios, as % of the status quo leaching in Figure 7."}
+ggplot(counties_swg_df) +
+  geom_polygon(aes(long, lat, group = group, fill=leach_red), color = "white") +
+  scale_fill_gradient(low = "white", high="dark green", guide = "colourbar") +  
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = "NO3 leaching reduction (%)") +
+  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
+  ggtitle("Reduction in total annual NO3 leaching per county")
+
+```
+
+
+Shut the database down:
+```{r shut, message=FALSE}
+ rm(list='isuag_db'); gc() 
 ```
