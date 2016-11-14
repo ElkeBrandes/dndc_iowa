@@ -27,7 +27,7 @@ library("tmap")
 ```
 
 
-### Connect to the PostgreSQL datbase###
+### Connect to the PostgreSQL datbase
 With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
@@ -54,7 +54,104 @@ con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres 
 # note that "con" will be used later in each connection to the database
 ```
 
-##1. Distributions of NO~3~ leaching in Iowa, from row cropped and switchgrass fields##
+### For visualization
+
+I am using a modified theme for ggplot that has a black border and white background:
+```{r theme, cache=TRUE}
+theme_b_border <- function (base_size = 12, base_family = "") 
+{
+  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      axis.text = element_text(size = rel(0.8), margin = margin(r=10)), #margin 
+      axis.ticks = element_line(colour = "black"),
+      axis.ticks.length = unit(0.15, "cm"),
+      legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
+      colour = NA), panel.border = element_rect(fill = NA, 
+      colour = "black"), panel.grid.major = element_line(colour = NA, 
+      size = 0.2), panel.grid.minor = element_line(colour = NA, 
+      size = 0.5), strip.background = element_rect(fill = "grey80", 
+      colour = "grey50", size = 0.2))
+}
+```
+
+
+##1. The baseline: Profitability in corn and soybeans
+
+### State-wide mean profitability distribution
+```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015."}
+profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
+  as.data.frame()
+profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
+str(profit)
+
+ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
+  geom_histogram(binwidth=20, alpha = .5, position="identity") +
+  theme_b_border() +
+  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
+  scale_y_continuous(name="Area (Mha)") +
+  geom_vline(aes(xintercept= -150, linetype= "dashed"),  show.legend = FALSE) 
+```
+
+
+### Spatial distribution of highly unprofitable areas
+
+I want to see how the areas below -150 US$/ha are distributed accross Iowa. First, I read in a county shapefile. Then, I read in the table containing the county-level unprofitable ha from the PostgreSQL database. In order to join hte data, I need to change the format of the county identifier "fips". I convert "fips" into a factor, then join the spatial and the attribute data on "fips". I then fortify (make a data frame out of) the spatial data frame and assign a column with a serial id. Finally, I join the attribute (unprofitable areas) data to this dataframe.
+
+```{r profit_spatial, fig.cap="Figure 2: Areas below a profitability of -150 US$/ha per county. "}
+counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+names(counties)[9] <- "fips" 
+
+profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
+  as.data.frame() 
+
+ for (i in 1:length(profit_county$fips)) {
+   profit_county$fips[i] <- sub("IA", "19", profit_county$fips[i])
+    }
+head(profit_county, n = 2)
+
+# profit_county$fips <- as.factor(profit_county$fips)
+counties@data <- left_join(counties@data, profit_county, by = "fips")
+
+head(counties@data, n=2)
+counties_df <- fortify(counties)
+head(counties_df, n = 2)
+counties$id <- row.names(counties) 
+counties_profit_df <- left_join(counties_df, counties@data)
+
+# add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
+centroids <- getSpPPolygonsLabptSlots(counties) %>%
+  as.data.frame() 
+
+centroids$id <- as.character(0:98)
+
+# join the total N leaching data to the centroids 
+counties_profit_df <- left_join(counties_profit_df, centroids)
+
+# create a theme without axes:
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+ggplot() +
+  geom_polygon(data = counties_profit_df, aes(long, lat, group = group, fill=area_in_swg_perc), color = "white") +
+  geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "orange") +
+  labs(size = "Total area below -150 US$/ha (ha)") +
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = "Relative area below -150 US$/ha (%)") +
+  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +
+  ggtitle("Highly unprofitable area per county")
+
+```
+
+
+
+##2. Distributions of NO~3~ leaching in Iowa, from row cropped and switchgrass fields##
 
 Connect to the isuag database and load tables that contain the rounded average NO~3~ leaching values (in kg/ha) for the **four scenarios**:
 
@@ -92,25 +189,7 @@ data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
 str(data_list[[1]])
 ```
 
-I am using a modified theme for ggplot that has a black border and white background:
-```{r theme, cache=TRUE}
-theme_b_border <- function (base_size = 12, base_family = "") 
-{
-  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
-    theme(
-      axis.text = element_text(size = rel(0.8), margin = margin(r=10)), #margin 
-      axis.ticks = element_line(colour = "black"),
-      axis.ticks.length = unit(0.15, "cm"),
-      legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
-      colour = NA), panel.border = element_rect(fill = NA, 
-      colour = "black"), panel.grid.major = element_line(colour = NA, 
-      size = 0.2), panel.grid.minor = element_line(colour = NA, 
-      size = 0.5), strip.background = element_rect(fill = "grey80", 
-      colour = "grey50", size = 0.2))
-}
-```
-
-Prepare a data frame to be used for the facet plot:
+Prepare a data frame to be used for the NO~3~ leaching facet plot:
 ```{r data, cache=TRUE}
 scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
 factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
@@ -228,23 +307,9 @@ perc_leach_red
 ```
 
 
-
 ##4. Disproportionate benefits?
 
 I want to see how NO3 leaching reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
-Plot the mean profitability distribution to identify profitability cut off values:
-```{r profit_distribution, fig.cap="Figure 4: Distribution of mean profitability 2012-2015."}
-profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
-  as.data.frame()
-str(profit)
-
-ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
-  geom_histogram(binwidth=20, alpha = .5, position="identity") +
-  theme_b_border() +
-  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
-  scale_y_continuous(name="Area (Mha)") +
-  geom_vline(aes(xintercept= 0, linetype= "dashed"),  show.legend = FALSE) 
-```
 
 I want to select the total area of polygons that fall under specific profitability thresholds (PO scenario).
 ```{r swg_areas_po, cache=TRUE}
@@ -357,9 +422,9 @@ head(counties_leach, n=2)
 
 Read in a shape file with county delineations. I could use a map provided in the maps package or read in a file from my directory, which I do in this case:
 ```{r counties_spatial}
+
 counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
-class(counties)
-names(counties)
+
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
 summary(counties)
 
@@ -376,7 +441,7 @@ To plot spatial data in ggplot, however, I need to make a data frame out of the 
 ```{r join} 
 counties_df <- fortify(counties)
 head(counties_df, n = 2)
-counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), sarting with 0.
+counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), starting with 0.
 head(counties@data, n = 2)
 # join the attributes back to the data frame, to create a dataframe used to map the baseline (corn/soybean):
 counties_baseline_df <- left_join(counties_df, counties@data)
