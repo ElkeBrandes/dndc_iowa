@@ -78,7 +78,8 @@ theme_b_border <- function (base_size = 12, base_family = "")
 ##1. The baseline: Profitability in corn and soybeans
 
 ### State-wide mean profitability distribution
-```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015."}
+
+```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US4/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
@@ -87,8 +88,10 @@ str(profit)
 ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
   geom_histogram(binwidth=20, alpha = .5, position="identity") +
   theme_b_border() +
-  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
-  scale_y_continuous(name="Area (Mha)") +
+  labs(x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1})),
+       y=expression(Area~(Mha))) +
+  scale_x_continuous() +
+  scale_y_continuous() +
   geom_vline(aes(xintercept= -150, linetype= "dashed"),  show.legend = FALSE) 
 ```
 
@@ -97,7 +100,7 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
 
 I want to see how the areas below -150 US$/ha are distributed accross Iowa. First, I read in a county shapefile. Then, I read in the table containing the county-level unprofitable ha from the PostgreSQL database. In order to join hte data, I need to change the format of the county identifier "fips". I convert "fips" into a factor, then join the spatial and the attribute data on "fips". I then fortify (make a data frame out of) the spatial data frame and assign a column with a serial id. Finally, I join the attribute (unprofitable areas) data to this dataframe.
 
-```{r profit_spatial, fig.cap="Figure 2: Areas below a profitability of -150 US$/ha per county. "}
+```{r profit_spatial, fig.cap="Figure 2: Areas below a mean 2012-2015 profitability of -150 US$/ha per county. No contraints were made with regards to subfield area size, shape or position."}
 counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
@@ -140,10 +143,10 @@ ditch_the_axes <- theme(
 ggplot() +
   geom_polygon(data = counties_profit_df, aes(long, lat, group = group, fill=area_in_swg_perc), color = "white") +
   geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "orange") +
-  labs(size = "Total area below -150 US$/ha (ha)") +
+  labs(size = expression(Total~area~below~-150~"US$"~ha^{-1}~(ha))) +
   coord_equal() +
   ditch_the_axes +
-  labs(fill = "Relative area below -150 US$/ha (%)") +
+  labs(fill = expression(Relative~area~below~-150~"US$"~ha^{-1}~("%"))) +
   scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +
   ggtitle("Highly unprofitable area per county")
 
@@ -210,14 +213,16 @@ head(leach)
 ```
 
 Plot the distributions:
-```{r histograms, cache=TRUE, fig.cap="Figure 1: Distributions of NO3 leaching"}
+```{r histograms, cache=TRUE, fig.cap="Figure 3: Distributions of NO3 leaching in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
 scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
 ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_b_border() +
-  scale_x_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
-  scale_y_continuous(name="Area (Mha)") +
+  labs(x=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       y=expression(Area~(Mha))) +
+  scale_x_continuous() +
+  scale_y_continuous() +
   theme(legend.position="bottom") +
   facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
 ```
@@ -247,24 +252,26 @@ str(sample)
 ```
 
 Plot the sample:
-```{r scatterplot, cache=TRUE, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$/ha for profitability (solid) and 60 kg N/ha for NO3 leaching (dashed)."}
+```{r scatterplot, cache=TRUE, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
-  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
-  scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)") +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
   geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE) 
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
 ```
 
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
-```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 3: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N/ha to better see the low leaching values. The red line indicates a possible cut off value of -150 US$/ha for profitability."}
+```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
-  scale_x_continuous(name="Mean profitability 2012-2015 (US$/ha)") +
-  scale_y_continuous(name="Mean NO3 leaching 2006-2015 (kg N/ha)", limits=c(0,20)) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
   geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
   
 ```
@@ -299,11 +306,23 @@ Improvement of total N leaching in form of NO3 state wide and on the county leve
 
 Leaching sums are calculated in PostgreSQL. Access the results:
 ```{r total_leaching}
-scen_areas <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+leach_tot <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
   as.data.frame()
-perc_leach_red <- 
-kable(scen_areas, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
-perc_leach_red
+names(leach_tot) <- c("Status Quo", "PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500")
+
+leach_red <- data.frame(status_quo = "NA",
+                        po_7500 = (leach_tot[1,1]-leach_tot[1,2])*100/leach_tot[1,1],
+                        po_10000 = (leach_tot[1,1]-leach_tot[1,3])*100/leach_tot[1,1],
+                        po_12500 = (leach_tot[1,1]-leach_tot[1,4])*100/leach_tot[1,1],
+                        wo_7500 = (leach_tot[1,1]-leach_tot[1,5])*100/leach_tot[1,1],
+                        wo_10000 = (leach_tot[1,1]-leach_tot[1,6])*100/leach_tot[1,1],
+                        wo_12500 = (leach_tot[1,1]-leach_tot[1,7])*100/leach_tot[1,1])
+names(leach_red) <- c("Status Quo", "PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500")
+
+leach_table <- rbind(leach_tot[1,],leach_red[1,])
+
+kable(leach_table, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Table 1: Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
+
 ```
 
 
@@ -365,19 +384,23 @@ relation_wo <- data.frame(leach_cutoff, swg_area_wo_percent)
 ```
 
 Plot relationsships between thresholds and % area in switchgrass:
-```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 5: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass."}
+```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 6: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass."}
 ggplot() +
   geom_point(data = relation_po, aes(x = profit_cutoff, y = swg_area_po_percent)) +
   theme_b_border() +
-  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
-  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
+  labs(x=expression(Profitability~threshold~("US$"~ha^{-1})),
+       y=expression(Area~"in"~switchgrass~("%"))) +
+  scale_x_continuous(breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous(limits= c(0,65)) +
     geom_vline(aes(xintercept= -150, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 ggplot() +
   geom_point(data = relation_wo, aes(x = leach_cutoff, y = swg_area_wo_percent)) +
   theme_b_border() +
-  scale_x_reverse(name="NO3 leaching threshold (kg/ha)", breaks=seq(from=50, to=100, by= 10)) +
-  scale_y_continuous(name="Area in switchgrass (%)", limits= c(0,65)) +
+    labs(x=expression(NO[3]^{"-"}~leaching~threshold~(kg~ha^{-1})),
+       y=expression(Area~"in"~switchgrass~("%"))) +
+  scale_x_reverse(breaks=seq(from=50, to=100, by= 10)) +
+  scale_y_continuous(limits= c(0,65)) +
     geom_vline(aes(xintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
 
 
@@ -386,20 +409,24 @@ ggplot() +
 
 
 Plot relationships:
-```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 6: Increase in NO~3~ leaching reduction with increasing area in switchgrass (left panel), and with increasing profitability threshold (right panel)."}
+```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 7: Increase in NO~3~ leaching reduction with increasing area in switchgrass (left panel), and with increasing profitability threshold (right panel)."}
 
 ggplot() +
   geom_point(data = relation_po, aes(x = swg_area_po_percent, y = N_reduction, color=swg_yield)) +
   theme_b_border() +
-  scale_x_continuous(name="Area in switchgrass (%)") +
-  scale_y_continuous(name="NO3 leaching reduction (% N)") +
-  scale_color_discrete(name="Switchgrass\nYield",  guide = FALSE)
+  labs(x=expression(Area~"in"~switchgrass~("%")),
+       y=expression(NO[3]^{"-"}~leaching~reduction~("%"~N))) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  scale_color_discrete(name="Switchgrass\nYield (kg/ha)",  guide = FALSE)
 
 ggplot() +
   geom_point(data = relation_po, aes(x = profit_cutoff, y = N_reduction, color=swg_yield)) +
   theme_b_border() +
-  scale_x_continuous(name="Profitability threshold (US$/ha)", breaks=seq(from=-500, to=200, by= 100)) +
-  scale_y_continuous(name="NO3 leaching reduction (% N)") +
+  labs(x=expression(Profitability~threshold~("US$"~ha^{-1})),
+       y=expression(NO[3]^{"-"}~leaching~reduction~("%"~N))) +
+  scale_x_continuous(breaks=seq(from=-500, to=200, by= 100)) +
+  scale_y_continuous() +
   scale_color_discrete(name="Switchgrass\nYield") +
   theme(legend.position=c(0.2,0.7))
 ```
@@ -447,7 +474,7 @@ head(counties@data, n = 2)
 counties_baseline_df <- left_join(counties_df, counties@data)
 ```
 
-```{r plot_baseline_map, fig.cap="Figure 7: County mean annual NO~3~ leaching, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county."} 
+```{r plot_baseline_map, fig.cap="Figure 8: County mean annual NO~3~ leaching, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county."} 
 
 head(counties_baseline_df, n= 2)
 
@@ -473,12 +500,12 @@ counties_baseline_df <- left_join(counties_baseline_df, centroids)
 
 ggplot() +
   geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
-  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_ave_no3_leach_cgsb), color = "dark grey") +
-  labs(size = "Total NO3 leaching (Mg N/ha)") +
+  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_ave_no3_leach_cgsb), color = "yellow") +
+  labs(size = expression(Total~NO[3]^{"-"}~leaching~(Mg~N~ha^{-1}))) +
   coord_equal() +
   ditch_the_axes +
-  labs(fill = "Average NO3 leaching (kg N/ha)") +
-  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +
+  labs(fill = expression(Average~NO[3]^{"-"}~leaching~(kg~N~ha^{-1}))) +
+  scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +
   ggtitle("Average and total annual NO3 leaching per county")
 
 head(counties_baseline_df, n=2)
@@ -487,16 +514,17 @@ head(counties_baseline_df, n=2)
 ```
 
 Now, I want to plot two times three maps in a facet plot that show the NO~3~ leaching results and the leaching reduction, when switchgrass is grown on areas losing -150 US$/ha or more, for each of the three yield scenarios. For the facet plot in ggplot, I need to re-arrange the data, creating the variable "scenario" and adding two columns with values, one for the average leaching and one for the percent change from the baseline to the switchgrass integration scenario.
-```{r plot_leach_maps,fig.width=10, fig.height=3, fig.cap="Figure 8: County mean annual NO~3~ leaching, averaged over 2012-2015, from three switchgrass integration scenarios in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county. Switchgrass was planted on areas that lost -150 US$/ha or more on average between 2012 and 2015. The three maps refer to different yield assumptions for switchgrass (low yielding: 7,500 kg/ha, medium yielding: 10,000 kg/ha, and high yielding: 12,500 kg/ha)"}
+```{r plot_leach_maps,fig.width=10, fig.height=3, fig.cap="Figure 9: County mean annual NO~3~ leaching, averaged over 2012-2015, from three switchgrass integration scenarios in Iowa, are shown as a color scale. Bubbles indicate the total N that has been leaching on average per year from each county. Switchgrass was planted on areas that lost -150 US$/ha or more on average between 2012 and 2015. The three maps refer to different yield assumptions for switchgrass (low yielding: 7,500 kg/ha, medium yielding: 10,000 kg/ha, and high yielding: 12,500 kg/ha)"}
 # set up the data frame 
 counties_swg <- data.frame(id = rep(counties$id,3),
                          scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
-                                                                               rep("swg_12500", length(counties$id))),
+                                                                               rep("swg_12500", length(counties))),
                          tot_no3_leach = c(counties$tot_ave_no3_leach_7500, counties$tot_ave_no3_leach_10000,
                                            counties$tot_ave_no3_leach_12500),
                          ave_no3_leach = c(counties$ave_no3_leach_7500, counties$ave_no3_leach_10000, counties$ave_no3_leach_12500),
                          leach_red = c(counties$no3_leach_change_7500, counties$no3_leach_change_10000,
                                        counties$no3_leach_change_12500))
+
 counties_swg$scenario <- factor(counties_swg$scenario, levels = c("swg_7500", "swg_10000", "swg_12500"))
 head(counties_swg, n = 2)
 # join data frame with the data frame extracted out of the spatial data frame
@@ -510,10 +538,10 @@ swg_yield <- c('swg_7500' = "Low yielding switchgrass", 'swg_10000' = "Medium yi
 
 ggplot(counties_swg_df) +
   geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "white") +
-  scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") +  
-  labs(fill = "Average NO3 leaching (kg N/ha)") +  
-  geom_point(aes(V1, V2, size = tot_no3_leach), color = "dark grey") +
-  labs(size = "Total NO3 leaching (Mg N)") +
+  scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +  
+  labs(fill = expression(Average~NO[3]^{"-"}~leaching~(kg~N~ha^{-1}))) +  
+  geom_point(aes(V1, V2, size = tot_no3_leach), color = "yellow") +
+  labs(size = expression(Total~NO[3]^{"-"}~leaching~(Mg~N))) +
   scale_size(range = c(0, 4)) +
   coord_equal() +
   ditch_the_axes +
@@ -521,15 +549,14 @@ ggplot(counties_swg_df) +
   ggtitle("Average and total annual NO3 leaching per county")
 ```
 
-```{r plot_leach_reduction_maps, fig.width=10, fig.height=3, fig.cap = "Figure 9: Reduction in total NO~3~ leaching in the switchgrass integration scenarios, as % of the status quo leaching in Figure 7."}
+```{r plot_leach_reduction_maps, fig.width=10, fig.height=3, fig.cap = "Figure 10: Reduction in total NO~3~ leaching in the switchgrass integration scenarios, as % of the status quo leaching in Figure 7."}
 ggplot(counties_swg_df) +
   geom_polygon(aes(long, lat, group = group, fill=leach_red), color = "white") +
-  scale_fill_gradient(low = "white", high="dark green", guide = "colourbar") +  
+  scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
   coord_equal() +
   ditch_the_axes +
-  labs(fill = "NO3 leaching reduction (%)") +
-  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
-  ggtitle("Reduction in total annual NO3 leaching per county")
+  labs(fill = expression(NO[3]^{"-"}~leaching~reduction~("%"))) +
+  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield))
 
 ```
 
