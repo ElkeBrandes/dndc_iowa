@@ -17,4 +17,21 @@ N rates: constant, 50 kg/ha
 C/N above ground biomass: 75
 C/N below ground biomass: 60
 
+Where did we take the C/N ratios from?
+
+- Gopalakrishnan et al, 2012 (GCB Bioenergy): Used values from Johnson et al, 2007 (Soil Sc Soc of Am J) in DNDC model:
+	C/N above ground = 54 
+	C/N below ground = 66
+
+- Jung and Lal, 2011: 
+	C/N above ground = 210.7 (7.0), 170.4 (35.7), 233.1 (9.8)
+	C/N below ground = 57.9 (5.0), 57.2 (8.5), 71.5 (3.8) (three different sites, 50 kg N/ha)
+	(Cave-in-Rock)
+
+- CenUSA field data: 
+	C/N above ground = 68 (average)
+	(Liberty)
+
+
+
 SSURGO 2016 data used.
