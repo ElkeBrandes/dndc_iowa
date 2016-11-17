@@ -32,9 +32,9 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- {
-  "5QUXJHTbxj"
-}
+#pw <- {
+#  ""
+#}
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
