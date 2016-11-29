@@ -248,7 +248,7 @@ str(sample)
 ```
 
 Plot the sample:
-```{r scatterplot, cache=TRUE, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
+```{r scatterplot, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -286,31 +286,16 @@ SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 
 SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
 ```
 
-I looked into the soil properties of those low leaching areas. For this, I queried the SSURGO database through the [SQL interface](http://sdmdataaccess.nrcs.usda.gov/Query.aspx) to get data on total sand and pH per component and horizon. I imported the table into the isuag PostgreSQL database. First I want to filter for the main component of each mapunit and then aggregate the variables over the horizons to get an average value for each mapunit's main component.
+### Soil properties on low leaching areas
+
+I looked into the soil properties of those low leaching areas. For this, I queried the SSURGO database through the [SQL interface](http://sdmdataaccess.nrcs.usda.gov/Query.aspx) to get data on total sand and pH per component and horizon. I imported the table into the isuag PostgreSQL database and joined the soil data (total sand fraction and pH), aggregated to the mapunit, to the DNDC results. 
+
+I then draw random samples from that table to analyze the relationship between leaching and sand fraction / pH.
+The theory is that high pH soils should have an equilibrium shifted toward NH~3~^+^ and therefore show higher volatilization and lower NO~3~^-^ leaching.
+
 
 ```{r ssurgo}
-ssurgo <- tbl(isuag_db, "ssurgo_ia_soil_ph_sand_frac")
-ssurgo %>%
-  filter(majcompflag == "Yes") %>%
-  group_by(cokey, mukey, comppct_r) %>%
-  summarise(avg_sandtotal_r = mean(sandtotal_r), avg_ph1to1h2o_r = mean(ph1to1h2o_r), avg_ph01mcacl2_r = mean(ph01mcacl2_r)) %>%
-  group_by(mukey) %>%
-  filter(n()>1) %>%
-  filter(comppct_r == max(comppct_r))
-  arrange(mukey, cokey) -> ssurgo_agg
 
-ssurgo_agg <-  collect(ssurgo_agg, n=Inf) 
-
-head(ssurgo_agg, n = 2)
-  
-
-
-# ssurgo_agg %>%
-#   group_by(mukey) %>%
-#   filter(n()>1) %>%
-#   filter(comppct_r == max(comppct_r)) -> multi_mukey
-# head(multi_mukey)
-# dim(multi_mukey)
 
 ```
 
