@@ -32,7 +32,7 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "xxxx" # enter password here
+pw <- "5QUXJHTbxj" # enter password here
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
@@ -152,9 +152,9 @@ ggplot() +
 
 
 
-##2. Distributions of NO~3~ leaching in Iowa, from row cropped and switchgrass fields##
+##2. Distributions of N loss in Iowa, from row cropped and switchgrass fields##
 
-Connect to the isuag database and load tables that contain the rounded average NO~3~ leaching values (in kg/ha) for the **four scenarios**:
+Connect to the isuag database and load tables that contain the rounded average N loss values (in kg/ha) for the **four scenarios**:
 
 1. Status quo (row cropped areas in corn or soybean as is from 2012-2015)
 2. Switchgrass low yield (all areas that were continuously in corn/soy from 2012-2015 were planted to switchgrass in 2006 for 10 years, assuming switchgrass yield is 7000 kg/ha)
@@ -166,20 +166,20 @@ The leaching values and respective patch areas were aggregated to the same leach
 Use the dplyr PostgreSQL handle into the database and create a data frame:
 ```{r fetch_distr, cache=TRUE}
 
-cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
+cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
-swg_low <-tbl(isuag_db, "06_swg_7500_ave_no3_leach_rounded_aggr")  %>%
+swg_low <-tbl(isuag_db, "06_swg_7500_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
-swg_med <-tbl(isuag_db, "06_swg_10000_ave_no3_leach_rounded_aggr")  %>%
+swg_med <-tbl(isuag_db, "06_swg_10000_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
-swg_hi <-tbl(isuag_db, "06_swg_12500_ave_no3_leach_rounded_aggr")  %>%
+swg_hi <-tbl(isuag_db, "06_swg_12500_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
 ```
 
 I can run some test here:
 ```{r test_distr}
 # send a query through dplyr
-query = "SELECT SUM(area_ha) FROM \"06_cgsb_ave_no3_leach_rounded_aggr\" WHERE ave_no3_leach_cgsb_round > 60"
+query = "SELECT SUM(area_ha) FROM \"06_cgsb_ave_n_loss_rounded_aggr\" WHERE ave_n_loss_cgsb_round > 60"
 sum = tbl(isuag_db, sql(query))
 sum
 ```
@@ -211,13 +211,13 @@ head(leach)
 ```
 
 Plot the distributions:
-```{r histograms, cache=TRUE, fig.cap="Figure 3: Distributions of NO3 leaching in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
+```{r histograms, cache=TRUE, fig.cap="Figure 3: Distributions of N loss in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
 scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
 ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_b_border() +
-  labs(x=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(x=expression(Mean~NO[3]^{"-"}~leaching~"+"~NH[3]~volatilization~2006-2015~(kg~N~ha^{-1})),
        y=expression(Area~(Mha))) +
   scale_x_continuous() +
   scale_y_continuous() +
@@ -370,39 +370,67 @@ To eliminate artifacts that are caused by model mechanisms, we decided to sum up
 
 I calculated N losses in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
 
-##4. Switchgrass integration scenarios
+### Correlation between profitability and N loss in corn and soybean fields
+I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
 
-From figure 2 we can see that the relation between NO~3~^-^ leaching and profitability is not completely random. At higher profitability, the number of sub-field patches with high NO~3~^-^ leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
+Using a SQL chunk, create a table from a sub-sample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_n_loss_sample";
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
+```
 
-I am choosing -250 US$/ha as a profitability cut off and 100 kg N/ha as an NO3 leaching cut off. That means, I produce two switchgrass integration scenarios:
 
-1. Profit-optimized (PO): Switchgrass is grown on the sub-field areas where mean profitability is below -150 US$/ha
-2. Water quality-optimized (WO): Switchgrass is grown on the sub-field areas where NO3 leaching is above 60 kg N/ha
+Pull the new table into R:
+```{r data_sample}
+sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
+  as.data.frame(sample)
 
-Each of those scenario has three "sub-scenarios" assuming the three different switchgrass yields, so I end up having 6 scenarios that I want to compare to the status quo.
+head(sample)
+str(sample)
+```
+
+Plot the sample:
+```{r scatterplot_n_loss, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb)) +
+  theme_b_border() +
+  labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  
+```
+
+##5. Switchgrass integration scenarios
+
+From figure 8 we can see that the relation between N loss and profitability is not completely random. At higher profitability, the number of sub-field patches with high N loss values decreases. The lower the profitability, the higher the heterogeneity in N loss values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest N loss values (but also many of lower leaching values). Managing the areas of highest N loss (e.g. above a cut off of 60 kg N/ha) would affect unprofitable as well as unprofitable areas.
+
+We discussed in the team to target those areas that fall in the upper left quarter of the graph divided by the two red lines: Subfield areas with a profitability below -150 US$/ha and N loss above 60 kg N/ha. 
 
 Comparison criteria:
 
-Improvement of total N leaching in form of NO3 state wide and on the county level (in % of status quo values).
+Improvement of total N loss in form of NO~3~^-^ and NH~3~ state wide and on the county level (in % of status quo values).
 
-Leaching sums are calculated in PostgreSQL. Access the results:
+N loss sums are calculated in PostgreSQL. Access the results:
 ```{r total_leaching}
-leach_tot <-tbl(isuag_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+n_loss_tot <-tbl(isuag_db, "05_dndc_n_loss_sums_iowa_scenarios")  %>%
   as.data.frame()
-names(leach_tot) <- c("Status Quo", "PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500")
+names(n_loss_tot) <- c("Status Quo", "7500", "10000", "12500")
 
-leach_red <- data.frame(status_quo = "NA",
-                        po_7500 = (leach_tot[1,1]-leach_tot[1,2])*100/leach_tot[1,1],
-                        po_10000 = (leach_tot[1,1]-leach_tot[1,3])*100/leach_tot[1,1],
-                        po_12500 = (leach_tot[1,1]-leach_tot[1,4])*100/leach_tot[1,1],
-                        wo_7500 = (leach_tot[1,1]-leach_tot[1,5])*100/leach_tot[1,1],
-                        wo_10000 = (leach_tot[1,1]-leach_tot[1,6])*100/leach_tot[1,1],
-                        wo_12500 = (leach_tot[1,1]-leach_tot[1,7])*100/leach_tot[1,1])
-names(leach_red) <- c("Status Quo", "PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500")
+n_loss_red <- data.frame(status_quo = "NA",
+                        "7500" = (n_loss_tot[1,1]-n_loss_tot[1,2])*100/n_loss_tot[1,1],
+                        "10000" = (n_loss_tot[1,1]-n_loss_tot[1,3])*100/n_loss_tot[1,1],
+                        "12500" = (n_loss_tot[1,1]-n_loss_tot[1,4])*100/n_loss_tot[1,1])
+names(n_loss_red) <- c("Status Quo", "7500", "10000", "12500")
 
-leach_table <- rbind(leach_tot[1,],leach_red[1,])
+n_loss_table <- rbind(n_loss_tot[1,],n_loss_red[1,])
 
-kable(leach_table, col.names=c("Status Quo","PO 7500", "PO 10000", "PO 12500","WO 7500", "WO 10000", "WO 12500"), caption="Table 1: Annual NO3 leaching (Mg N) in Iowa modelled with DNDC under different switchgrass integration scenarios. PO: Profitability optimized, WO: Water quality optimized." )
+kable(n_loss_table, col.names=c("Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
 
 ```
 
