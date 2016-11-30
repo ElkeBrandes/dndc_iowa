@@ -1,5 +1,5 @@
 ---
-title: "Modelled N loss by NO~3~^-^ leaching and NH~3~^+^ volatilization  in Iowa from row cropped and switchgrass fields"
+title: "Modelled N loss by NO~3~^-^ leaching and NH~3~ volatilization  in Iowa from row cropped and switchgrass fields"
 author: "Elke Brandes"
 date: "Tuesday, November 01, 2016"
 output: html_document
@@ -73,9 +73,11 @@ theme_b_border <- function (base_size = 12, base_family = "")
 
 ##1. The baseline: Profitability in corn and soybeans
 
+I am selecting the areas that will be managed in switchgrass based on mean profitability 2012-2015.
+
 ### State-wide mean profitability distribution
 
-```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US4/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
+```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
@@ -223,7 +225,7 @@ ggplot(leach, aes(leaching, weight = area)) +
   facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
 ```
 
-##3. Correlation between profitability and NO3 leaching in corn and soybean fields##
+##3. Correlation between profitability and NO~3~^-^ leaching in corn and soybean fields
 I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
 
 Using a SQL chunk, create a table from a sub-sample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
@@ -346,7 +348,7 @@ ggplot() +
        x=expression(pH))
 ```
 
-```{r scatter_ph, fig.show = "hold", fig.cap="Figure 7: Scatterplot of a subsample (n=10,000) of pH values on subfield areas in Iowa."}
+```{r scatter_ph, fig.cap="Figure 7: Scatterplot of a subsample (n=10,000) of pH values measured with different methods from the SSURGO database."}
 ggplot() +
   geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = avg_ph01mcacl2_r)) +
   theme_b_border() +
@@ -360,11 +362,17 @@ ggplot() +
 
 ```
 
+Figure 6 shows that the low leaching values do not fall out of the general pattern. Soils with lower sand fraction generally show lower leaching, but the very low leaching soils show a range of sand fraction. There is a cluster of low leaching subfield areas of pH 7.9 - 8.1. For these soils, NO~3~^-^ leaching might be low because the NH~3~ <-> NH~4~^+^ equilibrium is shifted toward the volatile NH~3~ that is leaving the soil.
 
+To eliminate artifacts that are caused by model mechanisms, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization).
+
+##4. N loss through NO~3~^-^ leaching and NH~3~ volatilization
+
+I calculated N losses in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
 
 ##4. Switchgrass integration scenarios
 
-From figure 2 we can see that the relation between NO3 leaching and profitability is not completely random. At higher profitability, the number of sub-field patches with high NO3 leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
+From figure 2 we can see that the relation between NO~3~^-^ leaching and profitability is not completely random. At higher profitability, the number of sub-field patches with high NO~3~^-^ leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
 
 I am choosing -250 US$/ha as a profitability cut off and 100 kg N/ha as an NO3 leaching cut off. That means, I produce two switchgrass integration scenarios:
 
