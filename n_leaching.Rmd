@@ -223,11 +223,11 @@ ggplot(leach, aes(leaching, weight = area)) +
   facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
 ```
 
-##2. Correlation between profitability and NO3 leaching in corn and soybean fields##
+##3. Correlation between profitability and NO3 leaching in corn and soybean fields##
 I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
 
 Using a SQL chunk, create a table from a sub-sample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
-```{sql, connection=con, message=FALSE, cache=TRUE}
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
 ```{sql, connection=con, message=FALSE, cache=TRUE}
@@ -293,17 +293,76 @@ I looked into the soil properties of those low leaching areas. For this, I queri
 I then draw random samples from that table to analyze the relationship between leaching and sand fraction / pH.
 The theory is that high pH soils should have an equilibrium shifted toward NH~3~^+^ and therefore show higher volatilization and lower NO~3~^-^ leaching.
 
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+DROP TABLE IF EXISTS "05_leaching_soil_sample";
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "05_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandtotal_r, avg_ph1to1h2o_r, avg_ph01mcacl2_r FROM "05_leaching_soil" ORDER BY random() LIMIT 10000
+```
 
-```{r ssurgo}
 
+Pull the new table into R:
+```{r soil_sample}
+soil = tbl(isuag_db, "05_leaching_soil_sample") %>%
+  as.data.frame()
+head(soil)
+```
+
+Plot the sample:
+```{r scatter_leach_sand, fig.show = "hold", fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of corn/soy leaching data and sand fraction on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Sand~fraction~("%")))
+
+ggplot() +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Sand~fraction~("%")))
+  
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(pH))
+
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(pH))
+```
+
+```{r scatter_ph, fig.show = "hold", fig.cap="Figure 7: Scatterplot of a subsample (n=10,000) of pH values on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = avg_ph01mcacl2_r)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(pH~CaCl2), x=expression(pH~H2O)) +
+  geom_abline(intercept=0, slope = 1)
+
+#  labs(y=expression(pH~1~to~2~CaCl[2]),
+#       x=expression(pH~1~to~1~H[2]O))
 
 ```
 
 
 
-
-
-##3. Switchgrass integration scenarios
+##4. Switchgrass integration scenarios
 
 From figure 2 we can see that the relation between NO3 leaching and profitability is not completely random. At higher profitability, the number of sub-field patches with high NO3 leaching values decreases. The lower the profitability, the higher the heterogeneity in leaching values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest leaching values (but also many of lower leaching values). Managing the areas of highest leaching (e.g. above a cut off of 100 kg N/ha) would mostly affect the areas that were on average unprofitable between 2012 and 2015.
 
