@@ -3,6 +3,7 @@ title: "Modelled N loss by NO~3~^-^ leaching and NH~3~ volatilization  in Iowa f
 author: "Elke Brandes"
 date: "Tuesday, November 01, 2016"
 output: html_document
+bibliography: nutrient_bibliography.bib
 ---
 This paper describes the data analysis of N loss results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr` and `RPostgreSQL`).
 
@@ -32,7 +33,7 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "5QUXJHTbxj" # enter password here
+pw <- "xxxx" # enter password here
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
@@ -73,15 +74,14 @@ theme_b_border <- function (base_size = 12, base_family = "")
 
 ##1. The baseline: Profitability in corn and soybeans
 
-I am selecting the areas that will be managed in switchgrass based on mean profitability 2012-2015.
+I am selecting the areas that will be managed in switchgrass based on mean profitability and mean N loss in 2012-2015 in the status quo management.
 
 ### State-wide mean profitability distribution
 
-```{r profit_distribution, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
+```{r profit_distribution, warning = FALSE, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
-str(profit)
 
 ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) + 
   geom_histogram(binwidth=20, alpha = .5, position="identity") +
@@ -98,7 +98,7 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
 
 I want to see how the areas below -150 US$/ha are distributed accross Iowa. First, I read in a county shapefile. Then, I read in the table containing the county-level unprofitable ha from the PostgreSQL database. In order to join hte data, I need to change the format of the county identifier "fips". I convert "fips" into a factor, then join the spatial and the attribute data on "fips". I then fortify (make a data frame out of) the spatial data frame and assign a column with a serial id. Finally, I join the attribute (unprofitable areas) data to this dataframe.
 
-```{r profit_spatial, fig.cap="Figure 2: Areas below a mean 2012-2015 profitability of -150 US$/ha per county. No contraints were made with regards to subfield area size, shape or position."}
+```{r profit_spatial, message = FALSE, warning = FALSE, cache=TRUE, fig.cap="Figure 2: Areas below a mean 2012-2015 profitability of -150 US$/ha per county. No constraints were made with regards to subfield area size, shape or position."}
 counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
@@ -108,14 +108,10 @@ profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
  for (i in 1:length(profit_county$fips)) {
    profit_county$fips[i] <- sub("IA", "19", profit_county$fips[i])
     }
-head(profit_county, n = 2)
 
 # profit_county$fips <- as.factor(profit_county$fips)
 counties@data <- left_join(counties@data, profit_county, by = "fips")
-
-head(counties@data, n=2)
 counties_df <- fortify(counties)
-head(counties_df, n = 2)
 counties$id <- row.names(counties) 
 counties_profit_df <- left_join(counties_df, counties@data)
 
@@ -161,7 +157,7 @@ Connect to the isuag database and load tables that contain the rounded average N
 3. Switchgrass medium yield (assuming a yield of 10000 kg/ha)
 4. Switchgrass high yield (assuming a yield of 12500 kg/ha)
 
-The leaching values and respective patch areas were aggregated to the same leaching values, and for each scenario, one table was created.
+The N loss values and respective patch areas were aggregated to the same N loss values, and for each scenario, one table was created.
 
 Use the dplyr PostgreSQL handle into the database and create a data frame:
 ```{r fetch_distr, cache=TRUE}
@@ -191,10 +187,9 @@ str(data_list[[1]])
 ```
 
 Prepare a data frame to be used for the NO~3~ leaching facet plot:
-```{r data, cache=TRUE}
+```{r data, message=FALSE, cache=TRUE}
 scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
 factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
-str(scenario)   
 
 leaching <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
@@ -203,15 +198,12 @@ str(leaching)
 area <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
    area <- append(area, data_list[[i]][,2])
-str(area)
    
 leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show Mha
-
-head(leach)
 ```
 
 Plot the distributions:
-```{r histograms, cache=TRUE, fig.cap="Figure 3: Distributions of N loss in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
+```{r histograms, cache=TRUE, warning=FALSE, fig.cap="Figure 3: Distributions of N loss in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
 scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
 ggplot(leach, aes(leaching, weight = area)) + 
@@ -226,9 +218,10 @@ ggplot(leach, aes(leaching, weight = area)) +
 ```
 
 ##3. Correlation between profitability and NO~3~^-^ leaching in corn and soybean fields
+In this chapter, I am only looking at the N loss through NO~3~^-^ leaching to check wether the numbers are reasonable.
 I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
 
-Using a SQL chunk, create a table from a sub-sample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
@@ -245,12 +238,12 @@ Pull the new table into R:
 sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
 
-head(sample)
+head(sample, n=2)
 str(sample)
 ```
 
-Plot the sample:
-```{r scatterplot, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
+I plot the sample as a scatter plot:
+```{r scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -263,7 +256,7 @@ ggplot() +
 ### Areas with very low NO~3~^-^ leaching
 
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
-```{r scatterplot_zoom, cache=TRUE, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
+```{r scatterplot_zoom, warning = FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -290,10 +283,10 @@ SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 
 
 ### Soil properties on low leaching areas
 
-I looked into the soil properties of those low leaching areas. For this, I queried the SSURGO database through the [SQL interface](http://sdmdataaccess.nrcs.usda.gov/Query.aspx) to get data on total sand and pH per component and horizon. I imported the table into the isuag PostgreSQL database and joined the soil data (total sand fraction and pH), aggregated to the mapunit, to the DNDC results. 
+I looked into the soil properties of those low leaching areas. For this, I queried the SSURGO database through the [SQL interface](http://sdmdataaccess.nrcs.usda.gov/Query.aspx) to get data on total sand fraction and pH per component and horizon. I imported the table into the isuag PostgreSQL database and joined the soil data (total sand fraction and pH), aggregated to the mapunit, to the DNDC results. 
 
-I then draw random samples from that table to analyze the relationship between leaching and sand fraction / pH.
-The theory is that high pH soils should have an equilibrium shifted toward NH~3~^+^ and therefore show higher volatilization and lower NO~3~^-^ leaching.
+I then drew random samples from that table to analyze the relationship between leaching and sand fraction / pH.
+In high pH soils the equilibrium between NH~3~^+^ and NH~3~ is shifted toward NH~3~, therefore they might show higher volatilization and lower NO~3~^-^ leaching, because the equilibrium is calculated before the nitrification to NO~3~^-^ and subsequent leaching in the DNDC model. Higher sand fraction means lower CEC (cation exchange capacity), therefore more NH~3~^+^ is available (not sorbed by negatively charged colloids).
 
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
@@ -306,15 +299,15 @@ CREATE TABLE "05_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sand
 ```
 
 
-Pull the new table into R:
+I make a dataframe out of the db table:
 ```{r soil_sample}
 soil = tbl(isuag_db, "05_leaching_soil_sample") %>%
   as.data.frame()
-head(soil)
+head(soil, n=2)
 ```
 
-Plot the sample:
-```{r scatter_leach_sand, fig.show = "hold", fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of corn/soy leaching data and sand fraction on subfield areas in Iowa."}
+Then I plot the sample:
+```{r scatter_leach_sand, warning=FALSE, fig.width=4.5, fig.height=3, fig.show = "hold", fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of corn/soy leaching data and sand fraction on subfield areas in Iowa."}
 ggplot() +
   geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb)) +
   theme_b_border() +
@@ -348,7 +341,7 @@ ggplot() +
        x=expression(pH))
 ```
 
-```{r scatter_ph, fig.cap="Figure 7: Scatterplot of a subsample (n=10,000) of pH values measured with different methods from the SSURGO database."}
+```{r scatter_ph, fig.width=4.5, fig.height=3, warning=FALSE, fig.cap="Figure 7: Scatterplot of a subsample (n=10,000) of pH values measured with different methods from the SSURGO database."}
 ggplot() +
   geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = avg_ph01mcacl2_r)) +
   theme_b_border() +
@@ -357,23 +350,21 @@ ggplot() +
   labs(y=expression(pH~CaCl2), x=expression(pH~H2O)) +
   geom_abline(intercept=0, slope = 1)
 
-#  labs(y=expression(pH~1~to~2~CaCl[2]),
-#       x=expression(pH~1~to~1~H[2]O))
 
 ```
 
 Figure 6 shows that the low leaching values do not fall out of the general pattern. Soils with lower sand fraction generally show lower leaching, but the very low leaching soils show a range of sand fraction. There is a cluster of low leaching subfield areas of pH 7.9 - 8.1. For these soils, NO~3~^-^ leaching might be low because the NH~3~ <-> NH~4~^+^ equilibrium is shifted toward the volatile NH~3~ that is leaving the soil.
 
-To eliminate artifacts that are caused by model mechanisms, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization).
+To eliminate artifacts that are caused by model mechanisms, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization before rain events, injecting anhydrous ammonia below the surface). Estimated N losses due to NH~3~ volatilization from synthetic fertilizers range between 0 and 5 kg ha^-1^ in the USA, not including the use of inhibiting chemicals [@bouwman2002nh3].
 
 ##4. N loss through NO~3~^-^ leaching and NH~3~ volatilization
 
-I calculated N losses in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
+I calculated N losses as a sum of the model outputs NO~3~^-^ leaching and NH~3~ volatilization in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
 
 ### Correlation between profitability and N loss in corn and soybean fields
-I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
+I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, and if the artifact of low leaching patches seen in Figure 4. disappears as the high NH~3~ volatilization compensates the low NO~3~^-^ leaching.
 
-Using a SQL chunk, create a table from a sub-sample (n=10000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
@@ -390,12 +381,10 @@ Pull the new table into R:
 sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
   as.data.frame(sample)
 
-head(sample)
-str(sample)
 ```
 
-Plot the sample:
-```{r scatterplot_n_loss, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
+I visualize the sample as a scatter plot:
+```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb)) +
   theme_b_border() +
@@ -408,21 +397,21 @@ ggplot() +
 
 ##5. Switchgrass integration scenarios
 
-From figure 8 we can see that the relation between N loss and profitability is not completely random. At higher profitability, the number of sub-field patches with high N loss values decreases. The lower the profitability, the higher the heterogeneity in N loss values. In other words, by managing the areas of lowest profitability in switchgrass would target those areas of highest N loss values (but also many of lower leaching values). Managing the areas of highest N loss (e.g. above a cut off of 60 kg N/ha) would affect unprofitable as well as unprofitable areas.
+From figure 8 we can see that the relation between N loss and profitability is not completely random. At higher profitability, the number of sub-field patches with high N loss values decreases. The lower the profitability, the higher the variability in N loss values. In other words, managing the areas of lowest profitability in switchgrass would target those areas of highest N loss values (but also many of lower leaching values). Managing the areas of highest N loss (e.g. above a cut off of 60 kg N/ha) would affect unprofitable as well as unprofitable areas.
 
-We discussed in the team to target those areas that fall in the upper left quarter of the graph divided by the two red lines: Subfield areas with a profitability below -150 US$/ha and N loss above 60 kg N/ha. 
+Therefore, we decided in a team discussion to target those areas that fall in the upper left quarter of the graph divided by the two red lines: Subfield areas with a profitability below -150 US$/ha and N loss > 60 kg N/ha. 
 
 Comparison criteria:
 
-Improvement of total N loss in form of NO~3~^-^ and NH~3~ state wide and on the county level (in % of status quo values).
+Improvement of total N loss in form of NO~3~^-^ and NH~3~ state-wide and on the county level (in % of status quo values).
 
-N loss sums are calculated in PostgreSQL. Access the results:
+Total state-wide N loss sums were calculated in PostgreSQL. Access the results:
 ```{r total_leaching}
 n_loss_tot <-tbl(isuag_db, "05_dndc_n_loss_sums_iowa_scenarios")  %>%
   as.data.frame()
 names(n_loss_tot) <- c("Status Quo", "7500", "10000", "12500")
 
-n_loss_red <- data.frame(status_quo = "NA",
+n_loss_red <- data.frame(status_quo = 0,
                         "7500" = (n_loss_tot[1,1]-n_loss_tot[1,2])*100/n_loss_tot[1,1],
                         "10000" = (n_loss_tot[1,1]-n_loss_tot[1,3])*100/n_loss_tot[1,1],
                         "12500" = (n_loss_tot[1,1]-n_loss_tot[1,4])*100/n_loss_tot[1,1])
@@ -430,14 +419,14 @@ names(n_loss_red) <- c("Status Quo", "7500", "10000", "12500")
 
 n_loss_table <- rbind(n_loss_tot[1,],n_loss_red[1,])
 
-kable(n_loss_table, col.names=c("Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
+kable(n_loss_table, digits = 2, col.names=c("Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
 
 ```
 
 
 ##4. Disproportionate benefits?
 
-I want to see how NO~3~^-^ leaching reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
+I want to see how N loss reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
 
 I want to select the total area of polygons that fall under specific profitability thresholds, keeping the N loss threshold constant at 60 kg ha^-1^.
 ```{r swg_areas, cache=TRUE}
@@ -457,13 +446,13 @@ sum_n_loss <- tbl(isuag_db, "08_dndc_n_loss_sums_iowa_dispr_benefits") %>%
   as.data.frame() %>%
   gather(corn_soybeans, swg_7500_1, swg_7500_2, swg_7500_3, swg_7500_4, swg_7500_5, swg_7500_6, swg_7500_7, swg_7500_8, swg_7500_9, swg_7500_10, swg_7500_11, swg_10000_1, swg_10000_2, swg_10000_3, swg_10000_4, swg_10000_5, swg_10000_6, swg_10000_7, swg_10000_8, swg_10000_9, swg_10000_10, swg_10000_11, swg_12500_1, swg_12500_2, swg_12500_3, swg_12500_4, swg_12500_5, swg_12500_6, swg_12500_7, swg_12500_8, swg_12500_9, swg_12500_10, swg_12500_11, key = swg_scenarios, value=ave_n_loss)
 ```
-
+I calculate the total area in corn/soybean in Iowa to use this number to calculate % area below.
 ```{sql connection=con, message=FALSE, cache=TRUE}
 select sum(clumuha) from "05_dndc_clumu_cgsb_swg_n_loss";
 ```
 
 
-Create data frames for figure:
+I create data frames for the figure:
 ```{r data_dispr_benefits}
 swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
 profit_cutoff <- c(NA, rep(profit_cutoffs,3))
@@ -475,8 +464,8 @@ N_reduction <- abs((N_loss - N_loss[1])/N_loss[1])*100
 relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
 ```
 
-Plot relationsships between profitability threshold and % area in switchgrass:
-```{r thresholds, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 6: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass. N loss cut off is constant at 60 kg ha^-1^."}
+I plot the relationsship between profitability threshold and % area in switchgrass:
+```{r thresholds, warning=FALSE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 6: Relation between the set thresholds in the profitability (left panel) and water quality optimized (right panel) scenario and the resulting area in switchgrass. N loss cut off is constant at 60 kg ha^-1^."}
 ggplot() +
   geom_point(data = relation, aes(x = profit_cutoff, y = swg_area_percent)) +
   theme_b_border() +
@@ -490,8 +479,8 @@ ggplot() +
 
 
 
-Plot relationships:
-```{r relations, cache=TRUE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 7: Increase in NO~3~ leaching reduction with increasing area in switchgrass (left panel), and with increasing profitability threshold (right panel)."}
+Then I plot the state-wide relative N loss reduction from the status quo to switchgrass integration, as a function of the area converted to switchgrass, and as a function of the profitability threshold applied.
+```{r relations, cache=TRUE, warning=FALSE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 7: N loss reduction as a function of area in switchgrass (left panel), and of profitability threshold (right panel)."}
 
 ggplot() +
   geom_point(data = relation, aes(x = swg_area_percent, y = N_reduction, color=swg_yield)) +
@@ -515,7 +504,7 @@ ggplot() +
 
 ##5. Spatial distribution of N loss changes
 
-Read in the table from the isuag database that contains county identifiers ("fips") and leaching results. 
+I read in the table from the isuag database that contains county identifiers ("fips") and leaching results. 
 ```{r counties_attributes}
  counties_n_loss = tbl(isuag_db, "07_n_loss_counties") %>%
    as.data.frame()
@@ -525,20 +514,17 @@ Read in the table from the isuag database that contains county identifiers ("fip
     }
  # make it a factor
   counties_n_loss$fips <- as.factor(counties_n_loss$fips)
-
-head(counties_n_loss, n=2)
 ```
 
 Read in a shape file with county delineations. I could use a map provided in the maps package or read in a file from my directory, which I do in this case:
-```{r counties_spatial}
+```{r counties_spatial, message = FALSE, cache=TRUE}
 
 counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
 
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
-summary(counties)
 
 head(counties@data, n=2) # shows only the slot "data"
-head(counties@polygons[[1]]@Polygons[[1]]@coords, 3) # shows the coordinates
+head(counties@polygons[[1]]@Polygons[[1]]@coords, 2) # shows the coordinates
 
 # join the attribute data with the spatial data, using a left join and the identifier "fips":
 counties@data <- left_join(counties@data, counties_n_loss, by = "fips")
@@ -556,9 +542,7 @@ head(counties@data, n = 2)
 counties_baseline_df <- left_join(counties_df, counties@data)
 ```
 
-```{r plot_baseline_map, fig.cap="Figure 8: County mean annual N loss, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been lost on average per year from each county."} 
-
-head(counties_baseline_df, n= 2)
+```{r plot_baseline_map, warning=FALSE, message=FALSE, fig.height=4, fig.cap="Figure 8: County mean annual N loss, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been lost on average per year from each county."} 
 
 # create a theme without axes:
 ditch_the_axes <- theme(
@@ -569,7 +553,6 @@ ditch_the_axes <- theme(
   panel.grid = element_blank(),
   axis.title = element_blank()
   )
-
 
 # add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
 centroids <- getSpPPolygonsLabptSlots(counties) %>%
@@ -589,10 +572,6 @@ ggplot() +
   labs(fill = expression(Average~N~loss~(kg~N~ha^{-1}))) +
   scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +
   ggtitle("Average and total annual N loss per county")
-
-head(counties_baseline_df, n=2)
-
-
 ```
 
 Now, I want to plot three maps in a facet plot that show the N loss results and the loss reduction, when switchgrass is grown on areas losing > 150 US$/ha and losing > 60 kg N/ha when in row crops for each of the three yield scenarios. For the facet plot in ggplot, I need to re-arrange the data, creating the variable "scenario" and adding two columns with values, one for the average leaching and one for the percent change from the baseline to the switchgrass integration scenario.
@@ -630,20 +609,31 @@ ggplot(counties_swg_df) +
   facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield)) +
   ggtitle("Average and total annual N loss per county")
 ```
+From figure 7 and 9, it becomes obvious that, at the switchgrass area fraction we are interested in (around 10% of current cropland), the switchgrass yields do not alter the N loss outcome in a significant way. Therefore, in the following analysis, I only consider the medium yielding scenario (10,000 Mg ha^-1^).
+```{r plot_n_loss_reduction_maps, fig.show = "hold", fig.width=4.5, fig.height=3, fig.cap = "Figure 10, left panel: county mean annual N loss, averaged over 2012-2015; right panel: reduction in total N loss in the switchgrass integration scenarios, as % of the status quo losses shown in Figure 8. "}
 
-```{r plot_n_loss_reduction_maps, fig.width=10, fig.height=3, fig.cap = "Figure 10: Reduction in total N loss in the switchgrass integration scenarios, as % of the status quo losses shown in Figure 8."}
-ggplot(counties_swg_df) +
+counties_swg_med_df <- filter(counties_swg_df, scenario == "swg_10000")
+
+ggplot(counties_swg_med_df) +
+  geom_polygon(aes(long, lat, group = group, fill=ave_n_loss), color = "white") +
+  scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +  
+  labs(fill = expression(Average~N~loss~(kg~N~ha^{-1}))) +  
+  geom_point(aes(V1, V2, size = tot_n_loss), color = "yellow") +
+  labs(size = expression(Total~N~loss~(Mg~N))) +
+  scale_size(range = c(0, 4)) +
+  coord_equal() +
+  ditch_the_axes
+
+ggplot(counties_swg_med_df) +
   geom_polygon(aes(long, lat, group = group, fill=loss_red), color = "white") +
   scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
   coord_equal() +
   ditch_the_axes +
-  labs(fill = expression(N_loss~reduction~("%"))) +
-  facet_wrap( ~ scenario, ncol = 3, labeller = as_labeller(swg_yield))
+  labs(fill = expression(N_loss~reduction~("%")))
 
 ```
 
 
-Shut the database down:
-```{r shut, message=FALSE}
+```{r shut, message=FALSE, include=FALSE}
  rm(list='isuag_db'); gc() 
 ```
