@@ -1,0 +1,12 @@
+*.RData
+*.png
+*.pdf
+*.rdx
+*.rdb
+*.html
+n_leaching_cache/html/__packages
+*.Rmd
+n_leaching_slides_2016-11-15_cache/beamer/__packages
+n_leaching_slides_2016-11-15_cache/html/__packages
+n_leaching_slides_cache/html/__packages
+n_loss_manuscript_cache/html/__packages
