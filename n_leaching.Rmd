@@ -33,7 +33,7 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "xxxx" # enter password here
+pw <- "5QUXJHTbxj" # enter password here
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
@@ -78,7 +78,7 @@ I am selecting the areas that will be managed in switchgrass based on mean profi
 
 ### State-wide mean profitability distribution
 
-```{r profit_distribution, warning = FALSE, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$/ha cut off value used in the profit opimization (PO) scenario for switchgrass integration below."}
+```{r profit_distribution, warning = FALSE, fig.width=4.5, fig.height=3, fig.cap="Figure 1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$/ha cut off value used for the switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
@@ -355,7 +355,7 @@ ggplot() +
 
 Figure 6 shows that the low leaching values do not fall out of the general pattern. Soils with lower sand fraction generally show lower leaching, but the very low leaching soils show a range of sand fraction. There is a cluster of low leaching subfield areas of pH 7.9 - 8.1. For these soils, NO~3~^-^ leaching might be low because the NH~3~ <-> NH~4~^+^ equilibrium is shifted toward the volatile NH~3~ that is leaving the soil.
 
-To eliminate artifacts that are caused by model mechanisms, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization before rain events, injecting anhydrous ammonia below the surface). Estimated N losses due to NH~3~ volatilization from synthetic fertilizers range between 0 and 5 kg ha^-1^ in the USA, not including the use of inhibiting chemicals [@bouwman2002nh3].
+To eliminate artifacts that are caused by model structure and mechansim, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization before rain events, injecting anhydrous ammonia below the surface). Estimated N losses due to NH~3~ volatilization from synthetic fertilizers range between 0 and 5 kg ha^-1^ in the USA, not including the use of inhibiting chemicals [@bouwman2002nh3].
 
 ##4. N loss through NO~3~^-^ leaching and NH~3~ volatilization
 
@@ -409,17 +409,21 @@ Total state-wide N loss sums were calculated in PostgreSQL. Access the results:
 ```{r total_leaching}
 n_loss_tot <-tbl(isuag_db, "05_dndc_n_loss_sums_iowa_scenarios")  %>%
   as.data.frame()
-names(n_loss_tot) <- c("Status Quo", "7500", "10000", "12500")
+n_loss_tot <-   data.frame(value = "total N loss", 
+                           n_loss_tot)
+head(n_loss_tot)  
+names(n_loss_tot) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
-n_loss_red <- data.frame(status_quo = 0,
-                        "7500" = (n_loss_tot[1,1]-n_loss_tot[1,2])*100/n_loss_tot[1,1],
-                        "10000" = (n_loss_tot[1,1]-n_loss_tot[1,3])*100/n_loss_tot[1,1],
-                        "12500" = (n_loss_tot[1,1]-n_loss_tot[1,4])*100/n_loss_tot[1,1])
-names(n_loss_red) <- c("Status Quo", "7500", "10000", "12500")
+n_loss_red <- data.frame(value = "Reduction (%)", 
+                         status_quo = 0,
+                        "7500" = (n_loss_tot[1,2]-n_loss_tot[1,3])*100/n_loss_tot[1,2],
+                        "10000" = (n_loss_tot[1,2]-n_loss_tot[1,4])*100/n_loss_tot[1,2],
+                        "12500" = (n_loss_tot[1,2]-n_loss_tot[1,5])*100/n_loss_tot[1,2])
+names(n_loss_red) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
 n_loss_table <- rbind(n_loss_tot[1,],n_loss_red[1,])
 
-kable(n_loss_table, digits = 2, col.names=c("Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
+kable(n_loss_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Million Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
 
 ```
 
