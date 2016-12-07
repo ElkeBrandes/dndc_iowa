@@ -33,6 +33,7 @@ Thumbs.db
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
+vignettes/*.docx
 
 # knitr and R markdown default cache directories
 /*_cache/
