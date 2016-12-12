@@ -33,7 +33,7 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "5QUXJHTbxj" # enter password here
+pw <- "xxxx" # enter password here
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
@@ -146,6 +146,101 @@ ggplot() +
 
 ```
 
+### County effects?
+Figure 2 suggests that NASS reported county yields and/or county survey cash rents are reponsible for strong contrasts between neiboring counties (also seen in the profit distribution on a subfield resolution). Therefore, I calculated 2012-2015 means for corn and soybean yield and cash rent per county in PostgreSQL (query script 09_county_mean_yields_cashrents_2012_2015) to visualize them.
+```{r county_yield_rent, cache=TRUE}
+counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+names(counties)[9] <- "fips" 
+
+yield_rent_county <- tbl(isuag_db, "09_county_mean_yields_cashrents_2012_2015") %>%
+  as.data.frame() 
+
+ for (i in 1:length(yield_rent_county$fips)) {
+   yield_rent_county$fips[i] <- sub("IA", "19", yield_rent_county$fips[i])
+ }
+head(yield_rent_county, n = 2)
+counties@data <- left_join(counties@data, yield_rent_county, by = "fips")
+#(counties@data, n = 2)
+counties_df <- fortify(counties)
+str(counties_df)
+head(counties_df, n=2)
+counties$id <- row.names(counties) 
+counties_yield_rent_df <- left_join(counties_df, counties@data)
+head(counties_yield_rent_df, n = 2)
+```
+```{r multiplot, cache=TRUE}
+multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
+  require(grid)
+
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  if (is.null(layout)) {
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+  if (numPlots == 1) {
+    print(plots[[1]])
+
+  } else {
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    for (i in 1:numPlots) {
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+
+
+```{r county_yield_rent_maps, cache=TRUE, fig.show="hold", fig.width=5, fig.height=10, fig.cap="Figure 3: Mean cash rents and yields per county, averaged over 2012-2015."}
+m1 <- ggplot() +
+  geom_polygon(data = counties_yield_rent_df, aes(long, lat, group = group, fill=cg_yield), color = "white") +
+  labs(fill = expression(Mean~maize~yield~(kg~ha^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  scale_fill_gradient(low = "white", high="orange", guide = "colourbar") 
+
+m2 <- ggplot() +
+  geom_polygon(data = counties_yield_rent_df, aes(long, lat, group = group, fill=sb_yield), color = "white") +
+  labs(fill = expression(Mean~soybean~yield~(kg~ha^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  scale_fill_gradient(low = "white", high="dark green", guide = "colourbar") 
+
+m3 <- ggplot() +
+  geom_polygon(data = counties_yield_rent_df, aes(long, lat, group = group, fill=avg_rent_2012_2015), color = "white") +
+  labs(fill = expression(Mean~cash~rent~("US$"~ha^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  scale_fill_gradient(low = "white", high="red", guide = "colourbar") 
+
+m4 <- ggplot() +
+  geom_polygon(data = counties_yield_rent_df, aes(long, lat, group = group, fill=cg_yield/avg_rent_2012_2015), color = "white") +
+  labs(fill = expression(Maize~yield~"/"~cash~rent~(kg~"US$"^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  scale_fill_gradient(low = "white", high="blue", guide = "colourbar") 
+
+multiplot(m1, m2, m3, m4, cols = 1)
+```
+
+```{r yield_rent_ratio}
+ggplot() +
+  geom_polygon(data = counties_yield_rent_df, aes(long, lat, group = group, fill=cg_yield/avg_rent_2012_2015), color = "white") +
+  labs(fill = expression(Corn~yield~"/"~cash~rent~(kg~"US$"^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  scale_fill_gradient(low = "white", high="blue", guide = "colourbar") +
+  ggtitle("Ratio of corn yield to cash rent,\nusing 2012-2015 means of NASS reported yields\nand ISU cash rent survey results")
+```
 
 
 ##2. Distributions of N loss in Iowa, from row cropped and switchgrass fields##
