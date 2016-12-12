@@ -456,7 +456,43 @@ To eliminate artifacts that are caused by model structure and mechansim, we deci
 
 I calculated N losses as a sum of the model outputs NO~3~^-^ leaching and NH~3~ volatilization in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
 
+### Correlation between NO~3~^-^ leaching and NH~3~ volatilization
+
+I draw a sample from the original DNDC result table for the status quo to look at the relationship between the two N loss pools. Note: I am not transforming the values into metric units in this case, so the units are lbs/acre.
+
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+DROP TABLE IF EXISTS "r_isu_cgsb_clumu_proc_sample";
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_isu_cgsb_clumu_proc_sample" AS SELECT ave_no3_leach, ave_nh3_vol FROM isu_cgsb_clumu_proc ORDER BY random() LIMIT 10000
+```
+
+
+Pull the new table into R:
+```{r leach_vol_sample}
+sample = tbl(isuag_db, "r_isu_cgsb_clumu_proc_sample") %>%
+  as.data.frame(sample)
+
+head(sample, n=2)
+str(sample)
+```
+
+I plot the sample as a scatter plot:
+```{r leach_vol_scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of corn/soy NO~3~^-^ leaching and NH~3~ volatilization data on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = sample, aes(x = ave_no3_leach, y = ave_nh3_vol)) +
+  theme_b_border() +
+  labs(x=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(lbs~N~acre^{-1})),
+       y=expression(Mean~NH[3]~volatilization~2006-2015~(lbs~N~acre^{-1})))
+  
+```
+
+
 ### Correlation between profitability and N loss in corn and soybean fields
+
 I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, and if the artifact of low leaching patches seen in Figure 4. disappears as the high NH~3~ volatilization compensates the low NO~3~^-^ leaching.
 
 Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
@@ -522,22 +558,71 @@ kable(n_loss_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "
 
 ```
 
+### Total area in switchgrass as a function of profitability and N loss threshold selection
 
-##4. Disproportionate benefits?
+I want to select the total area of polygons that fall under changing profitability and N loss thresholds.
 
-I want to see how N loss reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
-
-I want to select the total area of polygons that fall under specific profitability thresholds, keeping the N loss threshold constant at 60 kg ha^-1^.
 ```{r swg_areas, cache=TRUE}
 swg_areas <- vector(mode="numeric", length=0)
-profit_cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
- for (i in 1:length(profit_cutoffs)) {
-    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
+profit_cutoffs <- c(-1000, -500, -400, -250, -150, 0, 250, 500)
+n_loss_cutoffs <- c(0, 20, 40, 50, 60, 80, 100, 200)
+
+# make a cartesian product of the two vectors first:
+
+# function (from https://www.r-bloggers.com/nested-loops-with-mapply/)
+CartProduct = function(vector_1, vector_2)
+{
+ 
+  if (length(dim(vector_2)) != 0 )
+  {
+    warning("New vector has more than one dimension.")
+    return (NULL)
+  }
+ 
+  if (length(dim(vector_1)) == 0)
+  {
+    CurrentRows = length(vector_1)
+    vector_1 = as.matrix(vector_1, nrow = CurrentRows, ncol = 1)
+  } else {
+    CurrentRows = nrow(vector_1)
+  }
+ 
+  var1 = replicate(length(vector_2), vector_1, simplify=F)
+  var1 = do.call("rbind", var1)
+ 
+  var2 = rep(vector_2, CurrentRows)
+  var2 = matrix(var2[order(var2)], nrow = length(var2), ncol = 1)
+ 
+  CartProduct = cbind(var1, var2)
+  return (CartProduct)
+}
+
+comb <- CartProduct(profit_cutoffs, n_loss_cutoffs)
+
+# write a function that uses each of the combinations, using the matrix returned from the function CartProduct:
+
+
+# for (i in 1:length(profit_cutoffs)) {
+#     query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
+#     sum_area <- tbl(isuag_db, sql(query)) %>%
+#       as.data.frame()
+#     sum_area <- sum_area[1,1]
+#     swg_areas <- append(swg_areas, sum_area)
+# }
+
+area_select <- function(cutoff_1, cutoff_2)
+{ query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_n_loss_ha_cgsb > ", as.character(cutoff_2))
     sum_area <- tbl(isuag_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
-    swg_areas <- append(swg_areas, sum_area) 
-  }
+    return(sum_area)
+}
+
+# apply the function to each value in the matrix
+
+swg_areas <- mapply(area_select, comb[,1], comb[,2])
+comb[,1]
+
 ```
 
 ```{r no3_leaching_sums, cache=TRUE}
@@ -576,9 +661,12 @@ ggplot() +
 
 ```
 
+##4. Disproportionate benefits?
 
+I want to see how N loss reduction increases with increasing area in switchgrass, to test if the disproportionate benefits hypothesis holds true in our model.
 
-Then I plot the state-wide relative N loss reduction from the status quo to switchgrass integration, as a function of the area converted to switchgrass, and as a function of the profitability threshold applied.
+I plot the state-wide relative N loss reduction from the status quo to switchgrass integration, as a function of the area converted to switchgrass, and as a function of the profitability threshold applied.
+
 ```{r relations, cache=TRUE, warning=FALSE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 7: N loss reduction as a function of area in switchgrass (left panel), and of profitability threshold (right panel)."}
 
 ggplot() +
