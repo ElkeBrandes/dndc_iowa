@@ -36,6 +36,9 @@ out_raster = "profit_2015"
 cellsize = 10
 arcpy.PolygonToRaster_conversion(out_layer, value_field, out_raster, cellsize = cellsize)
 
+# clean up in memory layer
+arcpy.Delete_management("ia_clumu_2016_single_layer")
+
 print("")
 print("Done. Yippie!")
 

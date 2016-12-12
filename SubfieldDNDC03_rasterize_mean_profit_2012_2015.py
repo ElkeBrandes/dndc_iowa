@@ -17,7 +17,7 @@ arcpy.env.overwriteOutput=True
 arcpy.env.workspace = "C:\\Users\\ebrandes\\Documents\\ia_clumu\\ia_clumu.gdb"
 
 # starting with the feature class ia_clumu_2016_single (that I joined mean profit, no3 leaching,
-# clu cash rents, and 2015 profit), I create rasters for the different variable to be able to visualize
+# clu cash rents, and mean and 2015 profit), I create rasters for the different variable to be able to visualize
 # the differences within the whole state.
 
 # create a feature layer from the feature class "ia_clumu_2016_single"
@@ -28,11 +28,11 @@ out_layer = "ia_clumu_2016_single_layer"
 arcpy.MakeFeatureLayer_management(in_features, out_layer)
 
 
-# convert the feature layer to a raster containing the 2015 profit data.
+# convert the feature layer to a raster containing the mean profit data.
 print("")
-print("Creating raster with N loss reduction data...")
-value_field = "ave_n_loss_change_perc_10000"
-out_raster = "N_loss_reduction"
+print("Creating raster with mean profit data...")
+value_field = "mean_profit_ha"
+out_raster = "mean_profit"
 cellsize = 10
 arcpy.PolygonToRaster_conversion(out_layer, value_field, out_raster, cellsize = cellsize)
 

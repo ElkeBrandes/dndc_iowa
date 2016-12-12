@@ -3,9 +3,10 @@
 import sys
 print "Running script against: {}".format(sys.version)
 
-# the arguments noted below as sys.argv[1] and sys.argv[2] are passed in the cmd script "SubfieldDNDC01_reproject_join.cmd".
+# the arguments noted below as sys.argv[1] and sys.argv[2] are passed in the cmd script
+# "SubfieldDNDC01_reproject_join.cmd".
 # They refer to the two files, the Iowa subfield feature class and the txt file containing the
-# attributes (profit and DNDC data)
+# attributes (profit and DNDC leaching data)
 
 import arcpy
 from arcpy import env
