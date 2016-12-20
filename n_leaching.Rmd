@@ -23,8 +23,9 @@ library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
 
 library("tmap")
-library("grDevices") # for surface plot
+library("grDevices") # for colors of surface plot
 library("graphics") # for surface plot
+library("rgl") # for surface plot (3d graphics, more powerful than persp()
 
 
 ```
@@ -625,14 +626,12 @@ swg_areas <- data.frame(profit = comb[,1],
 
 ```
 
-To visualize the results I plot them in a a surface plot
+To visualize the results I plot them in a a surface plot. I ended up using the rgl package although I am not happy with the output as a screenshot png of very low resolution, and that I cannot plot the lines between the switchgrass percent values. The alternative is persp() (commented in the below chunk), but I have not figured out how to apply color according to the z axis yet and add a legend.
 ```{r area_surfaceplot, fig.cap="Figure 9: Area to convert to switchgrass when assuming different thresholds for N loss and profitability of the cropland under row crops. "}
 
 
 x <- profit_cutoffs
-#xseq <- seq(x[1], x[2], length.out = 3)
-y <- n_loss_cutoffs
-#yseq <- seq(y[1],y[2],length.out = 5)
+z <- n_loss_cutoffs
 
 # create a matrix out of the x and y values for z (in Mha):
 swg_matrix <- matrix(swg_areas[,3] * 1e-6
@@ -640,31 +639,48 @@ swg_matrix <- matrix(swg_areas[,3] * 1e-6
 #calculate % of total cropland (9374363)
 swg_matrix_perc <- (swg_matrix/9.374363)*100
 
-# revers the order of the columns in the matrix (for N loss threshold):
-# swg_matrix <- swg_matrix[, rev(seq_len(ncol(swg_matrix)))]
-
-nrz <- length(x)
-ncz <- length(y)
-jet.colors <- colorRampPalette( c("#ffcccc", "#cc0000") ) 
+jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                      "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
 nbcol <- 100
 color <- jet.colors(nbcol)
-# Compute the z-value at the facet centres
-zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
-# Recode facet z-values into color indices
-facetcol <- cut(zfacet, nbcol)
 
-persp(x=x, y=y, z=swg_matrix_perc, col = color[facetcol],
-      theta = -80, phi = 30, r = 5, shade = 0.50,
-     xlab = "Profitability cut off",
-      ylab = "N loss cut off",
-      zlab = "Area in swg (%)",
-     zlim = c(0, 100),
-      col = "#56B4E9",
-      ticktype = "detailed",
-      ntick=5)
+open3d()
+rgl.surface(x=x, y=swg_matrix_perc, 
+            coords=c(1,2,3),z=z, 
+            color=color[ findInterval(swg_matrix_perc, seq(min(swg_matrix_perc), max(swg_matrix_perc), length=nbcol))], alpha = .5 )
+axes3d()
+aspect3d(1,1,1)
+grid3d("x+")
+grid3d("z")
+grid3d("y")
+#lines3d(x, swg_matrix_perc, z)
+#legend3d("center", "% in switchgrass", fill= swg_matrix_perc)
+
+par3d("windowRect")
+rgl.viewpoint(zoom = .7)
+rgl.snapshot("surface.png")
+
+
+# nrz <- length(profit_cutoffs)
+# ncz <- length(n_loss_cutoffs)
+# z <- swg_matrix_perc
+# 
+# # Compute the z-value at the facet centres
+# zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+# # Recode facet z-values into color indices
+# facetcol <- cut(zfacet, nbcol)
+# 
+# persp(x=x, y=z, z=swg_matrix_perc, col = color[facetcol],
+#       theta = -60, phi = 30, r = 5, shade = 0.50,
+#      xlab = "Profitability cut off",
+#       ylab = "N loss cut off",
+#       zlab = "Area in swg (%)",
+#      zlim = c(0, 100),
+#       ticktype = "detailed",
+#       ntick=5)
 
 ```
-
+Next, I show the total N loss in Iowa under the three switchgrass yield scenarios, as a function of the profitability cut-off (at a constant N loss cut-off of > 60 kg N/ha), and as a function of % in switchgrass.
 
 ```{r no3_leaching_sums, cache=TRUE}
 sum_n_loss <- tbl(isuag_db, "08_dndc_n_loss_sums_iowa_dispr_benefits") %>%
@@ -679,9 +695,23 @@ select sum(clumuha) from "05_dndc_clumu_cgsb_swg_n_loss";
 
 I create data frames for the figure:
 ```{r data_dispr_benefits}
+profit_cutoffs_11 <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
 swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
-profit_cutoff <- c(NA, rep(profit_cutoffs,3))
-swg_area <- c(0,rep(swg_areas,3))
+profit_cutoff <- c(NA, rep(profit_cutoffs_11,3))
+
+area_select_profit_11 <- function(cutoff_1)
+{ query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_n_loss_ha_cgsb > 60")
+    sum_area_11 <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_area_11 <- sum_area_11[1,1]
+    return(sum_area_11)
+}
+
+# apply the function to each value in the profit cutoff vector
+
+swg_areas_11 <- sapply(area_select_profit_11, profit_cutoffs_11)
+
+swg_area <- c(0,rep(swg_areas[33:40,3],3))
 swg_area_percent <- (swg_area/9374363)*100
 N_loss <- sum_n_loss[,2]
 N_reduction <- abs((N_loss - N_loss[1])/N_loss[1])*100
