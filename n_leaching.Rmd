@@ -23,6 +23,8 @@ library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
 
 library("tmap")
+library("grDevices") # for surface plot
+library("graphics") # for surface plot
 
 
 ```
@@ -99,7 +101,7 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
 I want to see how the areas below -150 US$/ha are distributed accross Iowa. First, I read in a county shapefile. Then, I read in the table containing the county-level unprofitable ha from the PostgreSQL database. In order to join hte data, I need to change the format of the county identifier "fips". I convert "fips" into a factor, then join the spatial and the attribute data on "fips". I then fortify (make a data frame out of) the spatial data frame and assign a column with a serial id. Finally, I join the attribute (unprofitable areas) data to this dataframe.
 
 ```{r profit_spatial, message = FALSE, warning = FALSE, cache=TRUE, fig.cap="Figure 2: Areas below a mean 2012-2015 profitability of -150 US$/ha per county. No constraints were made with regards to subfield area size, shape or position."}
-counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+counties <- readOGR(dsn="./shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
 profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
@@ -149,7 +151,7 @@ ggplot() +
 ### County effects?
 Figure 2 suggests that NASS reported county yields and/or county survey cash rents are reponsible for strong contrasts between neiboring counties (also seen in the profit distribution on a subfield resolution). Therefore, I calculated 2012-2015 means for corn and soybean yield and cash rent per county in PostgreSQL (query script 09_county_mean_yields_cashrents_2012_2015) to visualize them.
 ```{r county_yield_rent, cache=TRUE}
-counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+counties <- readOGR(dsn="./shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
 yield_rent_county <- tbl(isuag_db, "09_county_mean_yields_cashrents_2012_2015") %>%
@@ -320,9 +322,7 @@ Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the Po
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_sample";
-```
+
 ```{sql, connection=con, message=FALSE, cache=TRUE}
 CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
 ```
@@ -386,17 +386,15 @@ In high pH soils the equilibrium between NH~3~^+^ and NH~3~ is shifted toward NH
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
+
 ```{sql, connection=con, message=FALSE, cache=TRUE}
-DROP TABLE IF EXISTS "05_leaching_soil_sample";
-```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "05_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandtotal_r, avg_ph1to1h2o_r, avg_ph01mcacl2_r FROM "05_leaching_soil" ORDER BY random() LIMIT 10000
+CREATE TABLE "r_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandtotal_r, avg_ph1to1h2o_r, avg_ph01mcacl2_r FROM "05_leaching_soil" ORDER BY random() LIMIT 10000
 ```
 
 
 I make a dataframe out of the db table:
 ```{r soil_sample}
-soil = tbl(isuag_db, "05_leaching_soil_sample") %>%
+soil = tbl(isuag_db, "r_leaching_soil_sample") %>%
   as.data.frame()
 head(soil, n=2)
 ```
@@ -463,9 +461,7 @@ I draw a sample from the original DNDC result table for the status quo to look a
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-DROP TABLE IF EXISTS "r_isu_cgsb_clumu_proc_sample";
-```
+
 ```{sql, connection=con, message=FALSE, cache=TRUE}
 CREATE TABLE "r_isu_cgsb_clumu_proc_sample" AS SELECT ave_no3_leach, ave_nh3_vol FROM isu_cgsb_clumu_proc ORDER BY random() LIMIT 10000
 ```
@@ -499,9 +495,7 @@ Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the Po
 ```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_n_loss_sample";
-```
+
 ```{sql, connection=con, message=FALSE, cache=TRUE}
 CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
 ```
@@ -621,9 +615,56 @@ area_select <- function(cutoff_1, cutoff_2)
 # apply the function to each value in the matrix
 
 swg_areas <- mapply(area_select, comb[,1], comb[,2])
-comb[,1]
+
+
+# combine the cut off values with the area in switchgrass in a data frame
+
+swg_areas <- data.frame(profit = comb[,1],
+                        n_loss = comb[,2],
+                        swg_areas)
 
 ```
+
+To visualize the results I plot them in a a surface plot
+```{r area_surfaceplot, fig.cap="Figure 9: Area to convert to switchgrass when assuming different thresholds for N loss and profitability of the cropland under row crops. "}
+
+
+x <- profit_cutoffs
+#xseq <- seq(x[1], x[2], length.out = 3)
+y <- n_loss_cutoffs
+#yseq <- seq(y[1],y[2],length.out = 5)
+
+# create a matrix out of the x and y values for z (in Mha):
+swg_matrix <- matrix(swg_areas[,3] * 1e-6
+, nrow=8, ncol=8)
+#calculate % of total cropland (9374363)
+swg_matrix_perc <- (swg_matrix/9.374363)*100
+
+# revers the order of the columns in the matrix (for N loss threshold):
+# swg_matrix <- swg_matrix[, rev(seq_len(ncol(swg_matrix)))]
+
+nrz <- length(x)
+ncz <- length(y)
+jet.colors <- colorRampPalette( c("#ffcccc", "#cc0000") ) 
+nbcol <- 100
+color <- jet.colors(nbcol)
+# Compute the z-value at the facet centres
+zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+# Recode facet z-values into color indices
+facetcol <- cut(zfacet, nbcol)
+
+persp(x=x, y=y, z=swg_matrix_perc, col = color[facetcol],
+      theta = -80, phi = 30, r = 5, shade = 0.50,
+     xlab = "Profitability cut off",
+      ylab = "N loss cut off",
+      zlab = "Area in swg (%)",
+     zlim = c(0, 100),
+      col = "#56B4E9",
+      ticktype = "detailed",
+      ntick=5)
+
+```
+
 
 ```{r no3_leaching_sums, cache=TRUE}
 sum_n_loss <- tbl(isuag_db, "08_dndc_n_loss_sums_iowa_dispr_benefits") %>%
