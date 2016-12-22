@@ -26,7 +26,7 @@ arcpy.MakeFeatureLayer_management(in_features, out_layer, where_clause)
 in_raster = "N_loss_reduction"
 clip_features = out_layer
 out_raster = "N_loss_reduction_IA023"
-arcpy.Clip_management(in_raster, "#", out_raster, clip_features)
+arcpy.Clip_management(in_raster, "#", out_raster, clip_features, "#", "ClippingGeometry")
 
 # make a feature layer from the county selected from the county feature class
 #in_features = "C:\\Users\\ebrandes\\Documents\\DNDC\\switchgrass_integration.gdb\\Counties"
@@ -39,7 +39,7 @@ arcpy.Clip_management(in_raster, "#", out_raster, clip_features)
 #in_raster = "N_loss_reduction"
 #clip_features = out_layer
 #out_raster = "N_loss_reduction_IA055"
-#arcpy.Clip_management(in_raster, "#", out_raster, clip_features)
+#arcpy.Clip_management(in_raster, "#", out_raster, clip_features, "#", "ClippingGeometry")
 
 # make a feature layer from the county selected from the county feature class
 #in_features = "C:\\Users\\ebrandes\\Documents\\DNDC\\switchgrass_integration.gdb\\Counties"
@@ -52,4 +52,4 @@ arcpy.Clip_management(in_raster, "#", out_raster, clip_features)
 #in_raster = "N_loss_reduction"
 #clip_features = out_layer
 #out_raster = "N_loss_reduction_IA073"
-#arcpy.Clip_management(in_raster, "#", out_raster, clip_features) 
+#arcpy.Clip_management(in_raster, "#", out_raster, clip_features, "#", "ClippingGeometry") 
