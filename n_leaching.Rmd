@@ -8,7 +8,7 @@ bibliography: nutrient_bibliography.bib
 This paper describes the data analysis of N loss results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr` and `RPostgreSQL`).
 
 ##Required packages##
-```{r packages, message=FALSE}
+```{r packages, message=FALSE, warning=FALSE}
 library('RPostgreSQL') # PostgreSQL database connection
 library("ggplot2") # for the figures
 library("maps") # to plot maps, contains country/state/county outlines
@@ -24,8 +24,9 @@ library("sp") # to use merge with a spatial data frame
 
 library("tmap")
 library("grDevices") # for colors of surface plot
-library("graphics") # for surface plot
-library("rgl") # for surface plot (3d graphics, more powerful than persp()
+# library("graphics") # for surface plot
+# library("rgl") # for surface plot (3d graphics, more powerful than persp()
+library("plot3D") # another package to plot surface plots
 
 
 ```
@@ -36,7 +37,7 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "xxxx" # enter password here
+pw <- "5QUXJHTbxj" # enter password here
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
                            port = 5432,
@@ -341,7 +342,7 @@ str(sample)
 I plot the sample as a scatter plot:
 ```{r scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
@@ -354,7 +355,7 @@ ggplot() +
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
 ```{r scatterplot_zoom, warning = FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
@@ -403,7 +404,7 @@ head(soil, n=2)
 Then I plot the sample:
 ```{r scatter_leach_sand, warning=FALSE, fig.width=4.5, fig.height=3, fig.show = "hold", fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of corn/soy leaching data and sand fraction on subfield areas in Iowa."}
 ggplot() +
-  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
@@ -411,7 +412,7 @@ ggplot() +
        x=expression(Sand~fraction~("%")))
 
 ggplot() +
-  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
@@ -419,7 +420,7 @@ ggplot() +
        x=expression(Sand~fraction~("%")))
   
 ggplot() +
-  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
@@ -427,7 +428,7 @@ ggplot() +
        x=expression(pH))
 
 ggplot() +
-  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb)) +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
@@ -478,12 +479,12 @@ str(sample)
 ```
 
 I plot the sample as a scatter plot:
-```{r leach_vol_scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of corn/soy NO~3~^-^ leaching and NH~3~ volatilization data on subfield areas in Iowa."}
+```{r leach_vol_scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of corn/soy NO~3~^-^ leaching and NH~3~ volatilization data (averaged over 2012 - 2015) on subfield areas in Iowa."}
 ggplot() +
-  geom_point(data = sample, aes(x = ave_no3_leach, y = ave_nh3_vol)) +
+  geom_point(data = sample, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
   theme_b_border() +
-  labs(x=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(lbs~N~acre^{-1})),
-       y=expression(Mean~NH[3]~volatilization~2006-2015~(lbs~N~acre^{-1})))
+  labs(x=expression(Mean~NO[3]^{"-"}~leaching~(lbs~N~acre^{-1})),
+       y=expression(Mean~NH[3]~volatilization~(lbs~N~acre^{-1})))
   
 ```
 
@@ -512,7 +513,7 @@ sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
 I visualize the sample as a scatter plot:
 ```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb)) +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
@@ -559,8 +560,8 @@ I want to select the total area of polygons that fall under changing profitabili
 
 ```{r swg_areas, cache=TRUE}
 swg_areas <- vector(mode="numeric", length=0)
-profit_cutoffs <- c(-1000, -500, -400, -250, -150, 0, 250, 500)
-n_loss_cutoffs <- c(0, 20, 40, 50, 60, 80, 100, 200)
+profit_cutoffs <- c(-800, -700, -600, -500, -400, -300, -200, -100, 0, 100, 200, 300, 400, 500, 600, 700)
+n_loss_cutoffs <- c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
 
 # make a cartesian product of the two vectors first:
 
@@ -596,15 +597,6 @@ comb <- CartProduct(profit_cutoffs, n_loss_cutoffs)
 
 # write a function that uses each of the combinations, using the matrix returned from the function CartProduct:
 
-
-# for (i in 1:length(profit_cutoffs)) {
-#     query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
-#     sum_area <- tbl(isuag_db, sql(query)) %>%
-#       as.data.frame()
-#     sum_area <- sum_area[1,1]
-#     swg_areas <- append(swg_areas, sum_area)
-# }
-
 area_select <- function(cutoff_1, cutoff_2)
 { query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_n_loss_ha_cgsb > ", as.character(cutoff_2))
     sum_area <- tbl(isuag_db, sql(query)) %>%
@@ -631,53 +623,25 @@ To visualize the results I plot them in a a surface plot. I ended up using the r
 
 
 x <- profit_cutoffs
-z <- n_loss_cutoffs
+y <- n_loss_cutoffs
 
 # create a matrix out of the x and y values for z (in Mha):
 swg_matrix <- matrix(swg_areas[,3] * 1e-6
-, nrow=8, ncol=8)
+, nrow=16, ncol=16)
 #calculate % of total cropland (9374363)
 swg_matrix_perc <- (swg_matrix/9.374363)*100
+z <- swg_matrix_perc
+persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+#        breaks = c(1,10,20,30,40,50,60,70,100), 
+        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "N loss reduction (%)", 
+        lighting = list(alpha = .5),
+        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "N loss red. (%)"
+        )
 
-jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
-                      "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
-nbcol <- 100
-color <- jet.colors(nbcol)
+contour2D(z, x, y, col = "black", colkey = FALSE, add = FALSE, xlab = "Profitability threshold (US$ ha-1)", ylab = "N loss threshold (kg ha-1)")
 
-open3d()
-rgl.surface(x=x, y=swg_matrix_perc, 
-            coords=c(1,2,3),z=z, 
-            color=color[ findInterval(swg_matrix_perc, seq(min(swg_matrix_perc), max(swg_matrix_perc), length=nbcol))], alpha = .5 )
-axes3d()
-aspect3d(1,1,1)
-grid3d("x+")
-grid3d("z")
-grid3d("y")
-#lines3d(x, swg_matrix_perc, z)
-#legend3d("center", "% in switchgrass", fill= swg_matrix_perc)
+# rect3D(x0 = 0, y0 = -1000, z0 = 20, x1 = 0, y1 = 500)
 
-par3d("windowRect")
-rgl.viewpoint(zoom = .7)
-rgl.snapshot("surface.png")
-
-
-# nrz <- length(profit_cutoffs)
-# ncz <- length(n_loss_cutoffs)
-# z <- swg_matrix_perc
-# 
-# # Compute the z-value at the facet centres
-# zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
-# # Recode facet z-values into color indices
-# facetcol <- cut(zfacet, nbcol)
-# 
-# persp(x=x, y=z, z=swg_matrix_perc, col = color[facetcol],
-#       theta = -60, phi = 30, r = 5, shade = 0.50,
-#      xlab = "Profitability cut off",
-#       ylab = "N loss cut off",
-#       zlab = "Area in swg (%)",
-#      zlim = c(0, 100),
-#       ticktype = "detailed",
-#       ntick=5)
 
 ```
 Next, I show the total N loss in Iowa under the three switchgrass yield scenarios, as a function of the profitability cut-off (at a constant N loss cut-off of > 60 kg N/ha), and as a function of % in switchgrass.
@@ -709,9 +673,9 @@ area_select_profit_11 <- function(cutoff_1)
 
 # apply the function to each value in the profit cutoff vector
 
-swg_areas_11 <- sapply(area_select_profit_11, profit_cutoffs_11)
+swg_areas_11 <- mapply(area_select_profit_11, profit_cutoffs_11)
 
-swg_area <- c(0,rep(swg_areas[33:40,3],3))
+swg_area <- c(0,rep(swg_areas_11,3))
 swg_area_percent <- (swg_area/9374363)*100
 N_loss <- sum_n_loss[,2]
 N_reduction <- abs((N_loss - N_loss[1])/N_loss[1])*100
@@ -777,7 +741,7 @@ I read in the table from the isuag database that contains county identifiers ("f
 Read in a shape file with county delineations. I could use a map provided in the maps package or read in a file from my directory, which I do in this case:
 ```{r counties_spatial, message = FALSE, cache=TRUE}
 
-counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+counties <- readOGR(dsn="./shapefiles/county.shp",layer="county")
 
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
 
