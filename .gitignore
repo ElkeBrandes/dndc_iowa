@@ -54,3 +54,7 @@ n_leaching_slides_cache/html/__packages
 n_loss_manuscript_cache/html/__packages
 *.docx
 n_loss_manuscript_cache/docx/__packages
+
+# shapefiles stored in the folder shapefiles
+/shapefiles/
+
