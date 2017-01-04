@@ -153,7 +153,7 @@ ggplot() +
 ### County effects?
 Figure 2 suggests that NASS reported county yields and/or county survey cash rents are reponsible for strong contrasts between neiboring counties (also seen in the profit distribution on a subfield resolution). Therefore, I calculated 2012-2015 means for corn and soybean yield and cash rent per county in PostgreSQL (query script 09_county_mean_yields_cashrents_2012_2015) to visualize them.
 ```{r county_yield_rent, cache=TRUE}
-counties <- readOGR(dsn="./shapefiles/county.shp",layer="county")
+counties <- readOGR(dsn="././geodata/shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
 yield_rent_county <- tbl(isuag_db, "09_county_mean_yields_cashrents_2012_2015") %>%
@@ -618,29 +618,102 @@ swg_areas <- data.frame(profit = comb[,1],
 
 ```
 
-To visualize the results I plot them in a a surface plot. I ended up using the rgl package although I am not happy with the output as a screenshot png of very low resolution, and that I cannot plot the lines between the switchgrass percent values. The alternative is persp() (commented in the below chunk), but I have not figured out how to apply color according to the z axis yet and add a legend.
-```{r area_surfaceplot, fig.cap="Figure 9: Area to convert to switchgrass when assuming different thresholds for N loss and profitability of the cropland under row crops. "}
+To visualize the results I plot them in a a surface plot amd a contour plot. Trying out the `rgl` package, the R base function `persp()` and the package [`plot3D`](https://cran.r-project.org/web/packages/plot3D/plot3D.pdf), I ended up using the function `persp3D` for the "surface" plot and the function [`filled.contour2()`](http://wiki.cbr.washington.edu/qerm/sites/qerm/images/4/44/Filled.contour2.R) modified from the in-built function `filled.contour()`. I had to correct and error in this function that might stem from the fact that it has been written in an older version of R.To see the contour lines, I added a contour plot with `contour()` according to [these instructions](http://wiki.cbr.washington.edu/qerm/index.php/R/Contour_Plots).
+
+
+This is the corrected function:
+```{r filled_contour_fun, cache = TRUE}
+filled.contour2 <-
+  function (x = seq(0, 1, length.out = nrow(z)),
+            y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE), 
+            ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE), 
+            levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
+            col = color.palette(length(levels) - 1), plot.title, plot.axes, 
+            key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
+            axes = TRUE, frame.plot = axes,mar, ...) 
+{
+  # modification by Ian Taylor of the filled.contour function
+  # to remove the key and facilitate overplotting with contour()
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq.int(0, 1, length.out = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+    stop("increasing 'x' and 'y' values expected")
+  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
+  on.exit(par(par.orig))
+  w <- (3 + mar.orig[2]) * par("csi") * 2.54
+  par(las = las)
+  mar <- mar.orig
+  plot.new()
+  par(mar=mar)
+  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
+    stop("no proper 'z' matrix specified")
+  if (!is.double(z)) 
+    storage.mode(z) <- "double"
+  # modified from the original code: changed from .Internal(filledcontour(...)) to:
+  .filled.contour(as.double(x), as.double(y), z, as.double(levels), 
+                          col = col)
+  if (missing(plot.axes)) {
+    if (axes) {
+      title(main = "", xlab = "", ylab = "")
+      Axis(x, side = 1)
+      Axis(y, side = 2)
+    }
+  }
+  else plot.axes
+  if (frame.plot) 
+    box()
+  if (missing(plot.title)) 
+    title(...)
+  else plot.title
+  invisible()
+}
+
+
+```
+
+
+```{r area_surfaceplot, fig.cap="Figure 9: Area to convert to switchgrass when assuming possible combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
 
 
 x <- profit_cutoffs
 y <- n_loss_cutoffs
 
-# create a matrix out of the x and y values for z (in Mha):
+# create a matrix out of the z values (in Mha):
 swg_matrix <- matrix(swg_areas[,3] * 1e-6
 , nrow=16, ncol=16)
 #calculate % of total cropland (9374363)
 swg_matrix_perc <- (swg_matrix/9.374363)*100
 z <- swg_matrix_perc
 persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
-#        breaks = c(1,10,20,30,40,50,60,70,100), 
-        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "N loss reduction (%)", 
-        lighting = list(alpha = .5),
-        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "N loss red. (%)"
+        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Switchgrass area (%)", 
+        lighting = list(alpha = 1),
+        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Swg area (%)",
+ticktype = "detailed"
         )
 
-contour2D(z, x, y, col = "black", colkey = FALSE, add = FALSE, xlab = "Profitability threshold (US$ ha-1)", ylab = "N loss threshold (kg ha-1)")
 
-# rect3D(x0 = 0, y0 = -1000, z0 = 20, x1 = 0, y1 = 500)
+mylevels <- c(seq(0,70,10),100)
+filled.contour2(x, y, z, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab="Profitability threshold (US$ ha-1)", ylab="N loss threshold (kg ha-1)")
+contour(x, y, z, levels=mylevels, add = TRUE)
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
 
 
 ```
@@ -658,7 +731,7 @@ select sum(clumuha) from "05_dndc_clumu_cgsb_swg_n_loss";
 
 
 I create data frames for the figure:
-```{r data_dispr_benefits}
+```{r data_dispr_benefits, cache=TRUE}
 profit_cutoffs_11 <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
 swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
 profit_cutoff <- c(NA, rep(profit_cutoffs_11,3))
