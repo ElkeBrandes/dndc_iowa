@@ -5,11 +5,11 @@ author: "Elke Brandes"
 date: "Monday, November 28, 2016"
 output:
   word_document: default
-#  html_document: default
+
 bibliography: nutrient_bibliography.bib
 ---
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE, fig.width=4.5, fig.height=3)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 ```
 
@@ -34,15 +34,25 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE, fig.width=4.5,
 
 ### Water quality as the ecosystem service in focus
 
+- nitrate, the form of N that is readily available to crops is also subject to leaching through the root zone and drainage tiles into surface waters
+
 - non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico (cite)
 
-- @vanloocke2016din found that replacing maize currently grown for bioethanol with cellulosic biomass crops could reduce dissolved inorganic nitrogen (DIN) export to the Gulf of Mexico by 15 to 20%. They suggest that integration of perennial grasses targeted to areas of low row crop productivity and high leaching rates could further increase surface water quality.
+- over half of the nitrogen delivered to the Gulf of Mexico from the Mississippi River Basin originate from cropland cultivated with maize and soybeans [@alexander2008differences]
+
+- @schilling2000relationship showed a strong relationship between percent land area in row crop and nitrate-N concentration in watersheds in Iowa. Their study suggests a 0.1 mg l^-1^ reduction of nitrate N in the surface water with every percent reduction of row crop area in the above watershed
 
 - Nutrient reduction task force requires a 30% - 55% reduction in N leaching from cropland to reduce it (cite)
 
-- in Iowa: 41% (Iowa Nutrient Reduction Strategy)
+- in Iowa: 41% N reduction proposed by INRS (cite Iowa Nutrient Reduction Strategy)
 
-- Perennial biomass grasses have shown to reduce N leaching drastically compared to maize (cite)
+- Perennial biomass grasses have shown to reduce N leaching drastically compared to maize (cite - switchgrass)
+
+- however, large uncertainties exist about the extent and strategic location of perennials in the agricultural landscape that would be effective to reach such goal
+
+- @vanloocke2016din found that replacing maize currently grown for bioethanol with cellulosic biomass crops in the Atchafalaya and Mississippi River Basin could reduce dissolved inorganic nitrogen (DIN) export to the Gulf of Mexico by 15 to 20%. They suggest that integration of perennial grasses targeted to areas of low row crop productivity and high leaching rates could further increase surface water quality.
+
+- not only environmental considerations play a role in strategic placement of perennial crops, but also economic constraints. Areas of high environmental risk are assumed to overlap with areas of high economic risk - targeting those areas may provide opportunities to combine financial risk mitigation with conservation management.
 
 - therefore we argue that targeted replacement of row crops with the highly productive and locally adapted switchgrass variety "Liberty" could contribute to a reduction of N loss in Iowa
 
@@ -61,11 +71,12 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE, fig.width=4.5,
 
 - model nitrogen mass balance in the agroecosystem with DNDC
 - data used:
-- assumptions:
+- assumptions: management, crop parameters...
 - scenarios: status quo, switchgrass with three yield assumptions
 - model description and evaluation?
-
-- identify thresholds to select subfield areas suitable for switchgrass integration: profit of < -150 US$/ha, DIN loss of > 60 kg N/ha
+- management decisions: switchgrass integration on a sliding threshold scale of profitability and N loss
+- selected an example scenario: profit of < -150 US$/ha, DIN loss of > 60 kg N/ha, swg yield: 10,000 kg/ha
+- at that conversion scale (approx. 10% of cropland converted to switchgrass), switchgrass yields have a very small effect on N loss reduction outcomes
 - calculate N loss changes per subfield area and aggregated to the county level
 
 ## Results
@@ -75,6 +86,8 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE, fig.width=4.5,
 - DIN leaching? (dissolved inorganic nitrogen) - includes NO~X~ and NH~3~ [@vanloocke2016din]
 
 - Mean profitability shows spatial heterogeneity accross Iowa, with highest total area losing > US$ 150 ha^-1^ in west central Iowa and highest relative area in the west central and south part of the state (Figure 1)
+
+- Surface plots and contour plots show the resulting area in switchgrass and consequent mean N loss reduction for Iowa, with varying combined thresholds of profitability and N loss(including cropland below a cut-off profitability and above a cut-off N loss) (Figure xx)
 
 - selected criteria for conversion to switchgrass: mean profitability < US$ -150 ha^-1^, N loss > 60 kg ha^-1^
 - *should I change the profit threshold? What is the rationale of chosing -150 US$ and 60 kg N ha^-1^?*
@@ -110,14 +123,14 @@ library("tmap")
 
 library(png) # to read png files
 library(grid) # to display png files
-
+library("plot3D") # for surface plot
 
 ```
 
 ```{r connect_dplyr}
 
 # with dplyr:
-pw <- "5QUXJHTbxj" # enter password here
+pw <- "xxxx" # enter password here
 
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
@@ -153,10 +166,76 @@ theme_b_border <- function (base_size = 12, base_family = "")
       size = 0.5), strip.background = element_rect(fill = "grey80", 
       colour = "grey50", size = 0.2))
 }
+
+# I am using a modified filled contour plot function for the figure that shows switchgrass area as a function of cut off values:
+filled.contour2 <-
+  function (x = seq(0, 1, length.out = nrow(z)),
+            y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE), 
+            ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE), 
+            levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
+            col = color.palette(length(levels) - 1), plot.title, plot.axes, 
+            key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
+            axes = TRUE, frame.plot = axes,mar, ...) 
+{
+  # modification by Ian Taylor of the filled.contour function
+  # to remove the key and facilitate overplotting with contour()
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq.int(0, 1, length.out = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+    stop("increasing 'x' and 'y' values expected")
+  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
+  on.exit(par(par.orig))
+  w <- (3 + mar.orig[2]) * par("csi") * 2.54
+  par(las = las)
+  mar <- mar.orig
+  plot.new()
+  par(mar=mar)
+  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
+    stop("no proper 'z' matrix specified")
+  if (!is.double(z)) 
+    storage.mode(z) <- "double"
+  # modified from the original code: changed from .Internal(filledcontour(...)) to:
+  .filled.contour(as.double(x), as.double(y), z, as.double(levels), 
+                          col = col)
+  if (missing(plot.axes)) {
+    if (axes) {
+      title(main = "", xlab = "", ylab = "")
+      Axis(x, side = 1)
+      Axis(y, side = 2)
+    }
+  }
+  else plot.axes
+  if (frame.plot) 
+    box()
+  if (missing(plot.title)) 
+    title(...)
+  else plot.title
+  invisible()
+}
+
 ```
 
+
+
 ```{r profit_spatial, cache=TRUE, include= FALSE}
-counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+counties <- readOGR(dsn="shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
 profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
@@ -166,7 +245,6 @@ profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
    profit_county$fips[i] <- sub("IA", "19", profit_county$fips[i])
     }
 
-# profit_county$fips <- as.factor(profit_county$fips)
 counties@data <- left_join(counties@data, profit_county, by = "fips")
 counties_df <- fortify(counties)
 counties$id <- row.names(counties) 
@@ -191,7 +269,8 @@ ditch_the_axes <- theme(
   axis.title = element_blank()
   )
 ```
-```{r figure_profit, fig.height=4, fig.width=8,  fig.cap="Figure 1: Areas below a mean 2012-2015 profitability of US$ -150 ha^-1^ per county. Purple shades indicate the relative area, orange circles show the absolute size of the area per county."}
+
+```{r figure_profit, fig.height=3.5, fig.width=8,  fig.cap="Figure 1: Areas below a mean 2012-2015 profitability of US$ -150 ha^-1^ per county. Purple shades indicate the relative area, orange circles show the absolute size of the area per county."}
 ggplot() +
   geom_polygon(data = counties_profit_df, aes(long, lat, group = group, fill=area_in_swg_perc), color = "white") +
   geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "orange") +
@@ -202,46 +281,95 @@ ggplot() +
   scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") 
 ```
 
+```{r swg_areas_two_thresholds, cache=TRUE}
+# In this chunk, the areas in switchgrass are calculated for all possible combinations of 
+# profitability and N loss cut offs.
 
+# swg_areas <- vector(mode="numeric", length=0)
+profit_cutoffs_16 <- c(-800, -700, -600, -500, -400, -300, -200, -100, 0, 100, 200, 300, 400, 500, 600, 700)
+n_loss_cutoffs_16 <- c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
 
-```{r swg_areas, cache=TRUE}
-swg_areas <- vector(mode="numeric", length=0)
-profit_cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
- for (i in 1:length(profit_cutoffs)) {
-    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
+# make a cartesian product of the two vectors first:
+# function (from https://www.r-bloggers.com/nested-loops-with-mapply/)
+CartProduct = function(vector_1, vector_2)
+{
+ 
+  if (length(dim(vector_2)) != 0 )
+  {
+    warning("New vector has more than one dimension.")
+    return (NULL)
+  }
+ 
+  if (length(dim(vector_1)) == 0)
+  {
+    CurrentRows = length(vector_1)
+    vector_1 = as.matrix(vector_1, nrow = CurrentRows, ncol = 1)
+  } else {
+    CurrentRows = nrow(vector_1)
+  }
+ 
+  var1 = replicate(length(vector_2), vector_1, simplify=F)
+  var1 = do.call("rbind", var1)
+ 
+  var2 = rep(vector_2, CurrentRows)
+  var2 = matrix(var2[order(var2)], nrow = length(var2), ncol = 1)
+ 
+  CartProduct = cbind(var1, var2)
+  return (CartProduct)
+}
+
+comb <- CartProduct(profit_cutoffs_16, n_loss_cutoffs_16)
+
+# write a function that uses each of the combinations, using the matrix returned from the function CartProduct:
+area_select <- function(cutoff_1, cutoff_2)
+{ query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_n_loss_ha_cgsb > ", as.character(cutoff_2))
     sum_area <- tbl(isuag_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
-    swg_areas <- append(swg_areas, sum_area) 
-  }
-```
-```{r no3_leaching_sums, cache=TRUE}
-sum_n_loss <- tbl(isuag_db, "08_dndc_n_loss_sums_iowa_dispr_benefits") %>%
-  as.data.frame() %>%
-  gather(corn_soybeans, swg_7500_1, swg_7500_2, swg_7500_3, swg_7500_4, swg_7500_5, swg_7500_6, swg_7500_7, swg_7500_8, swg_7500_9, swg_7500_10, swg_7500_11, swg_10000_1, swg_10000_2, swg_10000_3, swg_10000_4, swg_10000_5, swg_10000_6, swg_10000_7, swg_10000_8, swg_10000_9, swg_10000_10, swg_10000_11, swg_12500_1, swg_12500_2, swg_12500_3, swg_12500_4, swg_12500_5, swg_12500_6, swg_12500_7, swg_12500_8, swg_12500_9, swg_12500_10, swg_12500_11, key = swg_scenarios, value=ave_n_loss)
-```
-```{r data_dispr_benefits}
-swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
-profit_cutoff <- c(NA, rep(profit_cutoffs,3))
-swg_area <- c(0,rep(swg_areas,3))
-swg_area_percent <- (swg_area/9374363)*100
-N_loss <- sum_n_loss[,2]
-N_reduction <- abs((N_loss - N_loss[1])/N_loss[1])*100
+    return(sum_area)
+}
 
-relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
-```
-```{r thresholds, warning=FALSE, fig.show="hold", fig.height= 3, fig.width=4.5, fig.cap="Figure 2: Relation between profitability threshold and the resulting area in switchgrass. The N loss threshold is kept constant at 60 kg ha^-1^."}
-ggplot() +
-  geom_point(data = relation, aes(x = profit_cutoff, y = swg_area_percent)) +
-  theme_b_border() +
-  labs(x=expression(Profitability~threshold~("US$"~ha^{-1})),
-       y=expression(Area~"in"~switchgrass~("%"))) +
-  scale_x_continuous(breaks=seq(from=-500, to=200, by= 100)) +
-  scale_y_continuous(limits= c(0,65)) +
-    geom_vline(aes(xintercept= -150, linetype= "dotted", color = "red"),  show.legend = FALSE)
+# apply the function to each value in the matrix
+swg_areas <- mapply(area_select, comb[,1], comb[,2])
+
+
+# combine the cut off values with the area in switchgrass in a data frame
+swg_areas <- data.frame(profit = comb[,1],
+                        n_loss = comb[,2],
+                        swg_areas)
+
 ```
 
-```{r counties_attributes}
+```{r area_surfaceplot, fig.height=6, fig.width=8,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
+
+x <- profit_cutoffs_16
+y <- n_loss_cutoffs_16
+
+# create a matrix out of the z values (in Mha):
+swg_matrix <- matrix(swg_areas[,3] * 1e-6
+, nrow=16, ncol=16)
+#calculate % of total cropland (9374363 ha)
+swg_matrix_perc <- (swg_matrix/9.374363)*100
+z <- swg_matrix_perc
+persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Switchgrass\narea (%)", 
+        lighting = list(alpha = 1),
+        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Swg area (%)",
+ticktype = "detailed"
+        )
+```
+
+```{r area_contourplot, fig.height=5, fig.width=6, fig.cap="Figure 3: Surface plot (vertical projection of Figure 2) showing the resulting areas converted to switchgrass (in % of row cropland) with varying combinations of N loss and profitability threshold values. Lines with numbers 10-70 show the threshold combinations with similar areas converted to switchgrass. The grey dashed lines show an example how to read the plot: If cropland losing > 60 kg N ha^-1^ and losing > US$ 150 ha^-1^ was considered for conversion to switchgrass, approx. 10% of cropland currently in rowcrop would be in switchgrass."}
+mylevels <- c(seq(0,70,10),100)
+filled.contour2(x, y, z, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})))
+contour(x, y, z, levels=mylevels, add = TRUE)
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+
+```
+
+```{r counties_attributes, cache=TRUE}
  counties_n_loss = tbl(isuag_db, "07_n_loss_counties") %>%
    as.data.frame()
  # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
@@ -252,36 +380,24 @@ ggplot() +
   counties_n_loss$fips <- as.factor(counties_n_loss$fips)
 ```
 
-```{r counties_spatial, cache=TRUE, include=FALSE}
-
-counties <- readOGR(dsn="Z:/ElkeBrandes/projects/01 subfield profit/data analysis/02 GIS/government_units/iowa_cnty/IA_cnty/county.shp",layer="county")
+```{r counties_spatial, cache=TRUE, include=FALSE, cache=TRUE}
+counties <- readOGR(dsn="shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
 
 # join the attribute data with the spatial data, using a left join and the identifier "fips":
 counties@data <- left_join(counties@data, counties_n_loss, by = "fips")
 counties_df <- fortify(counties)
 counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), starting with 0.
-
 ```
 
-```{r plot_baseline_map, warning=FALSE, message=FALSE} 
-
-# create a theme without axes:
-ditch_the_axes <- theme(
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank()
-  )
-
+```{r counties_centroids, warning=FALSE, message=FALSE, cache=TRUE} 
 # add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
 centroids <- getSpPPolygonsLabptSlots(counties) %>%
   as.data.frame() 
 centroids$id <- as.character(0:98)
 ```
-```{r data_n_loss_maps}
+
+```{r data_n_loss_maps, cache=TRUE}
 # set up the data frame 
 counties_swg <- data.frame(id = rep(counties$id,3),
                          scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
@@ -298,7 +414,7 @@ counties_swg_df <- left_join(counties_df, counties_swg) %>%
   left_join(centroids)
 ```
 
-```{r total_leaching}
+```{r table_n_loss_reduction, cache=TRUE}
 n_loss_tot <-tbl(isuag_db, "05_dndc_n_loss_sums_iowa_scenarios")  %>%
   as.data.frame()
 n_loss_tot <-   data.frame(value = "total N loss", 
@@ -314,11 +430,11 @@ names(n_loss_red) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
 n_loss_table <- rbind(n_loss_tot[1,],n_loss_red[1,])
 
-kable(n_loss_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
+kable(n_loss_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) and N loss reduction (%) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
 
 ```
 
-```{r plot_n_loss_map, fig.cap = "Figure 3: County mean annual N loss (green shades) and county mean total annual N loss (yellow circles), averaged over 2012-2015 for the status quo cropland. "}
+```{r plot_n_loss_map, fig.width=4.5, fig.height=3, fig.cap = "Figure 4: County mean annual N loss (green shades) and county mean total annual N loss (yellow circles), averaged over 2012-2015 for the status quo cropland. "}
 
 counties_swg_med_df <- filter(counties_swg_df, scenario == "swg_10000")
 
@@ -333,7 +449,7 @@ ggplot(counties_swg_med_df) +
   ditch_the_axes 
 ```
 
-```{r plot_n_loss_reduction_map, fig.cap= "Figure 4: Relative reduction in total N loss per county in the medium yield switchgrass integration scenario, as compared to the status quo in Figure 3."}
+```{r plot_n_loss_reduction_map, fig.width=4.5, fig.height=3, fig.cap= "Figure 5: Relative reduction in total N loss per county when switchgrass is grown on areas that loose > US$ 150 ha^-1^ and > 60 kg N ha^-1^ under medium  switchgrass yield assumption, as compared to the status quo in Figure 4."}
 ggplot(counties_swg_med_df) +
   geom_polygon(aes(long, lat, group = group, fill=loss_red), color = "white") +
   scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
@@ -343,19 +459,28 @@ ggplot(counties_swg_med_df) +
 ```
 
 
-```{r subfield_n_red_iowa_zoom, fig.cap="Figure 5: Subfield-scale relative N loss reduction when switchgrass is grown on areas that lose > US$ 150 ha^-1^ and > 60 kg N ha^-1^. (a) The impaired North Racoon River Watershed spanning across Buena Vista, Pocahontas, Sac, and Calhoun County,   "}
+```{r subfield_n_red_iowa_zoom, fig.height=5, fig.width=5, fig.cap="Figure 6: Subfield-scale relative N loss reduction when switchgrass is grown on areas that loose > US$ 150 ha^-1^ and > 60 kg N ha^-1^. (a) The impaired North Racoon River Watershed spanning across Buena Vista, Pocahontas, Sac, and Calhoun County,   "}
 
-include_graphics("Z:/ElkeBrandes/projects/02 nutrient reduction/results/N_leaching_subfield_NR_Watershed.tif")
+include_graphics("imported_images/N_leaching_subfield_NR_Watershed.tif", dpi = 300)
 ```
 
 ## Discussion
 
 - our results do not take into account denitrification in surface waters, so the sum is not equal to the DIN export to the Gulf of Mexico
 
+- compare with North Racoon River watershed data in @schilling2000relationship
+
+- can I compare our results with N yields of watersheds, such as reported by @alexander2008differences? What is the total flux per state in table S4 (no unit, seems to be % of total flux into the Gulf, so how much is that???)
+
+- integration of switchgrass on 10% of cropland would have a stronger effect on N loss reduction compared to other conservation practices, such as crop rotation or conservation tillage [@wu2004decisions]
+
+- outlook: @qiu2015landscape showed that landscape composition is affecting water quality related ecosystem services to varying extent. Due to the large spatial area covered, our underlying data includes a realistic but approximated reflection of reality. However, applied to smaller management units and fed with more accurate data, our spatial results could be used as indicators to identify nonlinear (disproportionate) responses of N loss reduction to conversion of land to perennial grasses.
+(--> find "sweet spots" where large improvements can be obtained by conversion of small land areas)
+
 
 ## Supplementary Information
 
-```{r profit_distribution, fig.cap="Figure S1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$ ha^-1^ cut off value used for the switchgrass integration below."}
+```{r profit_distribution, fig.width=4.5, fig.height=3, fig.cap="Figure S1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$ ha^-1^ cut off value used for the switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
@@ -373,9 +498,7 @@ ggplot(profit, aes(profit_mean_ha_rounded, weight = sum_ha)) +
 ```{sql, connection=con, cache=TRUE, include=FALSE}
 SELECT setseed(0.5)
 ```
-```{sql, connection=con, cache=TRUE}
-DROP TABLE IF EXISTS "r_dndc_clumu_cgsb_swg_n_loss_sample";
-```
+
 ```{sql, connection=con, cache=TRUE}
 CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
 ```
@@ -384,7 +507,7 @@ sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
   as.data.frame(sample)
 ```
 
-```{r scatterplot_n_loss, fig.cap="Figure S2: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
+```{r scatterplot_n_loss, fig.width=4.5, fig.height=3, fig.cap="Figure S2: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha = .2, stroke=0) +
   theme_b_border() +
@@ -436,7 +559,37 @@ ggplot(leach, aes(leaching, weight = area)) +
   facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
 ```
 
-```{r relations, cache=TRUE,  fig.cap="Figure S4: N loss reduction as a function of area in switchgrass (a) and of the profitability threshold (b)."}
+```{r swg_areas, cache=TRUE}
+swg_areas <- vector(mode="numeric", length=0)
+profit_cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
+ for (i in 1:length(profit_cutoffs)) {
+    query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
+    sum_area <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_area <- sum_area[1,1]
+    swg_areas <- append(swg_areas, sum_area) 
+  }
+```
+
+```{r no3_leaching_sums, cache=TRUE}
+sum_n_loss <- tbl(isuag_db, "08_dndc_n_loss_sums_iowa_dispr_benefits") %>%
+  as.data.frame() %>%
+  gather(corn_soybeans, swg_7500_1, swg_7500_2, swg_7500_3, swg_7500_4, swg_7500_5, swg_7500_6, swg_7500_7, swg_7500_8, swg_7500_9, swg_7500_10, swg_7500_11, swg_10000_1, swg_10000_2, swg_10000_3, swg_10000_4, swg_10000_5, swg_10000_6, swg_10000_7, swg_10000_8, swg_10000_9, swg_10000_10, swg_10000_11, swg_12500_1, swg_12500_2, swg_12500_3, swg_12500_4, swg_12500_5, swg_12500_6, swg_12500_7, swg_12500_8, swg_12500_9, swg_12500_10, swg_12500_11, key = swg_scenarios, value=ave_n_loss)
+```
+
+```{r data_dispr_benefits}
+swg_yield <- as.factor(c("NA",rep("7500",11), rep("10000",11),rep("12500",11)))
+profit_cutoff <- c(NA, rep(profit_cutoffs,3))
+swg_area <- c(0,rep(swg_areas,3))
+swg_area_percent <- (swg_area/9374363)*100
+N_loss <- sum_n_loss[,2]
+N_reduction <- abs((N_loss - N_loss[1])/N_loss[1])*100
+
+relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, N_reduction)
+```
+
+
+```{r relations, cache=TRUE, fig.width=4.5, fig.height=3,  fig.cap="Figure S4: N loss reduction as a function of area in switchgrass (a) and of the profitability threshold (b)."}
 
 ggplot() +
   geom_point(data = relation, aes(x = swg_area_percent, y = N_reduction, color=swg_yield)) +
