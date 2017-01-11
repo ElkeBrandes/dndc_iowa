@@ -78,7 +78,7 @@ with arcpy.da.SearchCursor(feature_class, (area_field, n_loss_field)) as cursor:
         total_area += row[0]
         if row[1] < 0: # filtering for negative values indicating N loss reduction
             swg_area += row[0]
-swg_perc = swg_area / total_area
+swg_perc = round((swg_area / total_area)*100, 2)
 print("Area in switchgrass is " + str(swg_perc) + " %.")
        
 
