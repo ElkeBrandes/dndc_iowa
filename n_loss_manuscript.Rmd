@@ -15,38 +15,42 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 ## Abstract
 
+### Highlights
+
 - modelling the leachable N fraction for the state of Iowa in a bottom up approach
 - using high-resolution spatial data to test ecosystem service outcomes of a socio-economic approach of perennial biomass crop integration
 
 ## Introduction
 
-- pooled under the term precision conservation, efforts have been made recently to develop agricultural landscape designs that meet agricultural needs while optimizing the reduction of environmental risk by targeted placement of conservation management practices [@mcconnell2011precision]
+### Harnessing economic interests for switchgrass integration
+
+- pooled under the term precision conservation, efforts have been made recently to develop landscape designs that meet agricultural needs while optimizing environmental risk mitigation by targeted placement of conservation management practices [@mcconnell2011precision]
 
 - this approach can potentially be adapted to target perennial crops for sustainable cellulosic bioenergy production [@chaubey2016precision]
 
-- due to their multiple benefits on water and soil quality, perennial biomass crops have been proven suitable for conservation purposes while providing feedstock for a growing bioeconomy
+- due to their multiple benefits on water and soil quality, perennial biomass crops have been considered suitable for conservation purposes while providing feedstock for a growing bioeconomy [@tilman2009beneficial; @langholtz2016billion]
 
-- in practice, socio-economic barriers prevent the implementation of urgently needed conservation management
+- in practice, socio-economic barriers prevent the implementation of urgently needed conservation management [@james2010profitability]
 
 - thus, a trade off exists between economic and environmental desires and needs to be addressed when assessing the feasibility of sustainable bioenergy feedstock production
 
-- therefore, in this ananysis, we are targeting crop land that is least socially desirable to be in row crops
+- however, there are indications of synergies between economic and environmental risk mitigation: within a single corn field, @ssegane2015multifunctional showed that areas of low crop yield coincided with high NO~3~^-^ leaching due to low soil fertility related to high water infiltration.
 
-### Water quality as the ecosystem service in focus
+### Water quality as the ecosystem service of interest
 
-- nitrate, the form of N that is readily available to crops is also subject to leaching through the root zone and drainage tiles into surface waters
+- nitrate, the nitrogen species that is readily available to crops, is also subject to leaching through the root zone and drainage tiles into surface waters
 
-- non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico (cite)
+- non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico [@turner2003linking]
 
 - over half of the nitrogen delivered to the Gulf of Mexico from the Mississippi River Basin originate from cropland cultivated with maize and soybeans [@alexander2008differences]
 
 - @schilling2000relationship showed a strong relationship between percent land area in row crop and nitrate-N concentration in watersheds in Iowa. Their study suggests a 0.1 mg l^-1^ reduction of nitrate N in the surface water with every percent reduction of row crop area in the above watershed
 
-- Nutrient reduction task force requires a 30% - 55% reduction in N leaching from cropland to reduce it (cite)
+- as a quantitative goal to mitigate these water quality issues, the Nutrient reduction task force stipulated that a 30% reduction in the nitrogen load is needed to shrink the hypoxic zone to under 5000 km^2^ [@river2001action]
 
 - in Iowa: 41% N reduction proposed by INRS (cite Iowa Nutrient Reduction Strategy)
 
-- Perennial biomass grasses have shown to reduce N leaching drastically compared to maize (cite - switchgrass)
+- Perennial crops have shown to reduce N leaching drastically compared to maize [@smith2013reduced; @randall1997nitrate] (alfalfa and CRP))
 
 - however, large uncertainties exist about the extent and strategic location of perennials in the agricultural landscape that would be effective to reach such goal
 
@@ -56,9 +60,26 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 - therefore we argue that targeted replacement of row crops with the highly productive and locally adapted switchgrass variety "Liberty" could contribute to a reduction of N loss in Iowa
 
-### Goal of this study:
+- as an example for an impaired watershed, the North Racoon River Watershed, where counties are sued by the Des Moines Water Works for not complying with water quality regulations (CITE), is in focus in this paper to shed light on potential mitigation effords and their effectiveness 
 
-1. Quantify the extent of DIN (dissolved inorganic nitrogen) reduction by managing cropland areas that are at highest economic and environmental risk in switchgrass
+### Nitrogen mass balance
+
+- state wide nutrient budget analyses showed a balance between N inputs and outputs, but strong effects of crop type (continuous maize or maize-soybean rotation) and fertilization rate exist [@libra2004nitrogen].
+
+- as part of a nutrient budget for Iowa, NO~3~^-^ was estimated from fertilizer inputs [@christianson2012nitrogen]. There approach did not take into account weather and soil related variability.
+
+- in order to estimate the potential of DIN loss reduction by switchgrass integration in a spatial resolution relevant for decision makers, we apply a mechanistic model that accounts for weather and soil condition dependent processes of the nitrogen cycle.
+
+### Goals of this study:
+
+- here, we are presenting a novel approach to precision conservation and perennial integration: Placing switchgrass (a high yielding variety of a native grass showcasing favourable ecologic and economic properties) on crop land that is least socially desirable to grow row crops, simulating different opimization scenarios:
+    + minimum (tweak) scenario: mitigating profit and DIN loss
+    + achieving a biomass production threshold from dedicated bioenergy crops *(how much? Using figure 3 to identify possible threshold combinations)*
+    + *anything else?*
+
+Goals: 
+
+1. Quantify the extent of DIN (dissolved inorganic nitrogen) loss reduction by managing cropland areas that are at highest economic and environmental risk in switchgrass
 2. Identifying areas in Iowa with highest potential for swtichgrass integration that is compatible with socio-economic constraints
 3. Exploring one of many opportunities to improve management of subfield areas that are not profitable with high-input row crop management
 
@@ -68,41 +89,60 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 - updated to the time frame 2012-2015 (four years)
 - only including fields that were in maize and/or soybean in all four years
 - using publicly available data to calculate profitability
-
 - model nitrogen mass balance in the agroecosystem with DNDC
-- data used:
-- assumptions: management, crop parameters...
-- scenarios: status quo, switchgrass with three yield assumptions
-- model description and evaluation?
+
+### DNDC model description
+
+- process-based biogeochemistry model for agricultural systems
+- structured into 6 submodels
+- temporal resolution: day
+- data used: *to be completed with information from Gabe*
+    + climate data
+    + soil data
+    + land use and management
+    + crop parameters
+    + model was not calibrated for NH~3~ and NO~3~^-^: Relative changes with switchgrass integration were calculated, rather than absolute DIN loss values *should I show total values for Iowa at all?*
+- *describe relevant model processes*
+- scenarios: status quo (continuous maize or maize-soybean rotation), switchgrass with three yield assumptions (high, medium, low)
+- model evaluation?
+
+- focus on model outputs for dissolved inorganic nitrogen (DIN)
+- to avoid artefacts resulting from the model mechanisms, we do not distinguish between N leaving the soil in the form of NO~3~^-^ leaching and NH~3~^+^ volatilitzation, by making the following assumptions/simplifications:
+    + N is properly applied in form of anhydrous ammonia or N solution (the most commonly used forms of N fertilizer by Iowa farmers [@ifrlp2014]
+    + the present study is not taking into account manure application
+    + volatilization can be neglected if assuming proper N fertilizer application and not taking into account manure application [@jaynes2008sustaining]
+    + *alternatively: assuming 1.9% of N applied as fertilizer is lost by Nh~3~ volatilization (average of reported rates in studies reviewed by @christianson2012nitrogen) and deduct these rates from the sum of modelled NO~3~^-^ leaching and NH~3~^+^ volatilization*
+
 - management decisions: switchgrass integration on a sliding threshold scale of profitability and N loss
-- selected an example scenario: profit of < -150 US$/ha, DIN loss of > 60 kg N/ha, swg yield: 10,000 kg/ha
+- one example scenario selected: profit of < -150 US$/ha, DIN loss of > 60 kg N/ha, swg yield: 10,000 kg/ha
 - at that conversion scale (approx. 10% of cropland converted to switchgrass), switchgrass yields have a very small effect on N loss reduction outcomes
-- calculate N loss changes per subfield area and aggregated to the county level
+- calculate N loss changes per subfield area and aggregated to the county level / selected watershed of public interest
+- *other scenarions? (see comments above)*
 
 ## Results
 
 - *what weather data is used for the DNDC simulations? Should we show weather data and the annual response in N loss?*
-- *Total N loss: Sum of NO~3~^-^ leaching and NH~3~^+^ volatilitzation - term/definition?*
-- DIN leaching? (dissolved inorganic nitrogen) - includes NO~X~ and NH~3~ [@vanloocke2016din]
 
 - Mean profitability shows spatial heterogeneity accross Iowa, with highest total area losing > US$ 150 ha^-1^ in west central Iowa and highest relative area in the west central and south part of the state (Figure 1)
 
-- Surface plots and contour plots show the resulting area in switchgrass and consequent mean N loss reduction for Iowa, with varying combined thresholds of profitability and N loss(including cropland below a cut-off profitability and above a cut-off N loss) (Figure xx)
+- Surface plots and contour plots show the resulting area in switchgrass for Iowa, with varying combined thresholds of profitability and N loss (including cropland below a cut-off profitability and above a cut-off N loss) (Figure 2, 3)
 
 - selected criteria for conversion to switchgrass: mean profitability < US$ -150 ha^-1^, N loss > 60 kg ha^-1^
-- *should I change the profit threshold? What is the rationale of chosing -150 US$ and 60 kg N ha^-1^?*
+- *this could be presented as the minimum or "tweak" scenario. I could add other scenarios, e.g. that aim at a biomass number*
 
-- at a threshold of US$ -150 ha^-1^, 10 % of current row cropland would be converted to switchgrass, at a threshold of US\$ 0 ha^-1^ it would be 23 % (Figure 2)
+- at a threshold of US\$ -150 ha^-1^ profitability and 60 kg ha^-1^ N loss, approx. 10 % of current row cropland would be converted to switchgrass, a shift of the profitability threshold to US\$ 0 ha^-1^ would result in 23 % (Figure 3)
 
-- State-wide mean annual N loss (status quo, 2012-2015) amounted to 0.57 million metric tonnes. On the state-wide average, converting all areas with profitability below US$ -150 ha^-1^ and with N losses of > 60 kg ha^-1^ to switchgrass would result in a 13.5, 14.3, and 14.7 % reduction of N loss for the low, medium, and high yielding scenario (Table 1)
+- State-wide mean annual N loss (status quo, 2012-2015) amounted to 0.57 million metric tonnes. On the state-wide average, converting all areas with profitability below US$ -150 ha^-1^ and with N losses of > 60 kg ha^-1^ to switchgrass would result in a 13.5, 14.3, and 14.7 % reduction of N loss for the low, medium, and high yielding scenario (Table 1) *should I show absolute numbers at all?*
 
-- the spatial pattern of N loss in Iowa shows highest N losses in the counties on the Des Moines Lobe and in the north east of the state (Figure 3)
+- the spatial pattern of N loss in Iowa shows highest N losses in the counties on the Des Moines Lobe and in the north east of the state (Figure 4)
 
-- according to the model presented here, highest N loss reduction with the switchgrass integration scenario can be achieved in the western counties along the Missouri and some of the central and eastern counties (Figure 4). The counties of highest N losses in the status quo don't line up with those of highest reduction potential.
+- according to the model presented here, highest N loss reduction with the switchgrass integration scenario can be achieved in the western counties along the Missouri and some of the central and eastern counties (Figure 5). The counties of highest N losses in the status quo don't line up with those of highest reduction potential.
 
-- the subfield resolution map of N loss reduction (Figure 5) illustrates the spatial heterogeneity of the environmental outcomes of the biomass crop integration. Strong "county effects" seem to drive the highest reduction values. Some counties with very high conversion areas (Figure 1) and therefore high potential N loss reduction (Figure 4, 5), e.g., Monona, Carroll, and Hamilton County, both show a low yield/cash rent ratio (data not shown).
+- the subfield resolution map of N loss reduction (Figure 6) illustrates the spatial heterogeneity of the environmental outcomes of the biomass crop integration. 
 
-- zooming in on select counties: Pattern of switchgrass fields vary, some regions, whole fields are converted, in other, subfield areas are patchy and more fragmented (Figure 6)
+- Strong "county effects" seem to drive the highest reduction values (Figure 6(c)). Some counties with very high conversion areas (Figure 1) and therefore high potential N loss reduction (Figure 4, 5), e.g., Monona, Carroll, and Hamilton County, both show a low yield/cash rent ratio (data not shown).
+
+- zooming in on a select impaired watershed in Iowa: Pattern of switchgrass fields vary, some regions, whole fields are converted, in other, subfield areas are patchy and more fragmented (Figure 6(a),(b)). In the North Racoon River Watershed, an areas of high row crop percentage, the conversion scenario (converting cropland that loses > US$ 150 and > 60 kg N ha^-1^ to switchgrass) would result in 11.2 % of row crops converted to switchgrass and an N loss reduction of 8 %. Most subfield areas converted to switchgrass display N loss reduction of over 50%, but the relative small conversion area (due to relative high profitability in this watershed) produces a low mean N loss reduction.
 
 
 ```{r packages}
@@ -466,17 +506,28 @@ include_graphics("imported_images/N_leaching_subfield_NR_Watershed.tif", dpi = 3
 
 ## Discussion
 
-- our results do not take into account denitrification in surface waters, so the sum is not equal to the DIN export to the Gulf of Mexico
+- we assume that leached nitrate is exported from the fields by tile drainage *(compare with tile drainage nitrate concentrations of Gabe's modelled plots?)*
 
-- compare with North Racoon River watershed data in @schilling2000relationship
+- atmospheric deposition of N is not considered by the model (? - check), but it is factored out when calculating N loss changes
 
-- can I compare our results with N yields of watersheds, such as reported by @alexander2008differences? What is the total flux per state in table S4 (no unit, seems to be % of total flux into the Gulf, so how much is that???)
+- our results do not take into account denitrification in surface waters, so the sum is not equal to the DIN export to the Gulf of Mexico [@alexander2008differences]
+
+- however, by estimating DIN loss on a field basis, we are accounting for the amount of dissolved inorganic nitrogen that is lost for the farmer
+
+- *compare with North Racoon River watershed data in @schilling2000relationship: They showed N loads at the outlet of the watershed*
+
+- *can I compare our results with N yields of watersheds, such as reported by @alexander2008differences? What is the total flux per state in table S4 (no unit, seems to be % of total flux into the Gulf, so how much is that???)*
 
 - integration of switchgrass on 10% of cropland would have a stronger effect on N loss reduction compared to other conservation practices, such as crop rotation or conservation tillage [@wu2004decisions]
 
-- outlook: @qiu2015landscape showed that landscape composition is affecting water quality related ecosystem services to varying extent. Due to the large spatial area covered, our underlying data includes a realistic but approximated reflection of reality. However, applied to smaller management units and fed with more accurate data, our spatial results could be used as indicators to identify nonlinear (disproportionate) responses of N loss reduction to conversion of land to perennial grasses.
+- the variability accross the state comes from the variability in candidate areas for conversion, and from the effective N loss reduction of each of these areas
+
+- outlook: @qiu2015landscape showed that landscape composition is affecting water quality related ecosystem services to varying extent. Due to the large spatial area covered, our underlying data includes a realistic but approximated reflection of reality. However, applied to smaller management units and fed with more detailed and accurate data, our spatial results could be used as indicators to identify nonlinear (disproportionate) responses of N loss reduction to conversion of land to perennial grasses.
 (--> find "sweet spots" where large improvements can be obtained by conversion of small land areas)
 
+## Conclusions
+
+- This study disaggregates previously published approaches of N balance estimated based on county data (e.g Libra et al 2004) down to a finer resolution and takes into account the biogeochemical processes driving DIN loss in agroecosystems
 
 ## Supplementary Information
 
