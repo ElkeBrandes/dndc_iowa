@@ -1,8 +1,7 @@
 ---
-title: Modelled N loss by NO~3~^-^ leaching and NH~3~ volatilization in Iowa from row
-  cropped and switchgrass fields
+title: Addressing farm economy, water quality, and bioenergy goals by sub-field integration of switchgrass on unprofitable cropland
 author: "Elke Brandes"
-date: "Monday, November 28, 2016"
+date: "Friday, January 20, 2017"
 output:
   word_document: default
 
@@ -15,9 +14,8 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 ## Abstract
 
-### Highlights
-
-- modelling the leachable N fraction for the state of Iowa in a bottom up approach
+- In a three way comparison we analyse the impact of cropland conversion to a dedicated biomass crop on nutrient loss improvement
+- We modelled the leachable N fraction for agriculatural lands in the state of Iowa
 - using high-resolution spatial data to test ecosystem service outcomes of a socio-economic approach of perennial biomass crop integration
 
 ## Introduction
@@ -165,6 +163,8 @@ library(png) # to read png files
 library(grid) # to display png files
 library("plot3D") # for surface plot
 
+library('matrixStats')
+
 ```
 
 ```{r connect_dplyr}
@@ -270,8 +270,103 @@ filled.contour2 <-
   invisible()
 }
 
+
+filled.contour3 <-
+  function (x = seq(0, 1, length.out = nrow(z)),
+            y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE), 
+            ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE), 
+            levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
+            col = color.palette(length(levels) - 1), plot.title, plot.axes, 
+            key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
+            axes = TRUE, frame.plot = axes,mar, ...) 
+{
+  # modification by Ian Taylor of the filled.contour function
+  # to remove the key and facilitate overplotting with contour()
+  # further modified by Carey McGilliard and Bridget Ferris
+  # to allow multiple plots on one page
+
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq.int(0, 1, length.out = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+    stop("increasing 'x' and 'y' values expected")
+ # mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
+ # on.exit(par(par.orig))
+ # w <- (3 + mar.orig[2]) * par("csi") * 2.54
+ # par(las = las)
+ # mar <- mar.orig
+ plot.new()
+ # par(mar=mar)
+  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
+    stop("no proper 'z' matrix specified")
+  if (!is.double(z)) 
+    storage.mode(z) <- "double"
+    # modified from the original code: changed from .Internal(filledcontour(...)) to:
+  .filled.contour(as.double(x), as.double(y), z, as.double(levels), 
+                          col = col)
+  if (missing(plot.axes)) {
+    if (axes) {
+      title(main = "", xlab = "", ylab = "")
+      Axis(x, side = 1)
+      Axis(y, side = 2)
+    }
+  }
+  else plot.axes
+  if (frame.plot) 
+    box()
+  if (missing(plot.title)) 
+    title(...)
+  else plot.title
+  invisible()
+}
 ```
 
+```{r multiplot_function}
+multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
+  require(grid)
+
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  if (is.null(layout)) {
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+  if (numPlots == 1) {
+    print(plots[[1]])
+
+  } else {
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    for (i in 1:numPlots) {
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
 
 
 ```{r profit_spatial, cache=TRUE, include= FALSE}
@@ -380,6 +475,40 @@ swg_areas <- data.frame(profit = comb[,1],
 
 ```
 
+```{r n_loss_function, cache=TRUE}
+
+# write a function that uses each of the cutt off combinations and calculates the total N loss in this scenario:
+n_loss_select <- function(cutoff_1, cutoff_2)
+{query <- paste("SELECT (sum((CASE WHEN mean_profit_ha <" , as.character(cutoff_1), " AND ave_n_loss_ha_cgsb > ",  as.character(cutoff_2), " THEN ave_n_loss_ha_swg_7500  ELSE ave_n_loss_ha_cgsb END) * clumuha)) / 1000 FROM \"05_dndc_clumu_cgsb_swg_n_loss\" ")
+    sum_N_loss <- tbl(isuag_db, sql(query)) %>%
+      as.data.frame()
+    sum_N_loss <- sum_N_loss[1,1]
+    return(sum_N_loss)
+}
+
+# this is the SQL query that selects for each polygon the value of cgsb or swg, depending on its cgsb N loss and profit value, and sums all values up 
+# to get a Iowa wide N loss value (absolute), that can then substracted from the baseline N loss.
+# (sum((CASE WHEN mean_profit_ha < -500 AND ave_n_loss_ha_cgsb > 60 THEN ave_n_loss_ha_swg_7500  ELSE ave_n_loss_ha_cgsb END) * clumuha)) / 1000 
+
+```
+```{r n_loss_two_thresholds, cache=TRUE}
+
+# apply the function to each value in the matrix
+tot_n_loss <- mapply(n_loss_select, comb[,1], comb[,2])
+
+# combine the cut off values with the area in switchgrass in a data frame
+swg_n_loss <- data.frame(profit = comb[,1],
+                        n_loss = comb[,2],
+                        tot_n_loss)
+
+
+```
+
+
+```{r}
+
+```
+
 ```{r area_surfaceplot, fig.height=6, fig.width=8,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
 
 x <- profit_cutoffs_16
@@ -389,23 +518,142 @@ y <- n_loss_cutoffs_16
 swg_matrix <- matrix(swg_areas[,3] * 1e-6
 , nrow=16, ncol=16)
 #calculate % of total cropland (9374363 ha)
-swg_matrix_perc <- (swg_matrix/9.374363)*100
+tot_area <- 9.374363
+swg_matrix_perc <- (swg_matrix/tot_area)*100
 z <- swg_matrix_perc
-persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+p1 <- persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
         border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Switchgrass\narea (%)", 
         lighting = list(alpha = 1),
         xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Swg area (%)",
 ticktype = "detailed"
         )
+#calculate total biomass for Iowa for each scenario (10,000 kg/ha) in million Mg
+swg_matrix_bm <- (swg_matrix * 10)
+z_bm <- swg_matrix_bm
+p2 <- persp3D(x, y, z_bm, colvar = z_bm, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Biomass\nproduction \n(million metric tons)", 
+        lighting = list(alpha = 1),
+        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Biomass (million tons)",
+ticktype = "detailed"
+        )
+
+# create matrix for z values from the data frame swg_n_loss (N loss in kg)
+swg_matrix_nl <- matrix(swg_n_loss[,3], nrow = 16, ncol = 16)
+#calculate N loss reduction compared to baseline
+cgsb_n_loss <- 571905
+swg_matrix_nlr <- (cgsb_n_loss - swg_matrix_nl) *100 / cgsb_n_loss
+z_nlr <- swg_matrix_nlr
+p3 <- persp3D(x, y, z_nlr, colvar = z_nlr, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+        border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "N loss \nreduction (%)", 
+        lighting = list(alpha = 1),
+        xlab = "Profit threshold", ylab = "N loss threshold", zlab = "N loss reduction (%)",
+ticktype = "detailed"
+        )
+
+multiplot(p1, p2, p3, cols = 2)
+
+
 ```
 
-```{r area_contourplot, fig.height=5, fig.width=6, fig.cap="Figure 3: Surface plot (vertical projection of Figure 2) showing the resulting areas converted to switchgrass (in % of row cropland) with varying combinations of N loss and profitability threshold values. Lines with numbers 10-70 show the threshold combinations with similar areas converted to switchgrass. The grey dashed lines show an example how to read the plot: If cropland losing > 60 kg N ha^-1^ and losing > US$ 150 ha^-1^ was considered for conversion to switchgrass, approx. 10% of cropland currently in rowcrop would be in switchgrass."}
+```{r area_contourplot, fig.show="hold", fig.height=8, fig.width=8, fig.cap="Figure 3: Surface plot (vertical projection of Figure 2) showing the resulting areas converted to switchgrass (in % of row cropland) with varying combinations of N loss and profitability threshold values. Lines with numbers 10-70 show the threshold combinations with similar areas converted to switchgrass. The grey dashed lines show an example how to read the plot: If cropland losing > 60 kg N ha^-1^ and losing > US$ 150 ha^-1^ was considered for conversion to switchgrass, approx. 10% of cropland currently in rowcrop would be in switchgrass."}
+
+# create data frame for facet plots
+
+
 mylevels <- c(seq(0,70,10),100)
-filled.contour2(x, y, z, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})))
-contour(x, y, z, levels=mylevels, add = TRUE)
+filled.contour2(x, y, z, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
 abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
+filled.contour2(x, y, z_bm, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z_bm, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+# mylevels2 <- c(seq(0,60,10),100)
+filled.contour2(x, y, z_nlr, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z_nlr, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+# multiple panel plot with the modified function filled.contour3()
+
+plot.new()
+
+#I am organizing where the plots appear on the page using the "plt" argument in "par()"
+
+# top left plot:
+par(new = "TRUE",              
+    plt = c(0.1,0.4,0.60,0.95),   # using plt instead of mfcol (compare
+                                  # coordinates in other plots)
+    las = 1,                      # orientation of axis labels
+    cex.axis = 1,                 # size of axis annotation
+    tck = 0.02 )                  # major tick size and direction, < 0 means outside
+
+mylevels <- c(seq(0,70,10),100)
+filled.contour3(x, y, z, 
+                col = brewer.pal(length(mylevels),"YlGn"), 
+                levels=mylevels, 
+                xlab="", 
+                ylab="",
+                xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+# An annotation inside first plot
+#The xpd=NA allows for writing outside the plot limits, but still using the the x and y axes to place the text
+par(xpd = NA)
+text(x=11,y=1.5,"x",cex = 1.5,font = 2)
+print("(a)")
+
+#Top right plot:
+par(new = "TRUE",
+    plt = c(0.5,0.8,0.60,0.95),  # defining window for second plot
+    las = 1,
+    cex.axis = 1)
+
+filled.contour3(x, y, z_bm, 
+                col = brewer.pal(length(mylevels),"YlGn"), 
+                levels=mylevels, 
+                xlab="", ylab="")
+contour(x, y, z_bm, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+par(xpd = NA)
+text(x=11,y=1.5,"x",cex = 1.5,font = 2)
+print("(b)")
+
+#Bottom left plot:
+par(new = "TRUE",
+    plt = c(0.1,0.4,0.15,0.5),
+    las = 1,
+    cex.axis = 1)
+
+filled.contour3(x, y, z_nlr, 
+                col = brewer.pal(length(mylevels),"YlGn"), 
+                levels=mylevels, 
+                xlab=expression(Profitability~threshold~("US$"~ha^{-1})), 
+                ylab=expression(N~loss~threshold~(kg~ha^{-1})), 
+                xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z_nlr, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+abline(h = 60, col = "dark gray", lty = 2)
+abline(v = -150, col = "dark gray", lty = 2)
+
+par(xpd = NA)
+text(x=11,y=1.5,"x",cex = 1.5,font = 2)
+print("(c)")
 
 ```
 
@@ -594,6 +842,24 @@ area <- vector(mode="numeric", length=0)
    area <- append(area, data_list[[i]][,2])
    
 leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show Mha
+
+# calculate weighted medians and means
+
+median_cgsb <- weightedMedian(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
+median_swg_low <- weightedMedian(swg_low[,1], w=swg_low[,2])
+median_swg_med <- weightedMedian(swg_med[,1], w=swg_med[,2])
+median_swg_hi <- weightedMedian(swg_hi[,1], w=swg_hi[,2])
+medians <- c(median_cgsb, median_swg_low, median_swg_med, median_swg_hi)
+medians_df <- data.frame(crop = levels(leach$scenario),
+                         median = medians)
+
+mean_cgsb <- weightedMean(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
+mean_swg_low <- weightedMean(swg_low[,1], w=swg_low[,2])
+mean_swg_med <- weightedMean(swg_med[,1], w=swg_med[,2])
+mean_swg_hi <- weightedMean(swg_hi[,1], w=swg_hi[,2])
+means <-c(mean_cgsb, mean_swg_low, mean_swg_med, mean_swg_hi)
+
+
 ```
 
 ```{r histograms, cache=TRUE, fig.height=4, fig.width=7, fig.cap="Figure S3: Distributions of N loss in Iowa. Values for switchgrass were averaged over the mananagement horizon of 10 years, including two establishment years."}
@@ -606,6 +872,7 @@ ggplot(leach, aes(leaching, weight = area)) +
        y=expression(Area~(Mha))) +
   scale_x_continuous() +
   scale_y_continuous() +
+  geom_vline(data = medians_df, aes(xintercept=median), color = "black") +
   theme(legend.position="bottom") +
   facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
 ```
