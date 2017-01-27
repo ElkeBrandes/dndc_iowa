@@ -1,5 +1,5 @@
 ---
-title: Addressing farm economy, water quality, and bioenergy goals by sub-field integration of switchgrass on unprofitable cropland
+title: Addressing farm economy, water quality, and bioenergy feedstock production by sub-field switchgrass integration on unprofitable cropland
 author: "Elke Brandes"
 date: "Friday, January 20, 2017"
 output:
@@ -14,8 +14,17 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 ## Abstract
 
+
+Progress on reducing nutrient leaching from Iowa cropland has been slow due to conflicts between short-term profitability and long-term land stewardship. Besides mitigating nitrate leaching from cropland, perennial biomass crops such as switchgrass improve short- and long-term farm level profitability and help meeting national bioenergy targets.
+
+To explore the potential of a socially compatible switchgrass integration into Iowa's agricultural landscape, we combined two subfield-scale data sets: (i) a profitability analysis and (ii) nitrate leaching rates estimated with the DeNitrification-DeComposition (DNDC) model. We based the management change decision from row crops to switchgrass on status-quo (2012-2015) profitability and N leaching rates, creating a matrix of possible threshold combinations. For each scenario resulting from these combinations we calculated state-wide % area in switchgrass, biomass production, and relative N leaching reduction.
+
+Switchgrass yields had a negligible effect on N leaching reduction within the range of reasonable conversion areas (<20% of cropland). Converting all subfield areas losing > US$ 150 ha^-1^ yr^1^ and leaching > 60 kg N ha^-1^ yr^-1^ to switchgrass ("tweak-scenario") would result in 14% N leaching reduction for Iowa. We found that the counties of highest status-quo N leaching don't line up with those of highest reduction potential. E.g., within the impaired Upper Racoon River Watershed, the tweak-scenario resulted in 11.2% of row cropland converted to switchgrass and an N leaching reduction of 8%. Most subfield areas converted to switchgrass displayed high N leaching reduction (> 50%), but the high productivity of most farmland in this watershed resulted in a relatively small conversion area and therefore a low mean N leaching reduction. 
+
+Our analysis disaggregates previous approaches of county- or watershed-scale N balance down to a finer resolution and takes into account the biogeochemical processes driving N loss in agroecosystems. Even though approximated, our analysis can be turned into a farm-level decision making tool to identify non-linear responses of N leaching reduction to perennial integration.
+
 - In a three way comparison we analyse the impact of cropland conversion to a dedicated biomass crop on nutrient loss improvement
-- We modelled the leachable N fraction for agriculatural lands in the state of Iowa
+- We modelled the leachable N fraction for agricultural lands in the state of Iowa
 - using high-resolution spatial data to test ecosystem service outcomes of a socio-economic approach of perennial biomass crop integration
 
 ## Introduction
@@ -48,6 +57,8 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 - in Iowa: 41% N reduction proposed by INRS (cite Iowa Nutrient Reduction Strategy)
 
+The Iowa Nutrient Reduction Strategy recommends a wide range of nitrogen reduction practices including perennial crops, but does not account for the spatial heterogeneity within Major Land Resource Areas.
+
 - Perennial crops have shown to reduce N leaching drastically compared to maize [@smith2013reduced; @randall1997nitrate] (alfalfa and CRP))
 
 - however, large uncertainties exist about the extent and strategic location of perennials in the agricultural landscape that would be effective to reach such goal
@@ -77,11 +88,14 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 Goals: 
 
-1. Quantify the extent of DIN (dissolved inorganic nitrogen) loss reduction by managing cropland areas that are at highest economic and environmental risk in switchgrass
-2. Identifying areas in Iowa with highest potential for swtichgrass integration that is compatible with socio-economic constraints
+1. Identifying areas in Iowa with highest potential for switchgrass integration that is compatible with socio-economic constraints
+2. Quantify the extent of DIN (dissolved inorganic nitrogen) loss reduction by managing cropland areas that are at highest economic and environmental risk in switchgrass
+
 3. Exploring one of many opportunities to improve management of subfield areas that are not profitable with high-input row crop management
 
 ## Methods
+
+Using publicly available data, we identified subfield cropland areas of low profitability. We estimated nitrate leaching with the processed-based DeNitrifiction-DeComposition model (DNDC) for a baseline (cropland in maize and soybean in 2012-2015) and three switchgrass scenarios of varying biomass yields. We tested the sensitivity of different model outcomes for Iowa (% area in switchgrass, total biomass production, and relative N leaching reduction) for the management change decision points for N leaching and profitability.
 
 - subfield profitability analysis as described in detail in Brandes et al 2016
 - updated to the time frame 2012-2015 (four years)
@@ -170,7 +184,7 @@ library('matrixStats')
 ```{r connect_dplyr}
 
 # with dplyr:
-pw <- "xxxx" # enter password here
+pw <- "xxx" # enter password here
 
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
@@ -208,68 +222,6 @@ theme_b_border <- function (base_size = 12, base_family = "")
 }
 
 # I am using a modified filled contour plot function for the figure that shows switchgrass area as a function of cut off values:
-filled.contour2 <-
-  function (x = seq(0, 1, length.out = nrow(z)),
-            y = seq(0, 1, length.out = ncol(z)), z, xlim = range(x, finite = TRUE), 
-            ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE), 
-            levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
-            col = color.palette(length(levels) - 1), plot.title, plot.axes, 
-            key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
-            axes = TRUE, frame.plot = axes,mar, ...) 
-{
-  # modification by Ian Taylor of the filled.contour function
-  # to remove the key and facilitate overplotting with contour()
-  if (missing(z)) {
-    if (!missing(x)) {
-      if (is.list(x)) {
-        z <- x$z
-        y <- x$y
-        x <- x$x
-      }
-      else {
-        z <- x
-        x <- seq.int(0, 1, length.out = nrow(z))
-      }
-    }
-    else stop("no 'z' matrix specified")
-  }
-  else if (is.list(x)) {
-    y <- x$y
-    x <- x$x
-  }
-  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
-    stop("increasing 'x' and 'y' values expected")
-  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
-  on.exit(par(par.orig))
-  w <- (3 + mar.orig[2]) * par("csi") * 2.54
-  par(las = las)
-  mar <- mar.orig
-  plot.new()
-  par(mar=mar)
-  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
-  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
-    stop("no proper 'z' matrix specified")
-  if (!is.double(z)) 
-    storage.mode(z) <- "double"
-  # modified from the original code: changed from .Internal(filledcontour(...)) to:
-  .filled.contour(as.double(x), as.double(y), z, as.double(levels), 
-                          col = col)
-  if (missing(plot.axes)) {
-    if (axes) {
-      title(main = "", xlab = "", ylab = "")
-      Axis(x, side = 1)
-      Axis(y, side = 2)
-    }
-  }
-  else plot.axes
-  if (frame.plot) 
-    box()
-  if (missing(plot.title)) 
-    title(...)
-  else plot.title
-  invisible()
-}
-
 
 filled.contour3 <-
   function (x = seq(0, 1, length.out = nrow(z)),
@@ -337,36 +289,6 @@ filled.contour3 <-
 }
 ```
 
-```{r multiplot_function}
-multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
-  require(grid)
-
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  if (is.null(layout)) {
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
-  if (numPlots == 1) {
-    print(plots[[1]])
-
-  } else {
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    for (i in 1:numPlots) {
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
-```
 
 
 ```{r profit_spatial, cache=TRUE, include= FALSE}
@@ -509,7 +431,7 @@ swg_n_loss <- data.frame(profit = comb[,1],
 
 ```
 
-```{r area_surfaceplot, fig.height=6, fig.width=8,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
+```{r area_surfaceplot, fig.height=9, fig.width=10,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
 
 x <- profit_cutoffs_16
 y <- n_loss_cutoffs_16
@@ -521,21 +443,50 @@ swg_matrix <- matrix(swg_areas[,3] * 1e-6
 tot_area <- 9.374363
 swg_matrix_perc <- (swg_matrix/tot_area)*100
 z <- swg_matrix_perc
-p1 <- persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+
+# create figure with three plots 
+plot.new()
+
+#I am organizing where the plots appear on the page using the "plt" argument in "par()"
+
+# top left plot:
+par(new = "TRUE",              
+    plt = c(0.05,0.45,0.55,0.9),   # using plt instead of mfcol (compare
+                                  # coordinates in other plots)
+    las = 1,                      # orientation of axis labels
+    cex.axis = 1,                 # size of axis annotation
+    tck = 0.02 )                  # major tick size and direction, < 0 means outside
+
+persp3D(x, y, z, colvar = z, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
         border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Switchgrass\narea (%)", 
         lighting = list(alpha = 1),
         xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Swg area (%)",
-ticktype = "detailed"
-        )
+ticktype = "detailed")
+
+
+text3D(x=900,y=150, z=109, "(a)", cex = 1.5, font = 2, phi = 10, theta = -150, add= TRUE)
+
+
 #calculate total biomass for Iowa for each scenario (10,000 kg/ha) in million Mg
 swg_matrix_bm <- (swg_matrix * 10)
 z_bm <- swg_matrix_bm
-p2 <- persp3D(x, y, z_bm, colvar = z_bm, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+
+#Top right plot:
+par(new = "TRUE",
+    plt = c(0.55,0.95,0.55,0.9),  # defining window for second plot
+    las = 1,
+    cex.axis = 1)
+
+persp3D(x, y, z_bm, colvar = z_bm, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
         border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "Biomass\nproduction \n(million metric tons)", 
         lighting = list(alpha = 1),
         xlab = "Profit threshold", ylab = "N loss threshold", zlab = "Biomass (million tons)",
-ticktype = "detailed"
-        )
+        ticktype = "detailed")
+
+text3D(x=900,y=150, z=102, "(b)", cex = 1.5, font = 2, phi = 10, theta = -150, add= TRUE)
+
+
+
 
 # create matrix for z values from the data frame swg_n_loss (N loss in kg)
 swg_matrix_nl <- matrix(swg_n_loss[,3], nrow = 16, ncol = 16)
@@ -543,39 +494,29 @@ swg_matrix_nl <- matrix(swg_n_loss[,3], nrow = 16, ncol = 16)
 cgsb_n_loss <- 571905
 swg_matrix_nlr <- (cgsb_n_loss - swg_matrix_nl) *100 / cgsb_n_loss
 z_nlr <- swg_matrix_nlr
-p3 <- persp3D(x, y, z_nlr, colvar = z_nlr, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
+
+#Bottom left plot:
+par(new = "TRUE",
+    plt = c(0.05,0.45,0.05,0.4),
+    las = 1,
+    cex.axis = 1)
+
+persp3D(x, y, z_nlr, colvar = z_nlr, phi = 10, theta = -150, col = brewer.pal(8,"YlGn"), 
         border = 17, facets = TRUE, colkey = TRUE, resfac = 1, clab = "N loss \nreduction (%)", 
         lighting = list(alpha = 1),
         xlab = "Profit threshold", ylab = "N loss threshold", zlab = "N loss reduction (%)",
-ticktype = "detailed"
-        )
+ticktype = "detailed")
 
-multiplot(p1, p2, p3, cols = 2)
+text3D(x=900,y=150, z=71, "(c)", cex = 1.5, font = 2, phi = 10, theta = -150, add= TRUE)
+
+
+
 
 
 ```
 
-```{r area_contourplot, fig.show="hold", fig.height=8, fig.width=8, fig.cap="Figure 3: Surface plot (vertical projection of Figure 2) showing the resulting areas converted to switchgrass (in % of row cropland) with varying combinations of N loss and profitability threshold values. Lines with numbers 10-70 show the threshold combinations with similar areas converted to switchgrass. The grey dashed lines show an example how to read the plot: If cropland losing > 60 kg N ha^-1^ and losing > US$ 150 ha^-1^ was considered for conversion to switchgrass, approx. 10% of cropland currently in rowcrop would be in switchgrass."}
+```{r area_contourplot, fig.height=7, fig.width=8, fig.cap="Figure 3: Surface plots (vertical projection of Figure 2) showing the resulting areas converted to switchgrass (in % of row cropland, (a)), switchgrass biomass production (in million metric tons, (b)), and total N loss reduction (in % of the baseline, (c)) with varying combinations of N loss and profitability threshold values. Isolines with numbers 10-70 show the threshold combinations with similar resulting values. The grey dashed lines show an example how to read the plot: If cropland losing > 60 kg N ha^-1^ and losing > US$ 150 ha^-1^ was considered for conversion to switchgrass, approx. 10% of cropland currently in rowcrop would be in switchgrass (a), approx. 10 million metric tons would be produced (b), and the N loss through leaching would be reduced by 14 % (c)."}
 
-# create data frame for facet plots
-
-
-mylevels <- c(seq(0,70,10),100)
-filled.contour2(x, y, z, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
-contour(x, y, z, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
-
-filled.contour2(x, y, z_bm, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
-contour(x, y, z_bm, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
-
-# mylevels2 <- c(seq(0,60,10),100)
-filled.contour2(x, y, z_nlr, col = brewer.pal(length(mylevels),"YlGn"), levels=mylevels, xlab=expression(Profitability~threshold~("US$"~ha^{-1})), ylab=expression(N~loss~threshold~(kg~ha^{-1})), xlim = c(-400,700), ylim = c(0,120))
-contour(x, y, z_nlr, levels=mylevels, add = TRUE, xlim = c(-400,700), ylim = c(0,120))
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
 
 # multiple panel plot with the modified function filled.contour3()
 
@@ -585,18 +526,18 @@ plot.new()
 
 # top left plot:
 par(new = "TRUE",              
-    plt = c(0.1,0.4,0.60,0.95),   # using plt instead of mfcol (compare
+    plt = c(0.1,0.45,0.60,0.95),   # using plt instead of mfcol (compare
                                   # coordinates in other plots)
     las = 1,                      # orientation of axis labels
     cex.axis = 1,                 # size of axis annotation
-    tck = 0.02 )                  # major tick size and direction, < 0 means outside
+    tck = -0.02 )                  # major tick size and direction, < 0 means outside
 
 mylevels <- c(seq(0,70,10),100)
 filled.contour3(x, y, z, 
                 col = brewer.pal(length(mylevels),"YlGn"), 
                 levels=mylevels, 
                 xlab="", 
-                ylab="",
+                ylab=expression(N~loss~threshold~(kg~ha^{-1})),
                 xlim = c(-400,700), ylim = c(0,120))
 contour(x, y, z, 
         levels=mylevels, 
@@ -608,19 +549,21 @@ abline(v = -150, col = "dark gray", lty = 2)
 # An annotation inside first plot
 #The xpd=NA allows for writing outside the plot limits, but still using the the x and y axes to place the text
 par(xpd = NA)
-text(x=11,y=1.5,"x",cex = 1.5,font = 2)
-print("(a)")
+text(x=-300,y=110,"(a)",cex = 1.5,font = 2)
+
 
 #Top right plot:
 par(new = "TRUE",
-    plt = c(0.5,0.8,0.60,0.95),  # defining window for second plot
+    plt = c(0.55,0.9,0.60,0.95),  # defining window for second plot
     las = 1,
     cex.axis = 1)
 
 filled.contour3(x, y, z_bm, 
                 col = brewer.pal(length(mylevels),"YlGn"), 
                 levels=mylevels, 
-                xlab="", ylab="")
+                xlab=expression(Profitability~threshold~("US$"~ha^{-1})), 
+                ylab="",
+                xlim = c(-400,700), ylim = c(0,120))
 contour(x, y, z_bm, 
         levels=mylevels, 
         add = TRUE, 
@@ -629,12 +572,12 @@ abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
 par(xpd = NA)
-text(x=11,y=1.5,"x",cex = 1.5,font = 2)
-print("(b)")
+text(x=-300,y=110,"(b)",cex = 1.5,font = 2)
+
 
 #Bottom left plot:
 par(new = "TRUE",
-    plt = c(0.1,0.4,0.15,0.5),
+    plt = c(0.1,0.45,0.15,0.5),
     las = 1,
     cex.axis = 1)
 
@@ -652,8 +595,8 @@ abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
 par(xpd = NA)
-text(x=11,y=1.5,"x",cex = 1.5,font = 2)
-print("(c)")
+text(x=-300,y=110,"(c)",cex = 1.5,font = 2)
+
 
 ```
 
@@ -758,6 +701,8 @@ include_graphics("imported_images/N_leaching_subfield_NR_Watershed.tif", dpi = 3
 
 - atmospheric deposition of N is not considered by the model (? - check), but it is factored out when calculating N loss changes
 
+- manure application is not considered in the model due to missing spatial data on manure application and type
+
 - our results do not take into account denitrification in surface waters, so the sum is not equal to the DIN export to the Gulf of Mexico [@alexander2008differences]
 
 - however, by estimating DIN loss on a field basis, we are accounting for the amount of dissolved inorganic nitrogen that is lost for the farmer
@@ -768,12 +713,15 @@ include_graphics("imported_images/N_leaching_subfield_NR_Watershed.tif", dpi = 3
 
 - integration of switchgrass on 10% of cropland would have a stronger effect on N loss reduction compared to other conservation practices, such as crop rotation or conservation tillage [@wu2004decisions]
 
+To reach the Iowa Nutrient Reduction Strategy's goal of 41% N leaching reduction, 40-50% of Iowa cropland would have to be converted to switchgrass. Our resuls indicate the need to combine multiple conservation practices and to adapt them to the biophysical and socio-economic conditions of each given region.
+
 - the variability accross the state comes from the variability in candidate areas for conversion, and from the effective N loss reduction of each of these areas
 
 - outlook: @qiu2015landscape showed that landscape composition is affecting water quality related ecosystem services to varying extent. Due to the large spatial area covered, our underlying data includes a realistic but approximated reflection of reality. However, applied to smaller management units and fed with more detailed and accurate data, our spatial results could be used as indicators to identify nonlinear (disproportionate) responses of N loss reduction to conversion of land to perennial grasses.
 (--> find "sweet spots" where large improvements can be obtained by conversion of small land areas)
 
 ## Conclusions
+
 
 - This study disaggregates previously published approaches of N balance estimated based on county data (e.g Libra et al 2004) down to a finer resolution and takes into account the biogeochemical processes driving DIN loss in agroecosystems
 
