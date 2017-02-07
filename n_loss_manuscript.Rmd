@@ -6,22 +6,39 @@ output:
   word_document: default
 
 bibliography: nutrient_bibliography.bib
+csl: environmental-research-letters.csl
+
 ---
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
 
 ```
+## Authors
+
+Elke Brandes
+
+Gabe McNunn
+
+David Muth
+
+Lisa Schulte
+
+Andy VanLoocke
+
+Emily Heaton
+
 
 ## Abstract
 
 
-Progress on reducing nutrient leaching from Iowa cropland has been slow due to conflicts between short-term profitability and long-term land stewardship. Besides mitigating nitrate leaching from cropland, perennial biomass crops such as switchgrass improve short- and long-term farm level profitability and help meeting national bioenergy targets.
+Progress on reducing nutrient leaching from Iowa cropland has been slow due to perceived conflicts between short-term profitability and long-term land stewardship. Besides mitigating nitrate leaching from cropland, perennial biomass crops such as switchgrass can improve short- and long-term farm level profitability and help meeting national bioenergy targets.
 
-To explore the potential of a socially compatible switchgrass integration into Iowa's agricultural landscape, we combined two subfield-scale data sets: (i) a profitability analysis and (ii) nitrate leaching rates estimated with the DeNitrification-DeComposition (DNDC) model. We based the management change decision from row crops to switchgrass on status-quo (2012-2015) profitability and N leaching rates, creating a matrix of possible threshold combinations. For each scenario resulting from these combinations we calculated state-wide % area in switchgrass, biomass production, and relative N leaching reduction.
+To explore the potential of socially compatible switchgrass integration into Iowa's agricultural landscape, we combined two subfield-scale data sets: (i) a profitability analysis and (ii) nitrate leaching rates estimated with the DeNitrification-DeComposition (DNDC) model. We based the management change decision from row crops to switchgrass on status-quo (2012-2015) profitability and nitrate leaching rates, creating a matrix of possible threshold combinations. For each scenario resulting from these combinations we calculated: 1) the percent of Iowa cropland in switchgrass, 2) resulting biomass production, and 3) the relative reduction in nitrate leaching compared to row crops. 
 
-Switchgrass yields had a negligible effect on N leaching reduction within the range of reasonable conversion areas (<20% of cropland). Converting all subfield areas losing > US$ 150 ha^-1^ yr^1^ and leaching > 60 kg N ha^-1^ yr^-1^ to switchgrass ("tweak-scenario") would result in 14% N leaching reduction for Iowa. We found that the counties of highest status-quo N leaching don't line up with those of highest reduction potential. E.g., within the impaired Upper Racoon River Watershed, the tweak-scenario resulted in 11.2% of row cropland converted to switchgrass and an N leaching reduction of 8%. Most subfield areas converted to switchgrass displayed high N leaching reduction (> 50%), but the high productivity of most farmland in this watershed resulted in a relatively small conversion area and therefore a low mean N leaching reduction. 
+Converting all subfield areas losing > US\$ 150 ha-1 yr1 and leaching > 60 kg N ha-1 yr-1 to switchgrass would result in 14% nitrate leaching reduction for Iowa. We found that the counties of highest status-quo nitrate leaching did not line up with those of highest reduction potential. Within the impaired Upper Raccoon River Watershed, converting all subfield areas losing > US\$ 150 ha-1 yr1 and leaching > 60 kg N ha-1 yr-1 to switchgrass resulted in 11.2% of row cropland converted to switchgrass and 8% nitrate leaching reduction. Most subfield areas converted to switchgrass displayed high nitrate leaching reduction (> 50%), but the high productivity of most farmland in this watershed resulted in a relatively small conversion area and therefore a low mean nitrate leaching reduction. Our analysis disaggregates previous approaches of county- or watershed-scale nitrogen balance down to a finer resolution and takes into account the biogeochemical processes driving nitrogen loss in agroecosystems. Even though approximated, our analysis can be turned into a farm-level decision making tool to identify non-linear responses of nitrate leaching with the strategic integration of perennial vegetation.
 
-Our analysis disaggregates previous approaches of county- or watershed-scale N balance down to a finer resolution and takes into account the biogeochemical processes driving N loss in agroecosystems. Even though approximated, our analysis can be turned into a farm-level decision making tool to identify non-linear responses of N leaching reduction to perennial integration.
+## Highlights 
+(not needed for ERL, but can be useful anyway)
 
 - In a three way comparison we analyse the impact of cropland conversion to a dedicated biomass crop on nutrient loss improvement
 - We modelled the leachable N fraction for agricultural lands in the state of Iowa
@@ -31,33 +48,15 @@ Our analysis disaggregates previous approaches of county- or watershed-scale N b
 
 ### Harnessing economic interests for switchgrass integration
 
-- pooled under the term precision conservation, efforts have been made recently to develop landscape designs that meet agricultural needs while optimizing environmental risk mitigation by targeted placement of conservation management practices [@mcconnell2011precision]
+Pooled under the term precision conservation, efforts have been made recently to develop landscape designs that meet agricultural needs while optimizing environmental risk mitigation by targeted placement of conservation management practices [@mcconnell2011precision]. This approach can potentially be adapted to target perennial crops for sustainable cellulosic bioenergy production [@chaubey2016precision]. Due to their multiple benefits on water and soil quality, perennial biomass crops have been considered suitable for conservation purposes while providing feedstock for a growing bioeconomy [@tilman2009beneficial; @langholtz2016billion]. However, in the past decade, large extents of CRP and grassland have been converted back to cropland [@morefield2016grasslands; @lark2015cropland]. In practice, perceived socio-economic barriers prevent the implementation of urgently needed conservation management [@james2010profitability]. However, despite this seemingly universal trade-off between economic and environmental desires, there are indications of synergies between economic and environmental risk mitigation: within a single corn field, @ssegane2015multifunctional showed that areas of low crop yield coincided with high NO~3~^-^ leaching due to low soil fertility related to high water infiltration.
 
-- this approach can potentially be adapted to target perennial crops for sustainable cellulosic bioenergy production [@chaubey2016precision]
-
-- due to their multiple benefits on water and soil quality, perennial biomass crops have been considered suitable for conservation purposes while providing feedstock for a growing bioeconomy [@tilman2009beneficial; @langholtz2016billion]
-
-- in practice, socio-economic barriers prevent the implementation of urgently needed conservation management [@james2010profitability]
-
-- thus, a trade off exists between economic and environmental desires and needs to be addressed when assessing the feasibility of sustainable bioenergy feedstock production
-
-- however, there are indications of synergies between economic and environmental risk mitigation: within a single corn field, @ssegane2015multifunctional showed that areas of low crop yield coincided with high NO~3~^-^ leaching due to low soil fertility related to high water infiltration.
+*add a sentence proving evidence to support we are working in a key niche with the sub-field scale: Are there management recommendations?* 
 
 ### Water quality as the ecosystem service of interest
 
-- nitrate, the nitrogen species that is readily available to crops, is also subject to leaching through the root zone and drainage tiles into surface waters
+Nitrate, the nitrogen form that is readily available to crops, is also subject to leaching through the root zone and drainage tiles into surface waters. Non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico [@turner2003linking]. Over half of the  nitrogen delivered through this route originate from cropland cultivated with maize and soybeans [@alexander2008differences]. @schilling2000relationship showed a strong relationship between percent land area in row crop and nitrate-N concentration in watersheds in Iowa. Their study suggests a 0.1 mg l^-1^ reduction of nitrate-N in the surface water with every percent reduction of row crop area in the above watershed.
 
-- non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico [@turner2003linking]
-
-- over half of the nitrogen delivered to the Gulf of Mexico from the Mississippi River Basin originate from cropland cultivated with maize and soybeans [@alexander2008differences]
-
-- @schilling2000relationship showed a strong relationship between percent land area in row crop and nitrate-N concentration in watersheds in Iowa. Their study suggests a 0.1 mg l^-1^ reduction of nitrate N in the surface water with every percent reduction of row crop area in the above watershed
-
-- as a quantitative goal to mitigate these water quality issues, the Nutrient reduction task force stipulated that a 30% reduction in the nitrogen load is needed to shrink the hypoxic zone to under 5000 km^2^ [@river2001action]
-
-- in Iowa: 41% N reduction proposed by INRS (cite Iowa Nutrient Reduction Strategy)
-
-The Iowa Nutrient Reduction Strategy recommends a wide range of nitrogen reduction practices including perennial crops, but does not account for the spatial heterogeneity within Major Land Resource Areas.
+The Mississippi River Gulf of Mexico Watershed Nutrient Task Force [-@river2008action] has set the goal to decrease the hypoxic zone's 5 year average to under 5000 km^2^. The @inrs2013 translates this goal to a 41% nitrogen reduction requirement for Iowa and recommends a wide range of nitrogen conservation practices including perennial crops. However, the spatial heterogeneity on a level relevant for decisionmaking is not accounted for in this strategy.
 
 - Perennial crops have shown to reduce N leaching drastically compared to maize [@smith2013reduced; @randall1997nitrate] (alfalfa and CRP))
 
@@ -184,7 +183,7 @@ library('matrixStats')
 ```{r connect_dplyr}
 
 # with dplyr:
-pw <- "xxx" # enter password here
+pw <- "xxxx" # enter password here
 
 isuag_db <- src_postgres(dbname = 'isuag',
                            host = 'isu-ag-db.agsolver.com',
@@ -543,6 +542,7 @@ contour(x, y, z,
         levels=mylevels, 
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
 abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
@@ -568,6 +568,7 @@ contour(x, y, z_bm,
         levels=mylevels, 
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
 abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
@@ -591,6 +592,7 @@ contour(x, y, z_nlr,
         levels=mylevels, 
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
 abline(h = 60, col = "dark gray", lty = 2)
 abline(v = -150, col = "dark gray", lty = 2)
 
@@ -720,6 +722,8 @@ To reach the Iowa Nutrient Reduction Strategy's goal of 41% N leaching reduction
 - outlook: @qiu2015landscape showed that landscape composition is affecting water quality related ecosystem services to varying extent. Due to the large spatial area covered, our underlying data includes a realistic but approximated reflection of reality. However, applied to smaller management units and fed with more detailed and accurate data, our spatial results could be used as indicators to identify nonlinear (disproportionate) responses of N loss reduction to conversion of land to perennial grasses.
 (--> find "sweet spots" where large improvements can be obtained by conversion of small land areas)
 
+
+- annual variability in N leaching due to wheather (same with flux values, see @sprague2011nitrate)
 ## Conclusions
 
 
