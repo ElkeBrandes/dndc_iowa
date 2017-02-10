@@ -4,7 +4,7 @@
 Corn + soybean (Status quo):
 Years: 2012-2015 (actual crop rotations)
 Yields: ISPAID adjusted by NASS county averages
-N rates: constant, from N rate calculator for each year (based on best return on N)
+N rates: constant, from isu extension AgDecisionmaker rates
 
 Switchgrass (Liberty):
 Years: Spinup rotation: 4 years corn + soybean. 2006-2015 in switchgrass
