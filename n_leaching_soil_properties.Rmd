@@ -1,0 +1,284 @@
+---
+title: "Modelled N loss by NO~3~^-^ leaching and NH~3~ volatilization  in Iowa from row cropped and switchgrass fields"
+author: "Elke Brandes"
+date: "Tuesday, November 01, 2016"
+output: html_document
+bibliography: nutrient_bibliography.bib
+---
+This paper describes the data analysis of N loss results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr` and `RPostgreSQL`).
+
+##Required packages##
+```{r packages, message=FALSE, warning=FALSE}
+library('RPostgreSQL') # PostgreSQL database connection
+library("ggplot2") # for the figures
+library("maps") # to plot maps, contains country/state/county outlines
+library("gridGraphics") # needed for the function unit in ggplot
+library("tidyverse") # to make tidy tables, includes dplyr needed for PostgreSQL database connection
+library('knitr') # to use kable() function
+
+library(rgdal) # to read in shape files
+library(ggmap)
+library(scales)
+library(RColorBrewer)
+library("sp") # to use merge with a spatial data frame
+
+library("tmap")
+library("grDevices") # for colors of surface plot
+# library("graphics") # for surface plot
+# library("rgl") # for surface plot (3d graphics, more powerful than persp()
+library("plot3D") # another package to plot surface plots
+
+
+```
+
+
+### Connect to the PostgreSQL datbase
+With dplyr:
+```{r connect_dplyr, message=FALSE, include=FALSE}
+
+
+pw <- "5QUXJHTbxj" # enter password here
+isuag_db <- src_postgres(dbname = 'isuag',
+                           host = 'isu-ag-db.agsolver.com',
+                           port = 5432,
+                           user = 'isuag',
+                           password = pw)
+
+```
+With RPostgreSQL:
+```{r, connect_rpostgres, message=FALSE, include=FALSE}
+
+drv <- dbDriver("PostgreSQL") # loads the PostgreSQL driver
+con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres database
+                 host = "isu-ag-db.agsolver.com", port = 5432,
+                 user = "isuag", password = pw)
+# note that "con" will be used later in each connection to the database
+```
+
+### For visualization
+
+I am using a modified theme for ggplot that has a black border and white background:
+```{r theme, cache=TRUE, include = FALSE}
+theme_b_border <- function (base_size = 12, base_family = "") 
+{
+  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      axis.text = element_text(size = rel(0.8), margin = margin(r=10)), #margin 
+      axis.ticks = element_line(colour = "black"),
+      axis.ticks.length = unit(0.15, "cm"),
+      legend.key = element_rect(colour = NA), panel.background = element_rect(fill = "white", 
+      colour = NA), panel.border = element_rect(fill = NA, 
+      colour = "black"), panel.grid.major = element_line(colour = NA, 
+      size = 0.2), panel.grid.minor = element_line(colour = NA, 
+      size = 0.5), strip.background = element_rect(fill = "grey80", 
+      colour = "grey50", size = 0.2))
+}
+```
+
+## Correlation between profitability and NO~3~^-^ leaching in corn and soybean fields
+In this chapter, I am only looking at the N loss through NO~3~^-^ leaching to check wether the numbers are reasonable.
+I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
+
+Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
+```
+
+
+Pull the new table into R:
+```{r data_sample, include=FALSE}
+sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
+  as.data.frame(sample)
+
+head(sample, n=2)
+str(sample)
+```
+
+I plot the sample as a scatter plot:
+```{r scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 1: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  
+```
+### Areas with very low NO~3~^-^ leaching
+
+There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
+```{r scatterplot_zoom, warning = FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 2: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
+  
+```
+In order to know how much of the area is included in those very low leaching patches, I run queries in the SQL database:
+```{sql, connection=con, message=FALSE, cache=TRUE}
+SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg"
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 1
+```
+```{sql, connection=con, message=FALSE, cache=TRUE}
+SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
+```
+
+### Soil properties on low leaching areas
+
+I looked into the soil properties of those low leaching areas. For this, I queried the SSURGO database through the [SQL interface](http://sdmdataaccess.nrcs.usda.gov/Query.aspx) to get data on total sand fraction and pH per component and horizon. I imported the table into the isuag PostgreSQL database and joined the soil data (total sand fraction and pH), aggregated to the mapunit, to the DNDC results. 
+
+I then drew random samples from that table to analyze the relationship between leaching and sand fraction / pH.
+In high pH soils the equilibrium between NH~3~^+^ and NH~3~ is shifted toward NH~3~, therefore they might show higher volatilization and lower NO~3~^-^ leaching, because the equilibrium is calculated before the nitrification to NO~3~^-^ and subsequent leaching in the DNDC model. Higher sand fraction means lower CEC (cation exchange capacity), therefore more NH~3~^+^ is available (not sorbed by negatively charged colloids).
+
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandtotal_r, avg_ph1to1h2o_r, avg_ph01mcacl2_r FROM "05_leaching_soil" ORDER BY random() LIMIT 10000
+```
+
+
+I make a dataframe out of the db table:
+```{r soil_sample}
+soil = tbl(isuag_db, "r_leaching_soil_sample") %>%
+  as.data.frame()
+head(soil, n=2)
+```
+
+Then I plot the sample:
+```{r scatter_leach_sand, warning=FALSE, fig.width=4.5, fig.height=3, fig.show = "hold", fig.cap="Figure 3: Scatterplot of a subsample (n=10,000) of corn/soy leaching data and sand fraction on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Sand~fraction~("%")))
+
+ggplot() +
+  geom_point(data = soil, aes(x = avg_sandtotal_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Sand~fraction~("%")))
+  
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(pH))
+
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous(limits=c(0,20)) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+       x=expression(pH))
+```
+
+```{r scatter_ph, fig.width=4.5, fig.height=3, warning=FALSE, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of pH values measured with different methods from the SSURGO database."}
+ggplot() +
+  geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = avg_ph01mcacl2_r)) +
+  theme_b_border() +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  labs(y=expression(pH~CaCl2), x=expression(pH~H2O)) +
+  geom_abline(intercept=0, slope = 1)
+
+
+```
+
+Figure 6 shows that the low leaching values do not fall out of the general pattern. Soils with lower sand fraction generally show lower leaching, but the very low leaching soils show a range of sand fraction. There is a cluster of low leaching subfield areas of pH 7.9 - 8.1. For these soils, NO~3~^-^ leaching might be low because the NH~3~ <-> NH~4~^+^ equilibrium is shifted toward the volatile NH~3~ that is leaving the soil.
+
+To eliminate artifacts that are caused by model structure and mechansim, we decided to sum up NO~3~^-^ leaching and NH~3~ volatilization, assuming that volatilization is negligible since it is minimized by management (i.e. timing of fertilization before rain events, injecting anhydrous ammonia below the surface). Estimated N losses due to NH~3~ volatilization from synthetic fertilizers range between 0 and 5 kg ha^-1^ in the USA, not including the use of inhibiting chemicals [@bouwman2002nh3].
+
+##4. N loss through NO~3~^-^ leaching and NH~3~ volatilization
+
+I calculated N losses as a sum of the model outputs NO~3~^-^ leaching and NH~3~ volatilization in PostgreSQL for corn/soybean and for the three switchgrass yield scenarios.
+
+### Correlation between NO~3~^-^ leaching and NH~3~ volatilization
+
+I draw a sample from the original DNDC result table for the status quo to look at the relationship between the two N loss pools. Note: I am not transforming the values into metric units in this case, so the units are lbs/acre.
+
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_isu_cgsb_clumu_proc_sample" AS SELECT ave_no3_leach, ave_nh3_vol FROM isu_cgsb_clumu_proc ORDER BY random() LIMIT 10000
+```
+
+
+Pull the new table into R:
+```{r leach_vol_sample}
+sample = tbl(isuag_db, "r_isu_cgsb_clumu_proc_sample") %>%
+  as.data.frame(sample)
+
+head(sample, n=2)
+str(sample)
+```
+
+I plot the sample as a scatter plot:
+```{r leach_vol_scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10,000) of corn/soy NO~3~^-^ leaching and NH~3~ volatilization data (averaged over 2012 - 2015) on subfield areas in Iowa."}
+ggplot() +
+  geom_point(data = sample, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  labs(x=expression(Mean~NO[3]^{"-"}~leaching~(lbs~N~acre^{-1})),
+       y=expression(Mean~NH[3]~volatilization~(lbs~N~acre^{-1})))
+  
+```
+
+
+### Correlation between profitability and N loss in corn and soybean fields
+
+I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, and if the artifact of low leaching patches seen in Figure 4. disappears as the high NH~3~ volatilization compensates the low NO~3~^-^ leaching.
+
+Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
+```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
+SELECT setseed(0.5)
+```
+
+```{sql, connection=con, message=FALSE, cache=TRUE}
+CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
+```
+
+
+Pull the new table into R:
+```{r data_sample_n_loss}
+sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
+  as.data.frame(sample)
+
+```
+
+I visualize the sample as a scatter plot:
+```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
+ggplot() +
+  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  
+```
+
+
+```{r shut, message=FALSE, include=FALSE}
+ rm(list='isuag_db'); gc() 
+```
