@@ -56,41 +56,24 @@ Pooled under the term precision conservation, efforts have been made recently to
 
 Nitrate, the nitrogen form that is readily available to crops, is also subject to leaching through the root zone and drainage tiles into surface waters. Non-point nutrient pollution from industrialized agriculture in the Mississippi River Basin has been exacerbating the hypoxic zone in the Gulf of Mexico [@turner2003linking]. Over half of the  nitrogen delivered through this route originate from cropland cultivated with maize and soybeans [@alexander2008differences]. @schilling2000relationship showed a strong relationship between percent land area in row crop and nitrate-N concentration in watersheds in Iowa. Their study suggests a 0.1 mg l^-1^ reduction of nitrate-N in the surface water with every percent reduction of row crop area in the above watershed.
 
-The Mississippi River Gulf of Mexico Watershed Nutrient Task Force [-@river2008action] has set the goal to decrease the hypoxic zone's 5 year average to under 5000 km^2^. The @inrs2013 translates this goal to a 41% nitrogen reduction requirement for Iowa and recommends a wide range of nitrogen conservation practices including perennial crops. However, the spatial heterogeneity on a level relevant for decisionmaking is not accounted for in this strategy.
+The Mississippi River Gulf of Mexico Watershed Nutrient Task Force [-@river2008action] has set the goal to decrease the hypoxic zone's 5 year average to under 5000 km^2^. The @inrs2013 translates this goal to a 45% nitrogen reduction requirement for Iowa and recommends a wide range of nitrogen conservation practices including perennial crops. However, the spatial heterogeneity on a level relevant for decisionmaking is not accounted for in this strategy.
 
-- Perennial crops have shown to reduce N leaching drastically compared to maize [@smith2013reduced; @randall1997nitrate] (alfalfa and CRP))
+Perennial crops can drastically improve nitrate losses compared to row crops. Several experiments growing maize-soybean rotations side by side with perennial grasses such as Miscanthus x giganteus, switchgrass, or reconstructed prairie, resulted in leaching reductions of more than 90% in the perennial plots [@mcisaac2010miscanthus; @smith2013reduced; @daigh2015subsurface]. These experiments were conducted on fertile soils, but large uncertainties exist on how perennials compare to row crops on less productive cropland, where they would be most likely grown to provide feedstock to an emerging bioeconomy. Moreover, the extent and strategic location of perennials in the agricultural landscape effective to reach the nutrient reduction goal remains unknown.
 
-- however, large uncertainties exist about the extent and strategic location of perennials in the agricultural landscape that would be effective to reach such goal
+@vanloocke2016din found that replacing maize currently grown for bioethanol with cellulosic biomass crops in the Atchafalaya and Mississippi River Basin could reduce dissolved inorganic nitrogen (DIN) export to the Gulf of Mexico by 15 to 20%. (add sentence citing Davis et al 2011 or 2012).They suggest that integration of perennial grasses targeted to areas of low row crop productivity and high leaching rates could further increase surface water quality. Many modelling approaches have been conducted on a comparably coarse scale. These water quality studies of larger regions fail to reflect the high-resolution farm units relevant for decision making.
+As part of a nutrient budget for Iowa, @christianson2012nitrogen recently estimated nitrate leaching from fertilizer inputs. However, their approach did not take into account weather and soil related variability.
 
-- @vanloocke2016din found that replacing maize currently grown for bioethanol with cellulosic biomass crops in the Atchafalaya and Mississippi River Basin could reduce dissolved inorganic nitrogen (DIN) export to the Gulf of Mexico by 15 to 20%. They suggest that integration of perennial grasses targeted to areas of low row crop productivity and high leaching rates could further increase surface water quality.
+Not only environmental considerations play a role in strategic placement of perennial crops, but also economic constraints. Areas of high environmental risk are assumed to overlap with areas of high economic risk - targeting those areas may provide opportunities to combine financial risk mitigation with conservation management [@muth2014profitability]. We argue that targeted replacement of row crops with the highly productive and locally adapted switchgrass variety "Liberty" on low-performing cropland areas could contribute to a reduction of N loss in Iowa while enhancing biomass production and further regulating ecosystem services.
 
-- not only environmental considerations play a role in strategic placement of perennial crops, but also economic constraints. Areas of high environmental risk are assumed to overlap with areas of high economic risk - targeting those areas may provide opportunities to combine financial risk mitigation with conservation management.
+To estimate the potential of nitrate leaching reduction by switchgrass integration in a spatial resolution relevant for decision makers, we apply a mechanistic model that accounts for weather and soil dependent processes of the nitrogen cycle to a subfield scale across Iowa. As an example for an impaired watershed, the North Racoon River Watershed is in focus in this paper to shed light on potential mitigation efforts and their effectiveness.
 
-- therefore we argue that targeted replacement of row crops with the highly productive and locally adapted switchgrass variety "Liberty" could contribute to a reduction of N loss in Iowa
+We are presenting a novel approach to precision conservation and perennial integration: placing switchgrass on crop land that is least socially desirable to grow row crops, using a three-way comparison:
+   
+- baseline scenario: cropland in maize and /or soybean between 2012 and 2015
+- minimum (tweak) scenario: mitigating profit loss and nitrate leaching while keeping the area in switchgrass at around 10%
+- nutrient reduction scenario: achieving a 40% reduction in nitrate leaching compared to the status quo, thereby achieving the Iowa nutrient reduction goal mainly with dedicated biomass production
 
-- as an example for an impaired watershed, the North Racoon River Watershed, where counties are sued by the Des Moines Water Works for not complying with water quality regulations (CITE), is in focus in this paper to shed light on potential mitigation effords and their effectiveness 
-
-### Nitrogen mass balance
-
-- state wide nutrient budget analyses showed a balance between N inputs and outputs, but strong effects of crop type (continuous maize or maize-soybean rotation) and fertilization rate exist [@libra2004nitrogen].
-
-- as part of a nutrient budget for Iowa, NO~3~^-^ was estimated from fertilizer inputs [@christianson2012nitrogen]. There approach did not take into account weather and soil related variability.
-
-- in order to estimate the potential of DIN loss reduction by switchgrass integration in a spatial resolution relevant for decision makers, we apply a mechanistic model that accounts for weather and soil condition dependent processes of the nitrogen cycle.
-
-### Goals of this study:
-
-- here, we are presenting a novel approach to precision conservation and perennial integration: Placing switchgrass (a high yielding variety of a native grass showcasing favourable ecologic and economic properties) on crop land that is least socially desirable to grow row crops, simulating different opimization scenarios:
-    + minimum (tweak) scenario: mitigating profit and DIN loss
-    + achieving a biomass production threshold from dedicated bioenergy crops *(how much? Using figure 3 to identify possible threshold combinations)*
-    + *anything else?*
-
-Goals: 
-
-1. Identifying areas in Iowa with highest potential for switchgrass integration that is compatible with socio-economic constraints
-2. Quantify the extent of DIN (dissolved inorganic nitrogen) loss reduction by managing cropland areas that are at highest economic and environmental risk in switchgrass
-
-3. Exploring one of many opportunities to improve management of subfield areas that are not profitable with high-input row crop management
+With these scenarios located along a wide range of landscape integration schemes, we aim to identify areas in Iowa with highest potential for switchgrass integration that is compatible with socio-economic constraints, and to quantify the extent of nitrate leaching reduction by converting cropland areas to switchgrass that are at highest economic and environmental risk.
 
 ## Methods
 
@@ -183,23 +166,21 @@ library('matrixStats')
 ```{r connect_dplyr}
 
 # with dplyr:
-pw <- "xxxx" # enter password here
-
-isuag_db <- src_postgres(dbname = 'isuag',
-                           host = 'isu-ag-db.agsolver.com',
+pw <- "****" # enter password here
+HeatonAgsolver_db <- src_postgres(dbname = 'AgSolver',
+                           host = 'heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com',
                            port = 5432,
-                           user = 'isuag',
+                           user = 'heatonlab',
                            password = pw)
-
 ```
 
 ```{r, connect_rpostgres}
 
 # With RPostgreSQL:
 drv <- dbDriver("PostgreSQL") # loads the PostgreSQL driver
-con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres database
-                 host = "isu-ag-db.agsolver.com", port = 5432,
-                 user = "isuag", password = pw)
+con <- dbConnect(drv, dbname = "AgSolver",  # creates a connection to the postgres database
+                 host = "heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com", port = 5432,
+                 user = "heatonlab", password = pw)
 # note that "con" will be used later in each connection to the database
 ```
 
@@ -294,7 +275,7 @@ filled.contour3 <-
 counties <- readOGR(dsn="shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
-profit_county <- tbl(isuag_db, "07_swg_area_counties_po") %>%
+profit_county <- tbl(HeatonAgsolver_db, "07_swg_area_counties_tweak") %>%
   as.data.frame() 
 
  for (i in 1:length(profit_county$fips)) {
@@ -326,18 +307,20 @@ ditch_the_axes <- theme(
   )
 ```
 
-```{r figure_profit, fig.height=3.5, fig.width=8,  fig.cap="Figure 1: Areas below a mean 2012-2015 profitability of US$ -150 ha^-1^ per county. Purple shades indicate the relative area, orange circles show the absolute size of the area per county."}
+
+
+```{r figure_profit, fig.height=4, fig.width=9,  fig.cap="Figure 1: Areas below a mean 2012-2015 profitability of US$ -150 ha^-1^ per county. Purple shades indicate the relative area, orange circles show the absolute size of the area per county."}
 ggplot() +
   geom_polygon(data = counties_profit_df, aes(long, lat, group = group, fill=area_in_swg_perc), color = "white") +
   geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "orange") +
-  labs(size = expression(Total~area~below~-150~"US$"~ha^{-1}~(ha))) +
+  labs(size = expression(Total~area~losing~">100"~"US$"~ha^{-1}~and~">50"~kg~N~ha^{-1}~(ha))) +
   coord_equal() +
   ditch_the_axes +
-  labs(fill = expression(Relative~area~below~-150~"US$"~ha^{-1}~("%"))) +
+  labs(fill = expression(Relative~area~losing~">100"~"US$"~ha^{-1}~and~">50"~kg~N~ha^{-1}~("%"))) +
   scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") 
 ```
 
-```{r swg_areas_two_thresholds, cache=TRUE}
+```{r swg_areas_two_thresholds_prepare, cache=TRUE}
 # In this chunk, the areas in switchgrass are calculated for all possible combinations of 
 # profitability and N loss cut offs.
 
@@ -378,59 +361,57 @@ comb <- CartProduct(profit_cutoffs_16, n_loss_cutoffs_16)
 
 # write a function that uses each of the combinations, using the matrix returned from the function CartProduct:
 area_select <- function(cutoff_1, cutoff_2)
-{ query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_n_loss_ha_cgsb > ", as.character(cutoff_2))
-    sum_area <- tbl(isuag_db, sql(query)) %>%
+{ query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg\" WHERE mean_profit_ha < ", as.character(cutoff_1), "AND ave_no3_leach_ha_cgsb > ", as.character(cutoff_2))
+    sum_area <- tbl(HeatonAgsolver_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
     return(sum_area)
 }
+```
 
+```{r swg_areas_two_thresholds, cache=TRUE}
 # apply the function to each value in the matrix
 swg_areas <- mapply(area_select, comb[,1], comb[,2])
 
 
 # combine the cut off values with the area in switchgrass in a data frame
-swg_areas <- data.frame(profit = comb[,1],
-                        n_loss = comb[,2],
+swg_areas <- data.frame(profit_cut = comb[,1],
+                        no3_leach_cut = comb[,2],
                         swg_areas)
 
 ```
 
-```{r n_loss_function, cache=TRUE}
+```{r no3_leach_function, cache=TRUE}
 
-# write a function that uses each of the cutt off combinations and calculates the total N loss in this scenario:
-n_loss_select <- function(cutoff_1, cutoff_2)
-{query <- paste("SELECT (sum((CASE WHEN mean_profit_ha <" , as.character(cutoff_1), " AND ave_n_loss_ha_cgsb > ",  as.character(cutoff_2), " THEN ave_n_loss_ha_swg_7500  ELSE ave_n_loss_ha_cgsb END) * clumuha)) / 1000 FROM \"05_dndc_clumu_cgsb_swg_n_loss\" ")
-    sum_N_loss <- tbl(isuag_db, sql(query)) %>%
+# write a function that uses each of the cutt off combinations and calculates the total NO3 leaching in this scenario:
+no3_leach_select <- function(cutoff_1, cutoff_2)
+{query <- paste("SELECT (sum((CASE WHEN mean_profit_ha <" , as.character(cutoff_1), " AND ave_no3_leach_ha_cgsb > ",  as.character(cutoff_2), " THEN ave_no3_leach_ha_swg_7500  ELSE ave_no3_leach_ha_cgsb END) * clumuha)) / 1000 FROM \"05_dndc_clumu_cgsb_swg\" ")
+    sum_no3_leach <- tbl(HeatonAgsolver_db, sql(query)) %>%
       as.data.frame()
-    sum_N_loss <- sum_N_loss[1,1]
-    return(sum_N_loss)
+    sum_no3_leach <- sum_no3_leach[1,1]
+    return(sum_no3_leach)
 }
 
-# this is the SQL query that selects for each polygon the value of cgsb or swg, depending on its cgsb N loss and profit value, and sums all values up 
-# to get a Iowa wide N loss value (absolute), that can then substracted from the baseline N loss.
-# (sum((CASE WHEN mean_profit_ha < -500 AND ave_n_loss_ha_cgsb > 60 THEN ave_n_loss_ha_swg_7500  ELSE ave_n_loss_ha_cgsb END) * clumuha)) / 1000 
+# this is the SQL query that selects for each polygon the value of cgsb or swg, depending on its cgsb NO3 leaching and profit value, 
+# and sums all values up 
+# to get a Iowa wide NO3 leaching value (absolute), that can then substracted from the baseline NO3 leaching.
 
 ```
-```{r n_loss_two_thresholds, cache=TRUE}
+```{r no3_leach_two_thresholds, cache=TRUE}
 
 # apply the function to each value in the matrix
-tot_n_loss <- mapply(n_loss_select, comb[,1], comb[,2])
+tot_no3_leach <- mapply(no3_leach_select, comb[,1], comb[,2])
 
 # combine the cut off values with the area in switchgrass in a data frame
-swg_n_loss <- data.frame(profit = comb[,1],
-                        n_loss = comb[,2],
-                        tot_n_loss)
+swg_no3_leach <- data.frame(profit_cut = comb[,1],
+                        no3_leach_cut = comb[,2],
+                        tot_no3_leach)
 
 
 ```
 
 
-```{r}
-
-```
-
-```{r area_surfaceplot, fig.height=9, fig.width=10,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of N loss and profitability thresholds. N loss thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
+```{r area_surfaceplot, fig.height=9, fig.width=10,  fig.cap="Figure 2: Area to convert to switchgrass under a range of combinations of nitrate leaching and profitability thresholds. Nitrate leaching thresholds (in kg N ha^-1^) indicate the value above which the area would be converted to switchgrass and profitability thresholds (in US$ ha^-1^) indicate the value below which the area would be converted to switchgrass."}
 
 x <- profit_cutoffs_16
 y <- n_loss_cutoffs_16
@@ -488,10 +469,12 @@ text3D(x=900,y=150, z=102, "(b)", cex = 1.5, font = 2, phi = 10, theta = -150, a
 
 
 # create matrix for z values from the data frame swg_n_loss (N loss in kg)
-swg_matrix_nl <- matrix(swg_n_loss[,3], nrow = 16, ncol = 16)
+swg_matrix_nl <- matrix(swg_no3_leach[,3], nrow = 16, ncol = 16)
 #calculate N loss reduction compared to baseline
-cgsb_n_loss <- 571905
-swg_matrix_nlr <- (cgsb_n_loss - swg_matrix_nl) *100 / cgsb_n_loss
+no3_leach_tot <-tbl(HeatonAgsolver_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
+  as.data.frame()
+cgsb_no3_leach <- no3_leach_tot[1,1]
+swg_matrix_nlr <- (cgsb_no3_leach - swg_matrix_nl) *100 / cgsb_no3_leach
 z_nlr <- swg_matrix_nlr
 
 #Bottom left plot:
@@ -543,8 +526,8 @@ contour(x, y, z,
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
 par(xpd = FALSE) # restricts the lines to the plot region
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
 
 # An annotation inside first plot
 #The xpd=NA allows for writing outside the plot limits, but still using the the x and y axes to place the text
@@ -569,8 +552,8 @@ contour(x, y, z_bm,
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
 par(xpd = FALSE) # restricts the lines to the plot region
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
 
 par(xpd = NA)
 text(x=-300,y=110,"(b)",cex = 1.5,font = 2)
@@ -593,8 +576,8 @@ contour(x, y, z_nlr,
         add = TRUE, 
         xlim = c(-400,700), ylim = c(0,120))
 par(xpd = FALSE) # restricts the lines to the plot region
-abline(h = 60, col = "dark gray", lty = 2)
-abline(v = -150, col = "dark gray", lty = 2)
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
 
 par(xpd = NA)
 text(x=-300,y=110,"(c)",cex = 1.5,font = 2)
@@ -603,14 +586,14 @@ text(x=-300,y=110,"(c)",cex = 1.5,font = 2)
 ```
 
 ```{r counties_attributes, cache=TRUE}
- counties_n_loss = tbl(isuag_db, "07_n_loss_counties") %>%
+ counties_no3_leach = tbl(HeatonAgsolver_db, "07_dndc_counties") %>%
    as.data.frame()
  # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
- for (i in 1:length(counties_n_loss$fips)) {
-   counties_n_loss$fips[i] <- sub("IA", "19", counties_n_loss$fips[i])
+ for (i in 1:length(counties_no3_leach$fips)) {
+   counties_no3_leach$fips[i] <- sub("IA", "19", counties_no3_leach$fips[i])
     }
  # make it a factor
-  counties_n_loss$fips <- as.factor(counties_n_loss$fips)
+  counties_no3_leach$fips <- as.factor(counties_no3_leach$fips)
 ```
 
 ```{r counties_spatial, cache=TRUE, include=FALSE, cache=TRUE}
@@ -618,9 +601,10 @@ counties <- readOGR(dsn="shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
 
 # join the attribute data with the spatial data, using a left join and the identifier "fips":
-counties@data <- left_join(counties@data, counties_n_loss, by = "fips")
+counties@data <- left_join(counties@data, counties_no3_leach, by = "fips")
 counties_df <- fortify(counties)
 counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), starting with 0.
+
 ```
 
 ```{r counties_centroids, warning=FALSE, message=FALSE, cache=TRUE} 
@@ -635,11 +619,11 @@ centroids$id <- as.character(0:98)
 counties_swg <- data.frame(id = rep(counties$id,3),
                          scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
                                                                                rep("swg_12500", length(counties))),
-                         tot_n_loss = c(counties$tot_ave_n_loss_7500, counties$tot_ave_n_loss_10000,
-                                           counties$tot_ave_n_loss_12500),
-                         ave_n_loss = c(counties$ave_n_loss_7500, counties$ave_n_loss_10000, counties$ave_n_loss_12500),
-                         loss_red = c(counties$n_loss_change_7500, counties$n_loss_change_10000,
-                                       counties$n_loss_change_12500))
+                         tot_no3_leach = c(counties$tot_no3_leach_7500, counties$tot_no3_leach_10000,
+                                           counties$tot_no3_leach_12500),
+                         ave_no3_leach = c(counties$ave_no3_leach_7500, counties$ave_no3_leach_10000, counties$ave_no3_leach_12500),
+                         no3_leach_red = c(counties$no3_leach_change_7500, counties$no3_leach_change_10000,
+                                       counties$no3_leach_change_12500))
 
 counties_swg$scenario <- factor(counties_swg$scenario, levels = c("swg_7500", "swg_10000", "swg_12500"))
 # join data frame with the data frame extracted out of the spatial data frame
@@ -647,48 +631,48 @@ counties_swg_df <- left_join(counties_df, counties_swg) %>%
   left_join(centroids)
 ```
 
-```{r table_n_loss_reduction, cache=TRUE}
-n_loss_tot <-tbl(isuag_db, "05_dndc_n_loss_sums_iowa_scenarios")  %>%
+```{r table_no3_leach_reduction, cache=TRUE}
+no3_leach_tot <-tbl(HeatonAgsolver_db, "05_dndc_no3_leach_sums_iowa_scenarios")  %>%
   as.data.frame()
-n_loss_tot <-   data.frame(value = "total N loss", 
-                           n_loss_tot)
-names(n_loss_tot) <- c(" ", "Status Quo", "7500", "10000", "12500")
+no3_leach_tot <-   data.frame(value = "Total leaching (Mg N)", 
+                           no3_leach_tot)
+names(no3_leach_tot) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
-n_loss_red <- data.frame(value = "Reduction (%)", 
+no3_leach_red <- data.frame(value = "Reduction (%)", 
                          status_quo = 0,
-                        "7500" = (n_loss_tot[1,2]-n_loss_tot[1,3])*100/n_loss_tot[1,2],
-                        "10000" = (n_loss_tot[1,2]-n_loss_tot[1,4])*100/n_loss_tot[1,2],
-                        "12500" = (n_loss_tot[1,2]-n_loss_tot[1,5])*100/n_loss_tot[1,2])
-names(n_loss_red) <- c(" ", "Status Quo", "7500", "10000", "12500")
+                        "7500" = (no3_leach_tot[1,2]-no3_leach_tot[1,3])*100/no3_leach_tot[1,2],
+                        "10000" = (no3_leach_tot[1,2]-no3_leach_tot[1,4])*100/no3_leach_tot[1,2],
+                        "12500" = (no3_leach_tot[1,2]-no3_leach_tot[1,5])*100/no3_leach_tot[1,2])
+names(no3_leach_red) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
-n_loss_table <- rbind(n_loss_tot[1,],n_loss_red[1,])
+no3_leach_table <- rbind(no3_leach_tot[1,],no3_leach_red[1,])
 
-kable(n_loss_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss (Mg N) and N loss reduction (%) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
+kable(no3_leach_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss through leaching (Mg N) and NO3 leaching reduction (%) in Iowa modelled with DNDC under different switchgrass yield scenarios." )
 
 ```
 
-```{r plot_n_loss_map, fig.width=4.5, fig.height=3, fig.cap = "Figure 4: County mean annual N loss (green shades) and county mean total annual N loss (yellow circles), averaged over 2012-2015 for the status quo cropland. "}
+```{r plot_n_loss_map, fig.width=8, fig.height=4, fig.cap = "Figure 4: County mean annual N loss (green shades) and county mean total annual N loss (yellow circles), averaged over 2012-2015 for the status quo cropland. "}
 
 counties_swg_med_df <- filter(counties_swg_df, scenario == "swg_10000")
 
 ggplot(counties_swg_med_df) +
-  geom_polygon(aes(long, lat, group = group, fill=ave_n_loss), color = "white") +
+  geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "white") +
   scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +  
-  labs(fill = expression(atop("Average N loss", paste("kg N ha"^{-1},")")))) +  
-  geom_point(aes(V1, V2, size = tot_n_loss), color = "yellow") +
-  labs(size = expression(Total~N~loss~(Mg~N))) +
-  scale_size(range = c(0, 4)) +
+  labs(fill = expression(atop("Average nitrate", paste("leaching (kg N ha"^{-1},")")))) +  
+  geom_point(aes(V1, V2, size = tot_no3_leach), color = "yellow") +
+  labs(size = expression(Total~leached~nitrate~(Mg~N))) +
+  scale_size(range = c(0, 6)) +
   coord_equal() +
   ditch_the_axes 
 ```
 
-```{r plot_n_loss_reduction_map, fig.width=4.5, fig.height=3, fig.cap= "Figure 5: Relative reduction in total N loss per county when switchgrass is grown on areas that loose > US$ 150 ha^-1^ and > 60 kg N ha^-1^ under medium  switchgrass yield assumption, as compared to the status quo in Figure 4."}
+```{r plot_n_loss_reduction_map, fig.width=8, fig.height=4, fig.cap= "Figure 5: Relative reduction in total N loss through leaching per county when switchgrass is grown on areas that loose > US$ 100 ha^-1^ and > 50 kg N ha^-1^ under medium  switchgrass yield assumption, as compared to the status quo in Figure 4."}
 ggplot(counties_swg_med_df) +
-  geom_polygon(aes(long, lat, group = group, fill=loss_red), color = "white") +
+  geom_polygon(aes(long, lat, group = group, fill=no3_leach_red), color = "white") +
   scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
   coord_equal() +
   ditch_the_axes +
-  labs(fill = expression(N~loss~reduction~("%"))) 
+  labs(fill = expression(Nitrate~leaching~reduction~("%"))) 
 ```
 
 
@@ -699,7 +683,10 @@ include_graphics("imported_images/N_leaching_subfield_NR_Watershed.tif", dpi = 3
 
 ## Discussion
 
-- we assume that leached nitrate is exported from the fields by tile drainage *(compare with tile drainage nitrate concentrations of Gabe's modelled plots?)*
+### Comparison of results to measured values
+In comparison to a maize-maize-soybean rotation, miscanthus, switchgreass, and prairie reduced nitrate leaching at 50 cm soil depth by more than 90% in the 4th year [@smith2013reduced].  @daigh2015subsurface showed that fertilized, reconstructed prairie lost 89-99% less nitrate N in tile drainage water compared to row crops. @mcisaac2010miscanthus showed a 97% reduction in nitrate leaching at 50 cm soil depth.
+
+- we are not considering tile drainage, because the model predicts leaching at 50 cm soil depth (assumed to be below the rooting zone)
 
 - atmospheric deposition of N is not considered by the model (? - check), but it is factored out when calculating N loss changes
 
@@ -731,7 +718,7 @@ To reach the Iowa Nutrient Reduction Strategy's goal of 41% N leaching reduction
 
 ## Supplementary Information
 
-```{r profit_distribution, fig.width=4.5, fig.height=3, fig.cap="Figure S1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$ ha^-1^ cut off value used for the switchgrass integration below."}
+```{r profit_distribution, eval=FALSE, fig.width=4.5, fig.height=3, fig.cap="Figure S1: Distribution of mean profitability 2012-2015. The vertical line marks the -150 US$ ha^-1^ cut off value used for the switchgrass integration below."}
 profit = tbl(isuag_db, "01_profit_mean_2012_2015_aggregated") %>%
   as.data.frame()
 profit$sum_ha <- profit$sum_ha * 1e-6  # convert to Mha
@@ -751,40 +738,50 @@ SELECT setseed(0.5)
 ```
 
 ```{sql, connection=con, cache=TRUE}
-CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
+CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
 ```
 ```{r data_sample_n_loss}
-sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
+sample_leach <- tbl(HeatonAgsolver_db, "r_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
 ```
 
 ```{r scatterplot_n_loss, fig.width=4.5, fig.height=3, fig.cap="Figure S2: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha = .2, stroke=0) +
+  geom_point(data = sample_leach, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha = .2, stroke=0) +
   theme_b_border() +
-  labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 50, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
 ```
 
 ```{r fetch_distr, cache=TRUE}
 
-cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_n_loss_rounded_aggr")  %>%
+cgsb_n_loss <-tbl(HeatonAgsolver_db, "06_cgsb_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
-swg_low <-tbl(isuag_db, "06_swg_7500_ave_n_loss_rounded_aggr")  %>%
+cgsb_no3_leach <-tbl(HeatonAgsolver_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
   as.data.frame()
-swg_med <-tbl(isuag_db, "06_swg_10000_ave_n_loss_rounded_aggr")  %>%
+cgsb_nh3_vol <-tbl(HeatonAgsolver_db, "06_cgsb_ave_nh3_vol_rounded_aggr")  %>%
   as.data.frame()
-swg_hi <-tbl(isuag_db, "06_swg_12500_ave_n_loss_rounded_aggr")  %>%
+swg_low <-tbl(HeatonAgsolver_db, "06_swg_7500_ave_n_loss_rounded_aggr")  %>%
+  as.data.frame()
+swg_med <-tbl(HeatonAgsolver_db, "06_swg_10000_ave_n_loss_rounded_aggr")  %>%
+  as.data.frame()
+swg_hi <-tbl(HeatonAgsolver_db, "06_swg_12500_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
 ```
 ```{r data_list}
-data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
+data_list <- list(cgsb_n_loss, cgsb_no3_leach, cgsb_nh3_vol, swg_low, swg_med, swg_hi)
 
-scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
-factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
+scenario <- c(rep("cgsb_n_loss", sum(sapply(data_list[1],nrow))), 
+              rep("cgsb_no3_leach", sum(sapply(data_list[2],nrow))),
+              rep("cgsb_nh3_vol", sum(sapply(data_list[3],nrow))), 
+              rep("swg_low", sum(sapply(data_list[4],nrow))), 
+              rep("swg_med", sum(sapply(data_list[5],nrow))), 
+              rep("swg_hi", sum(sapply(data_list[6],nrow)))) %>%
+factor(levels= c('cgsb_n_loss', 'cgsb_no3_leach', 'cgsb_nh3_vol', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
+
 
 leaching <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
@@ -797,36 +794,36 @@ leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show 
 
 # calculate weighted medians and means
 
-median_cgsb <- weightedMedian(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
-median_swg_low <- weightedMedian(swg_low[,1], w=swg_low[,2])
-median_swg_med <- weightedMedian(swg_med[,1], w=swg_med[,2])
-median_swg_hi <- weightedMedian(swg_hi[,1], w=swg_hi[,2])
-medians <- c(median_cgsb, median_swg_low, median_swg_med, median_swg_hi)
-medians_df <- data.frame(crop = levels(leach$scenario),
-                         median = medians)
-
-mean_cgsb <- weightedMean(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
-mean_swg_low <- weightedMean(swg_low[,1], w=swg_low[,2])
-mean_swg_med <- weightedMean(swg_med[,1], w=swg_med[,2])
-mean_swg_hi <- weightedMean(swg_hi[,1], w=swg_hi[,2])
-means <-c(mean_cgsb, mean_swg_low, mean_swg_med, mean_swg_hi)
+# median_cgsb <- weightedMedian(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
+# median_swg_low <- weightedMedian(swg_low[,1], w=swg_low[,2])
+# median_swg_med <- weightedMedian(swg_med[,1], w=swg_med[,2])
+# median_swg_hi <- weightedMedian(swg_hi[,1], w=swg_hi[,2])
+# medians <- c(median_cgsb, median_swg_low, median_swg_med, median_swg_hi)
+# medians_df <- data.frame(crop = levels(leach$scenario),
+#                          median = medians)
+# 
+# mean_cgsb <- weightedMean(cgsb_leach[-1,1], w=cgsb_leach[-1,2])
+# mean_swg_low <- weightedMean(swg_low[,1], w=swg_low[,2])
+# mean_swg_med <- weightedMean(swg_med[,1], w=swg_med[,2])
+# mean_swg_hi <- weightedMean(swg_hi[,1], w=swg_hi[,2])
+# means <-c(mean_cgsb, mean_swg_low, mean_swg_med, mean_swg_hi)
 
 
 ```
 
-```{r histograms, cache=TRUE, fig.height=4, fig.width=7, fig.cap="Figure S3: Distributions of N loss in Iowa. Values for switchgrass were averaged over the mananagement horizon of 10 years, including two establishment years."}
-scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
+```{r histograms, cache=TRUE, fig.height=4, fig.width=7, fig.cap="Figure S3: Distributions of N loss (total, by nitrate leaching only, by ammonia volatilization only) in Iowa. Values for switchgrass were averaged over the mananagement horizon of 10 years, including two establishment years."}
+scenarios <- c('cgsb_n_loss'= "N loss (corn/soybeans)",'cgsb_no3_leach'= "NO3 leach. (corn/soybeans)", 'cgsb_nh3_vol'= "NH3 vol. (corn/soybeans)",'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
 ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_b_border() +
-  labs(x=expression(Mean~NO[3]^{"-"}~leaching~"+"~NH[3]~volatilization~2006-2015~(kg~N~ha^{-1})),
+  labs(x=expression(Mean~nitrate~loss~(kg~N~ha^{-1})),
        y=expression(Area~(Mha))) +
-  scale_x_continuous() +
+  scale_x_continuous(lim = c(-1,150)) +
   scale_y_continuous() +
-  geom_vline(data = medians_df, aes(xintercept=median), color = "black") +
+ # geom_vline(data = medians_df, aes(xintercept=median), color = "black") +
   theme(legend.position="bottom") +
-  facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
+  facet_wrap( ~ scenario, ncol=3, labeller = as_labeller(scenarios)) 
 ```
 
 ```{r swg_areas, cache=TRUE}
@@ -834,7 +831,7 @@ swg_areas <- vector(mode="numeric", length=0)
 profit_cutoffs <- c(-500, -400, -300, -200, -150, -100, -50, 0, 50, 100, 150)
  for (i in 1:length(profit_cutoffs)) {
     query <- paste("SELECT SUM(clumuha) FROM \"05_dndc_clumu_cgsb_swg_n_loss\" WHERE mean_profit_ha < ", as.character(profit_cutoffs[i]), "AND ave_n_loss_ha_cgsb > 60")
-    sum_area <- tbl(isuag_db, sql(query)) %>%
+    sum_area <- tbl(HeatonAgsolver_db, sql(query)) %>%
       as.data.frame()
     sum_area <- sum_area[1,1]
     swg_areas <- append(swg_areas, sum_area) 
@@ -883,5 +880,5 @@ ggplot() +
   annotate("text", x = -500, y = 40, label = "(b)", size = 5)
 ```
 ```{r shut, include=FALSE}
- rm(list='isuag_db'); gc() 
+ rm(list='HeatonAgsolver_db'); gc() 
 ```
