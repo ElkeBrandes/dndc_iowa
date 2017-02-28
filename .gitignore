@@ -58,3 +58,8 @@ n_loss_manuscript_cache/docx/__packages
 # shapefiles stored in the folder shapefiles
 /shapefiles/
 
+# weather files stored in the folder weather
+/weather/
+
+# imported images to be included in manuscript
+/imported_images/
