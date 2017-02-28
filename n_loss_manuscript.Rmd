@@ -419,7 +419,7 @@ swg_no3_leach <- data.frame(profit_cut = comb[,1],
 ```
 
 
-```{r area_surfaceplot, fig.height=9, fig.width=10,  fig.cap="Figure 2: State-wide aggregated model outputs for (a) area converted to switchgrass, (b) biomass production, assuming a 10,000 kg ha^-1^ yield, and (c) reduction N loss through nitrate leaching as a function of profitability and nitrate leaching driven management decisions. Each corner in the surface grid represents an output value under given combination of nitrate leaching threshold (the value in kg N ha^-1^ above which the area would be converted to switchgrass) and profitability threshold (the value in US$ ha^-1^ below which the area would be converted to switchgrass)."}
+```{r area_surfaceplot, cache = TRUE, fig.height=9, fig.width=10,  fig.cap="Figure 2: State-wide aggregated model outputs for (a) area converted to switchgrass, (b) biomass production, assuming a 10,000 kg ha^-1^ yield, and (c) reduction N loss through nitrate leaching as a function of profitability and nitrate leaching driven management decisions. Each corner in the surface grid represents an output value under given combination of nitrate leaching threshold (the value in kg N ha^-1^ above which the area would be converted to switchgrass) and profitability threshold (the value in US$ ha^-1^ below which the area would be converted to switchgrass)."}
 
 x <- profit_cutoffs_16
 y <- n_loss_cutoffs_16
@@ -505,7 +505,7 @@ text3D(x=900,y=150, z=85, "(c)", cex = 1.5, font = 2, phi = 10, theta = -150, ad
 
 ```
 
-```{r area_contourplot, fig.height=7, fig.width=8, fig.cap="Figure 3: Contour plots (vertical projections of Figure 2) showing (a) the resulting areas converted to switchgrass (in % of row cropland), (b) total switchgrass biomass production (in million metric tons), and (c) total nitrate leaching reduction (in % of the baseline) as a function of nitrate leaching and profitability threshold values of the baseline scenario. In each plot, isolines with numbers 10-70 show the threshold combinations with similar resulting values. The grey dashed lines show an example how to read the plot: If cropland losing > 50 kg N ha^-1^ and losing > US$ 100 ha^-1^ was considered for conversion to switchgrass (tweak scenario), a little over 10% of cropland currently in rowcrop would be in switchgrass (a), approx. 10 million metric tons of biomass would be produced (b), and the N loss through leaching would be reduced by almost 20 % (c). the solid lines show the outcomes for the nutrient reduction scenario."}
+```{r area_contourplot, cache = TRUE, fig.height=7, fig.width=8, fig.cap="Figure 3: Contour plots (vertical projections of Figure 2) showing (a) the resulting areas converted to switchgrass (in % of row cropland), (b) total switchgrass biomass production (in million metric tons), and (c) total nitrate leaching reduction (in % of the baseline) as a function of nitrate leaching and profitability threshold values of the baseline scenario. In each plot, isolines with numbers 10-70 show the threshold combinations with similar resulting values. The grey dashed lines show an example how to read the plot: If cropland losing > 50 kg N ha^-1^ and losing > US$ 100 ha^-1^ was considered for conversion to switchgrass (tweak scenario), a little over 10% of cropland currently in rowcrop would be in switchgrass (a), approx. 10 million metric tons of biomass would be produced (b), and the N loss through leaching would be reduced by almost 20 % (c). the solid lines show the outcomes for the nutrient reduction scenario."}
 
 
 # multiple panel plot with the modified function filled.contour3()
@@ -662,11 +662,11 @@ names(no3_leach_red) <- c(" ", "Status Quo", "7500", "10000", "12500")
 
 no3_leach_table <- rbind(no3_leach_tot[1,],no3_leach_red[1,])
 
-kable(no3_leach_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss through leaching (Mg N) and nitrate leaching reduction (%) in Iowa modelled with DNDC under different switchgrass yield scenarios (7500, 10,000, and 12,500 kg ha^-1^)." )
+kable(no3_leach_table, digits = 2, col.names=c(" ", "Status Quo","7500", "10000", "12500"), caption="Table 1: Annual N loss through leaching (Mg N) and nitrate leaching reduction (%) in Iowa modelled with DNDC under different switchgrass yield scenarios (7,500, 10,000, and 12,500 kg ha^-1^)." )
 
 ```
 
-```{r plot_n_loss_map, fig.width=8, fig.height=4, fig.cap = "Figure 4: Mean (green shades) and total (yellow circles) annual nitrate leaching per county, averaged over 2012-2015 for the status quo cropland."}
+```{r plot_n_loss_map, cache = TRUE, fig.width=8, fig.height=4, fig.cap = "Figure 4: Mean (green shades) and total (yellow circles) annual nitrate leaching per county, averaged over 2012-2015 for the status quo cropland."}
 
 counties_swg_med_df <- filter(counties_swg_df, scenario == "swg_10000")
 
@@ -681,7 +681,7 @@ ggplot(counties_swg_med_df) +
   ditch_the_axes 
 ```
 
-```{r plot_n_loss_reduction_map, fig.width=8, fig.height=4, fig.cap= "Figure 5: Relative nitrogen leaching reduction per county when switchgrass is grown on areas that loose > US$ 100 ha^-1^ and > 50 kg N ha^-1^, assuming medium (10,000 kg ha^-1^) switchgrass yield, as compared to the status quo in Figure 4."}
+```{r plot_n_loss_reduction_map, cache = TRUE, fig.width=8, fig.height=4, fig.cap= "Figure 5: Relative nitrogen leaching reduction per county when switchgrass is grown on areas that loose > US$ 100 ha^-1^ and > 50 kg N ha^-1^, assuming medium (10,000 kg ha^-1^) switchgrass yield, as compared to the status quo in Figure 4."}
 ggplot(counties_swg_med_df) +
   geom_polygon(aes(long, lat, group = group, fill=no3_leach_red), color = "white") +
   scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
@@ -691,7 +691,7 @@ ggplot(counties_swg_med_df) +
 ```
 
 
-```{r subfield_n_red_iowa_zoom, fig.height=5, fig.width=5, fig.cap="Figure 6: Subfield-scale relative nitrate leaching reduction in Iowa ((a), (b)) and in the northern part of the North Raccoon River Watershed, spanning across Buena Vista, Pocahontas, Sac, and Calhoun County ((c), (d)). (a) and (c) show the \"tweak scenario\" where switchgrass is grown on areas that loose > US$ 100 ha^-1^ and > 50 kg N ha^-1^. (b) and (d) show the \"nutrient reduction scenario\" where switchgrass is grown on unprofitable areas that leach > 20 kg N ha^-1^."}
+```{r subfield_n_red_iowa_zoom, cache = TRUE, fig.height=5, fig.width=5, fig.cap="Figure 6: Subfield-scale relative nitrate leaching reduction in Iowa ((a), (b)) and in the northern part of the North Raccoon River Watershed, spanning across Buena Vista, Pocahontas, Sac, and Calhoun County ((c), (d)). (a) and (c) show the \"tweak scenario\" where switchgrass is grown on areas that loose > US$ 100 ha^-1^ and > 50 kg N ha^-1^. (b) and (d) show the \"nutrient reduction scenario\" where switchgrass is grown on unprofitable areas that leach > 20 kg N ha^-1^."}
 
 include_graphics("imported_images/N_leaching_subfield_RRWS.tif", dpi = 300)
 ```
@@ -733,17 +733,16 @@ To reach the Iowa Nutrient Reduction Strategy's goal of 45% N leaching reduction
 
 ## Supplementary Information
 
-```{r weather_data}
+```{r weather_data, cache = TRUE}
 
+# make a list of files and their paths that I want to load, using regular expressions to filter according to a pattern
 wth <- list.files(path = "./weather", pattern = "IA[[:digit:]][[:digit:]][[:digit:]]_201[2345].wth", full.names = TRUE)
-
 
 # make a vector from wth that only includes the fips and year
 fips <- list.files(path = "./weather", pattern = "IA[[:digit:]][[:digit:]][[:digit:]]_201[2345].wth")
 # split the file name to get the fips and create a matrix with two columns (there must be a way to extract only the fips but I don't know it)
 fips <- unlist(strsplit(fips, "_")) %>%
 matrix(ncol = 2, byrow = TRUE)
-
 # create vector to use for the final data frame
 fips <- fips[,1]
 
@@ -761,10 +760,36 @@ weather <- lapply(wth, read.table, skip = 1, col.names = header) %>%
 
 
 # using dplyr, I can now aggregate the data to county, year, etc.
+weather %>%
+  group_by(fips, year) %>%
+  summarise(sum(precip)) %>%
+  rename(precip = `sum(precip)`) -> annual_precip
 
+# extracting the relevant data from the postgreSQL database
+query_annual <- "SELECT fips, ave_no3_leach12_cgsb, ave_no3_leach13_cgsb, ave_no3_leach14_cgsb, ave_no3_leach15_cgsb FROM \"07_dndc_counties\" "
+  
+annual_leach <- tbl(HeatonAgsolver_db, sql(query_annual)) %>%
+      as.data.frame() %>%
+      rename("2012" = ave_no3_leach12_cgsb, "2013" = ave_no3_leach13_cgsb, "2014" = ave_no3_leach14_cgsb, "2015" = ave_no3_leach15_cgsb) %>%
+      gather(year, avg_leach, `2012`, `2013`, `2014`, `2015`)  %>% # gather the table to get the variable "no3 leaching" into one column (use back ticks for years)
+      left_join(annual_precip, by = c("fips", "year")) -> leach_precip
 
+leach_precip$year <- as.factor(leach_precip$year)
+```
+
+```{r plot_leach_precip}
+
+ggplot(leach_precip) +
+  geom_point(aes(x = precip, y = avg_leach, col = year)) +
+  theme_b_border() +
+  labs(x=expression(Annual~precipitation~(mm)),
+       y=expression(Annual~nitrate~leaching~(kg~N~ha^{-1}))) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+    scale_color_discrete(name="Year")
 
 ```
+
 
 
 ```{r profit_distribution, fig.width=4.5, fig.height=3, fig.cap="Figure S1: Distribution of mean profitability 2012-2015. The vertical line marks the US$ -100  ha^-1^  cut off value used for the switchgrass integration analysis in Figure S5."}
