@@ -7,7 +7,13 @@ bibliography: nutrient_bibliography.bib
 ---
 This paper describes the data analysis of N loss results in Iowa. The initial data are the DNDC-outputs from Gabe McNunn on a clu-mapunit scale. I have performed the first analysis steps in the PostgreSQL database and access the resulting tables with the code below (using `dplyr` and `RPostgreSQL`).
 
-##Required packages##
+---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = FALSE)
+
+```
+
+
 ```{r packages, message=FALSE, warning=FALSE}
 library('RPostgreSQL') # PostgreSQL database connection
 library("ggplot2") # for the figures
@@ -27,37 +33,37 @@ library("grDevices") # for colors of surface plot
 # library("graphics") # for surface plot
 # library("rgl") # for surface plot (3d graphics, more powerful than persp()
 library("plot3D") # another package to plot surface plots
+library(gridExtra) # need to plot ggplots in a grid
 
 
 ```
 
 
-### Connect to the PostgreSQL datbase
-With dplyr:
+
 ```{r connect_dplyr, message=FALSE, include=FALSE}
 
 
-pw <- "5QUXJHTbxj" # enter password here
-isuag_db <- src_postgres(dbname = 'isuag',
-                           host = 'isu-ag-db.agsolver.com',
+pw <- "angst-vrpFhB" # enter password here
+db_con <- src_postgres(dbname = 'AgSolver',
+                           host = 'heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com',
                            port = 5432,
-                           user = 'isuag',
+                           user = 'heatonlab',
                            password = pw)
 
 ```
-With RPostgreSQL:
+
 ```{r, connect_rpostgres, message=FALSE, include=FALSE}
 
 drv <- dbDriver("PostgreSQL") # loads the PostgreSQL driver
-con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres database
-                 host = "isu-ag-db.agsolver.com", port = 5432,
-                 user = "isuag", password = pw)
+con <- dbConnect(drv, dbname = "AgSolver",  # creates a connection to the postgres database
+                 host = "heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com", port = 5432,
+                 user = "heatonlab", password = pw)
 # note that "con" will be used later in each connection to the database
 ```
 
-### For visualization
+### Visualization
 
-I am using a modified theme for ggplot that has a black border and white background:
+I am using a modified theme for ggplot that has a black border and white background.
 ```{r theme, cache=TRUE, include = FALSE}
 theme_b_border <- function (base_size = 12, base_family = "") 
 {
@@ -79,23 +85,10 @@ theme_b_border <- function (base_size = 12, base_family = "")
 In this chapter, I am only looking at the N loss through NO~3~^-^ leaching to check wether the numbers are reasonable.
 I am using the table `05_dndc_clumu_cgsb_swg` in the isuag database, that contains 2012-2015 mean profit and leaching values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and NO3 leaching, but since the complete data set contains more than 3 million records, I want to randomly select a sub-sample for the correlation.
 
-Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
-```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
-SELECT setseed(0.5)
-```
-
-```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
-CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_leach_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
-```
-
-
-Pull the new table into R:
+Pull a table of a sub-sample (n=10,000) into R:
 ```{r data_sample, include=FALSE}
-sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
+sample = tbl(db_con, "r_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
-
-head(sample, n=2)
-str(sample)
 ```
 
 I plot the sample as a scatter plot:
@@ -103,10 +96,10 @@ I plot the sample as a scatter plot:
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
-       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~("US$"~ha^{-1}))) +
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 50, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
 ```
 ### Areas with very low NO~3~^-^ leaching
@@ -116,22 +109,12 @@ There are many records with leaching values close to 0, and then only a few that
 ggplot() +
   geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
-       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
+       x=expression(Mean~profitability~("US$"~ha^{-1}))) +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE)
   
-```
-In order to know how much of the area is included in those very low leaching patches, I run queries in the SQL database:
-```{sql, connection=con, message=FALSE, cache=TRUE}
-SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg"
-```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 1
-```
-```{sql, connection=con, message=FALSE, cache=TRUE}
-SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
 ```
 
 ### Soil properties on low leaching areas
@@ -141,20 +124,11 @@ I looked into the soil properties of those low leaching areas. For this, I queri
 I then drew random samples from that table to analyze the relationship between leaching and sand fraction / pH.
 In high pH soils the equilibrium between NH~3~^+^ and NH~3~ is shifted toward NH~3~, therefore they might show higher volatilization and lower NO~3~^-^ leaching, because the equilibrium is calculated before the nitrification to NO~3~^-^ and subsequent leaching in the DNDC model. Higher sand fraction means lower CEC (cation exchange capacity), therefore more NH~3~^+^ is available (not sorbed by negatively charged colloids).
 
-```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
-SELECT setseed(0.5)
-```
-
-```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "r_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandtotal_r, avg_ph1to1h2o_r, avg_ph01mcacl2_r FROM "05_leaching_soil" ORDER BY random() LIMIT 10000
-```
-
 
 I make a dataframe out of the db table:
 ```{r soil_sample}
-soil = tbl(isuag_db, "r_leaching_soil_sample") %>%
+soil = tbl(db_con, "r_leaching_soil_sample") %>%
   as.data.frame()
-head(soil, n=2)
 ```
 
 Then I plot the sample:
@@ -164,7 +138,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
        x=expression(Sand~fraction~("%")))
 
 ggplot() +
@@ -172,7 +146,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
        x=expression(Sand~fraction~("%")))
   
 ggplot() +
@@ -180,7 +154,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
        x=expression(pH))
 
 ggplot() +
@@ -188,7 +162,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~(kg~N~ha^{-1})),
        x=expression(pH))
 ```
 
@@ -216,22 +190,10 @@ I calculated N losses as a sum of the model outputs NO~3~^-^ leaching and NH~3~ 
 
 I draw a sample from the original DNDC result table for the status quo to look at the relationship between the two N loss pools. Note: I am not transforming the values into metric units in this case, so the units are lbs/acre.
 
-```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
-SELECT setseed(0.5)
-```
-
-```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "r_isu_cgsb_clumu_proc_sample" AS SELECT ave_no3_leach, ave_nh3_vol FROM isu_cgsb_clumu_proc ORDER BY random() LIMIT 10000
-```
-
-
 Pull the new table into R:
 ```{r leach_vol_sample}
-sample = tbl(isuag_db, "r_isu_cgsb_clumu_proc_sample") %>%
+sample = tbl(db_con, "r_isu_cgsb_clumu_proc_sample") %>%
   as.data.frame(sample)
-
-head(sample, n=2)
-str(sample)
 ```
 
 I plot the sample as a scatter plot:
@@ -249,19 +211,10 @@ ggplot() +
 
 I am using the table `05_dndc_clumu_cgsb_swg_n_loss` in the isuag database, that contains 2012-2015 mean profit and N loss values for each of the four scenarios on a subfield (clu-map unit) scale. I want to see if there is a correlation between profitability and N loss, and if the artifact of low leaching patches seen in Figure 4. disappears as the high NH~3~ volatilization compensates the low NO~3~^-^ leaching.
 
-Using a SQL chunk, I create a table from a sub-sample (n=10,000) *within* the PostgreSQL database. Setseed is used so that every time I run the code I will get the same random sample.
-```{sql, connection=con, message=FALSE, cache=TRUE, include=FALSE}
-SELECT setseed(0.5)
-```
 
-```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
-```
-
-
-Pull the new table into R:
+Pull the subset table into R:
 ```{r data_sample_n_loss}
-sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
+sample_n_loss = tbl(db_con, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
   as.data.frame(sample)
 
 ```
@@ -269,16 +222,298 @@ sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
 I visualize the sample as a scatter plot:
 ```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 6: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
+  geom_point(data = sample_n_loss, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
-       x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+       x=expression(Mean~profitability~("US$"~ha^{-1}))) +
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 50, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
+```
+As expected, there are no extreme values falling out of the point cloud when nitrate leaching and ammonium volatilization are summed up into total N loss.
+
+We narrowed the causes of the extreme leaching and volatilization values down to the soil properties, because annual variation would not show up so significantly in a variable averaged over four years.
+
+Next, I looked at the spatial distribution of the low leaching values, and of volatilization in general.
+
+It strikes that mean county volatilization is very high in a few west Iowa counties, shown in this map:
+
+```{r nh3_vol_county, fig.cap="Figure 7: County mean ammonium volatilization."}
+
+ counties_no3_leach = tbl(db_con, "07_dndc_counties") %>%
+   as.data.frame()
+ # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
+ for (i in 1:length(counties_no3_leach$fips)) {
+   counties_no3_leach$fips[i] <- sub("IA", "19", counties_no3_leach$fips[i])
+    }
+ # make it a factor
+  counties_no3_leach$fips <- as.factor(counties_no3_leach$fips)
+
+counties <- readOGR(dsn="./shapefiles/county.shp",layer="county")
+names(counties)[9] <- "fips" # change to lower case so that we can join on this field later on
+
+# join the attribute data with the spatial data, using a left join and the identifier "fips":
+counties@data <- left_join(counties@data, counties_no3_leach, by = "fips")
+
+# make a dataframe out of the spatial object
+counties_df <- fortify(counties)
+counties$id <- row.names(counties) # assign a column with the variable ID that is equal to the row names (=numbers), starting with 0.
+# join the attributes back to the data frame, to create a dataframe used to map the baseline (corn/soybean):
+counties_baseline_df <- left_join(counties_df, counties@data)
+
+# add a spatial data frame with the county centroids, to be used to plot the total leaching N per county:
+centroids <- getSpPPolygonsLabptSlots(counties) %>%
+  as.data.frame() 
+centroids$id <- as.character(0:98)
+
+# join the total N leaching data to the centroids 
+counties_baseline_df <- left_join(counties_baseline_df, centroids)
+
+# create a theme without axes:
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+ggplot() +
+  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_nh3_vol_cgsb), color = "white") +
+  #geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_no3_leach_cgsb), color = "yellow") +
+  #labs(size = expression(Total~N~loss~(Mg~N~ha^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = expression(Average~N~loss~(kg~N~ha^{-1}))) +
+  scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +
+  ggtitle("Average annual N loss by ammonia volatilization per county")
+```
+
+```{r subfield_leaching, fig.height=5, fig.width=4, fig.cap="Figure 8: 2012-2015 average nitrate leaching (a) and ammonium volatilization (b) in Iowa at a subfield resolution."}
+include_graphics("imported_images/DNDC_subfield_NO3_NH3_CGSB_raster_small.png", dpi = 200)
+```
+
+
+Looking at some soil properties of the extreme high leaching and extreme high volatilizing areas:
+
+```{r extreme_high_samples, fig.width=9, fig.height=15, fig.show="hold", fig.cap="Figure 9: Highest leaching and highest volatilizing values plotted against selected soil characteristics."}
+hi_leach <- read.table("high_no3_leach.txt", header = TRUE, sep = "")
+hi_leach$cat <- as.factor(rep("hi_leach",1000))
+
+hi_vol <- read.table("high_nh3_vol.txt", header = TRUE, sep = "")
+hi_vol$cat <- as.factor(rep("hi_vol",1000))
+
+# combine the two data frames into one
+
+extreme <- rbind(hi_leach, hi_vol)
+
+# make a scatter plot
+
+# colorblind friendly palette
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+
+
+plot1 <- ggplot() +
+  geom_point(data = extreme, aes(x = ave_nh3_vol, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot2 <- ggplot() +
+  geom_point(data = extreme, aes(x = bulk_dens, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot3 <- ggplot() +
+  geom_point(data = extreme, aes(x = ph, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot4 <- ggplot() +
+  geom_point(data = extreme, aes(x = wthirdbar, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot5 <- ggplot() +
+  geom_point(data = extreme, aes(x = wfifteenbar, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot6 <- ggplot() +
+  geom_point(data = extreme, aes(x = awc, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot7 <- ggplot() +
+  geom_point(data = extreme, aes(x = clay_frac, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot8 <- ggplot() +
+  geom_point(data = extreme, aes(x = sand_frac, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot9 <- ggplot() +
+  geom_point(data = extreme, aes(x = ksat, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+plot10 <- ggplot() +
+  geom_point(data = extreme, aes(x = om, y =  ave_no3_leach, color = cat), alpha=0.2, stroke=0) +
+  theme_b_border() +
+  scale_colour_manual(values=cbPalette)
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, ncol=2)
+
+
+```
+Soil variables to look at:
+
+- bulk_dens
+- ph
+- wthirdbar
+- wfifteenbar
+- awc
+- clay_frac
+- sand_frac
+- ksat
+- om
+- soc
+- porosity
+- fld_capacity
+- wilt_pt
+
+```{r all_soil_leach, , fig.width=9, fig.height=17}
+all_soil <- tbl(db_con, "no3_soil_sample") %>%
+  as.data.frame()
+
+plot1 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border() 
+
+plot2 <- ggplot() +
+  geom_point(data = all_soil, aes(x = bulk_dens, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot3 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ph , y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot4 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wthirdbar , y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot5 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wfifteenbar, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot6 <- ggplot() +
+  geom_point(data = all_soil, aes(x = awc, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot7 <- ggplot() +
+  geom_point(data = all_soil, aes(x = clay_frac, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot8 <- ggplot() +
+  geom_point(data = all_soil, aes(x = sand_frac, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot9 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ksat, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot10 <- ggplot() +
+  geom_point(data = all_soil, aes(x = om, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot11 <- ggplot() +
+  geom_point(data = all_soil, aes(x = soc, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot12 <- ggplot() +
+  geom_point(data = all_soil, aes(x = porosity, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot13 <- ggplot() +
+  geom_point(data = all_soil, aes(x = fld_capacity, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot14 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wilt_pt, y = ave_no3_leach), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot13, plot14, ncol=2)
+
+```
+```{r all_soil_vol, , fig.width=9, fig.height=17}
+all_soil <- tbl(db_con, "no3_soil_sample") %>%
+  as.data.frame()
+
+plot1 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border() 
+
+plot2 <- ggplot() +
+  geom_point(data = all_soil, aes(x = bulk_dens, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot3 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ph , y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot4 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wthirdbar , y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot5 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wfifteenbar, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot6 <- ggplot() +
+  geom_point(data = all_soil, aes(x = awc, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot7 <- ggplot() +
+  geom_point(data = all_soil, aes(x = clay_frac, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot8 <- ggplot() +
+  geom_point(data = all_soil, aes(x = sand_frac, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot9 <- ggplot() +
+  geom_point(data = all_soil, aes(x = ksat, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot10 <- ggplot() +
+  geom_point(data = all_soil, aes(x = om, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot11 <- ggplot() +
+  geom_point(data = all_soil, aes(x = soc, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot12 <- ggplot() +
+  geom_point(data = all_soil, aes(x = porosity, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot13 <- ggplot() +
+  geom_point(data = all_soil, aes(x = fld_capacity, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+plot14 <- ggplot() +
+  geom_point(data = all_soil, aes(x = wilt_pt, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  theme_b_border()
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot13, plot14, ncol=2)
+
 ```
 
 
 ```{r shut, message=FALSE, include=FALSE}
- rm(list='isuag_db'); gc() 
+ rm(list='db_con'); gc() 
 ```
