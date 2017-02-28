@@ -1,8 +1,8 @@
 # in this script, the feature class containing subfield areas (single polygons) and several joined attributes
 # related to N loss is clipped to
-# the North Racoon River watershed to then calculate the average N loss reduction with switchgrass integration
+# the North Raccoon River watershed to then calculate the average N loss reduction with switchgrass integration
 # in that watershed.
-# using the prepared feature "NorthRacoonRiverOne" from script "SubfieldDNDC05_clip_watershed.py"
+# using the prepared feature "NorthRaccoonRiverOne" from script "SubfieldDNDC05_clip_watershed.py"
 
 print("Running script ...")
 print("")
@@ -19,7 +19,7 @@ print("Clipping subfield feature class to watershed feature class ...")
 print("")
 
 in_features = "ia_clumu_2016_single"
-clip_features = "NorthRacoonRiverOne"
+clip_features = "NorthRaccoonRiverOne"
 out_feature_class = "clumu_NRW"
 arcpy.Clip_analysis(in_features, clip_features, out_feature_class)
 
@@ -40,10 +40,11 @@ print("")
 
 feature_class = out_feature_class
 area_field = "SHAPE_Area"
-value_field = "ave_n_loss_change_perc_10000"
-where_clause = '"' + value_field + '" IS NULL'
+value_field_1 = "ave_no3_leach_change_perc_10000_12"
+value_field_2 = "ave_no3_leach_change_perc_10000_2"
+where_clause = '"' + value_field_1 + '" IS NULL'
 
-with arcpy.da.UpdateCursor(feature_class, (value_field,), where_clause) as cursor:
+with arcpy.da.UpdateCursor(feature_class, (value_field_1, value_field_2), where_clause) as cursor:
     for row in cursor:
         cursor.deleteRow()
 
@@ -56,29 +57,52 @@ print("")
 
 num = 0
 denom = 0
-with arcpy.da.SearchCursor(feature_class, (area_field, value_field)) as cursor:
+with arcpy.da.SearchCursor(feature_class, (area_field, value_field_1)) as cursor:
     for row in cursor:
         product = (row[0]*row[1])
         num += product 
         denom += row[0]
 
 weighted_mean = round(num / denom, 2)
-print("Area weighted mean N loss reduction for the North Racoon River Watershed is "
-      + str(abs(weighted_mean)) + " %.")
+print("Area weighted mean nitrate leaching reduction for the North Racoon River Watershed is "
+      + str(abs(weighted_mean)) + " % in the tweak scenario.")
+
+num = 0
+denom = 0
+with arcpy.da.SearchCursor(feature_class, (area_field, value_field_2)) as cursor:
+    for row in cursor:
+        product = (row[0]*row[1])
+        num += product 
+        denom += row[0]
+
+weighted_mean = round(num / denom, 2)
+print("Area weighted mean nitrate leaching reduction for the North Racoon River Watershed is "
+      + str(abs(weighted_mean)) + " % in the nutrient reduction scenario.")
         
 
 print("Calculating area in switchgrass in the watershed ...")
 print("")
 
-n_loss_field = "ave_n_loss_change_10000"
+n_leach_field_1 = "ave_no3_leach_change_perc_10000_12"
 total_area = 0
 swg_area = 0
-with arcpy.da.SearchCursor(feature_class, (area_field, n_loss_field)) as cursor:
+with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_1)) as cursor:
     for row in cursor:
         total_area += row[0]
         if row[1] < 0: # filtering for negative values indicating N loss reduction
             swg_area += row[0]
 swg_perc = round((swg_area / total_area)*100, 2)
-print("Area in switchgrass is " + str(swg_perc) + " %.")
+print("Area in switchgrass is " + str(swg_perc) + " % in the tweak scenario.")
+
+n_leach_field_2 = "ave_no3_leach_change_perc_10000_2"
+total_area = 0
+swg_area = 0
+with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_2)) as cursor:
+    for row in cursor:
+        total_area += row[0]
+        if row[1] < 0: # filtering for negative values indicating N loss reduction
+            swg_area += row[0]
+swg_perc = round((swg_area / total_area)*100, 2)
+print("Area in switchgrass is " + str(swg_perc) + " % in the nutrient reduction scenario.")
        
 
