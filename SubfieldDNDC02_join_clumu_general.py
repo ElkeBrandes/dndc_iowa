@@ -61,7 +61,7 @@ print("Joining with attribute data ...")
 in_feature_class = featureClass
 in_field = join_field # same as join_field assigned above
 join_table = out_name
-field = sys.argv[4]
+field = sys.argv[4]  # field or field list
 
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field)
 
