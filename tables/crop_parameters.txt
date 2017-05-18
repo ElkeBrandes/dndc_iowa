@@ -1,0 +1,17 @@
+	maize	soybean	switchgrass		
+simulated years	2012-2015	2012-2015	2006-2015		
+parameter 					
+yield (Mg ha-1)	"f(CSR2, county yield)"	"f(CSR2, county yield)"	"7.5, 10, 12.5 "		
+C/N above ground			75		
+C/N below ground			60		
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
