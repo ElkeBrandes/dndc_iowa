@@ -24,7 +24,7 @@ library('knitr') # to use kable() function
 
 library(rgdal) # to read in shape files
 library(ggmap)
-library(scales)
+library(scales) # needed for ggradar
 library(RColorBrewer)
 library("sp") # to use merge with a spatial data frame
 
@@ -34,6 +34,8 @@ library("grDevices") # for colors of surface plot
 # library("rgl") # for surface plot (3d graphics, more powerful than persp()
 library("plot3D") # another package to plot surface plots
 library(gridExtra) # need to plot ggplots in a grid
+library(ggradar) # to plot radar charts with gglot
+library("Hmisc") # to calculate weighted standard deviation
 
 
 ```
@@ -297,7 +299,7 @@ include_graphics("imported_images/DNDC_subfield_NO3_NH3_CGSB_raster_small.png", 
 
 Looking at some soil properties of the extreme high leaching and extreme high volatilizing areas:
 
-```{r extreme_high_samples, fig.width=9, fig.height=15, fig.show="hold", fig.cap="Figure 9: Highest leaching and highest volatilizing values plotted against selected soil characteristics."}
+```{r extreme_high_samples, cache=TRUE, fig.width=9, fig.height=15, fig.show="hold", fig.cap="Figure 9: Highest leaching and highest volatilizing values plotted against selected soil characteristics."}
 hi_leach <- read.table("high_no3_leach.txt", header = TRUE, sep = "")
 hi_leach$cat <- as.factor(rep("hi_leach",1000))
 
@@ -372,21 +374,21 @@ grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot
 ```
 Soil variables to look at:
 
-- bulk_dens
+- bulk_dens: Bulk Density ()
 - ph
 - wthirdbar
 - wfifteenbar
-- awc
+- awc: plant available water capacity (cm/cm) The amount of water that an increment of soil depth, inclusive of fragments, can store that is available to plants. AWC is expressed as a volume fraction, and is commonly estimated as the difference between the water contents at 1/10 or 1/3 bar (field capacity) and 15 bars (permanent wilting point) tension and adjusted for salinity, and fragments.
 - clay_frac
 - sand_frac
-- ksat
-- om
+- ksat: The amount of water that would move vertically through a unit area of saturated soil in unit time under unit hydraulic gradient.
+- om: Organic Matter (%) The amount by weight of decomposed plant and animal residue expressed as a weight percentage of the less than 2 mm soil material.
 - soc
 - porosity
 - fld_capacity
 - wilt_pt
 
-```{r all_soil_leach, , fig.width=9, fig.height=17}
+```{r all_soil_leach, fig.width=9, fig.height=17, cache=TRUE, fig.cap="Figure 10: Average (2012-2015) nitrate leaching as a function of soil parameters used in the DNDC model."}
 all_soil <- tbl(db_con, "no3_soil_sample") %>%
   as.data.frame()
 
@@ -449,7 +451,7 @@ plot14 <- ggplot() +
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot13, plot14, ncol=2)
 
 ```
-```{r all_soil_vol, , fig.width=9, fig.height=17}
+```{r all_soil_vol, cache=TRUE , fig.width=9, fig.height=17, fig.cap="Figure 11: Average (2012-2015) ammonia volatilization as a function of soil parameters used in the DNDC model."}
 all_soil <- tbl(db_con, "no3_soil_sample") %>%
   as.data.frame()
 
@@ -512,6 +514,160 @@ plot14 <- ggplot() +
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot13, plot14, ncol=2)
 
 ```
+
+```{r data_radar, include = FALSE, cache=TRUE, fig.width=11, fig.height=9, fig.cap="Figure 12: Soil parameters, nitrate leaching and ammonia volatilization (values are normalized and range between 0 and 1 for all variables), for six map units manually selected from Woodbury county. Three map units show very low leaching, the other three show very high leaching values."}
+
+soils <- tbl(db_con, "05_woodbury_soils_contrast") %>%
+   as.data.frame()
+
+soils %>%
+  select(mukey, bulk_dens, ph, awc, clay_frac,sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, avg_leach_mukey, avg_vol_mukey, csr2_nrcs) %>%
+  mutate(leach_cat = ifelse(avg_leach_mukey < 0.1, 0.1, 0.2)) %>%  # the categories are selected arbitrarily, but need to be numeric and < 1
+  mutate_if(is.character, as.numeric) %>%
+  mutate_each(funs(rescale), -mukey, -leach_cat) -> soils_radar
+
+soils_radar %>%
+  filter(leach_cat == 0.1) %>%
+  select(-leach_cat) -> soils_low_leach
+
+soils_radar %>%
+  filter(leach_cat == 0.2) %>%
+  select(-leach_cat) -> soils_high_leach
+
+plot1 <- ggradar(soils_low_leach, plot.extent.x.sf = 2, plot.extent.y.sf = 1.2, axis.label.size = 5,
+                 legend.text.size = 5, grid.label.size = 5) 
+
+  
+plot2 <- ggradar(soils_high_leach, plot.extent.x.sf = 2, plot.extent.y.sf = 1.2, axis.label.size = 5,
+                 legend.text.size = 5, grid.label.size = 5) 
+
+grid.arrange(plot1, plot2, ncol = 1)
+```
+
+```{r data_radar_2, cache=TRUE, fig.width=11, fig.height=9, fig.cap="Figure 12: Soil parameters as weighted averages for soils in Woodbury, Plymouth and Lyon County, leaching < 0.1 kg/ha and soils leaching > 20 kg/ha adjacent the low leaching soils. Values are normalized relative to the range of values for the three counties."}
+
+soils <- tbl(db_con, "05_mukeys_select") %>%
+   as.data.frame()
+
+weighted.mean <- funs("weighted.mean", weighted.mean(.,muha))
+wtd.var <- funs("wtd.var", wtd.var(.,muha))
+fs <- c(weighted.mean, wtd.var)
+
+soils %>%
+  select(mukey, muha, bulk_dens, ph, awc, clay_frac,sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, leach_category) %>%
+  group_by(leach_category) %>%
+  summarize_each(funs_(fs), -mukey, -muha) -> soil_stats_abs  # calculate weighted stats
+
+
+
+soils %>%
+  select(mukey, muha, bulk_dens, ph, awc, clay_frac,sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, leach_category) %>%
+  mutate_each(funs(rescale), -mukey, -muha, -leach_category) %>%  # normalize data
+  group_by(leach_category) %>%
+  summarize_each(funs_(fs), -mukey, -muha) -> soil_stats_norm  # calculate weighted stats
+
+soil_contrast <- soil_stats[1:2,1:12]
+
+ggradar(soil_contrast, plot.extent.x.sf = 2, plot.extent.y.sf = 1.2, axis.label.size = 5,
+                 legend.text.size = 5, grid.label.size = 5, axis.labels = c("bulk dens.", "pH", "AWC", "clay frac.", "sand frac.", "Ksat", "OM", "SOC", "porosity", "field cap.", "wilt pt."))
+  
+```
+
+
+```{r barplot, fig.cap = "Figure 13: Nitrate leaching, ammonium volatilization, and soil parameters as weighted averages for soils in Woodbury, Plymouth and Lyon County, leaching < 0.1 kg/ha (low) and soils leaching > 20 kg/ha adjacent the low leaching soils (norm)."}
+soil_stats_abs[1:2,] %>%
+  mutate(bulk_dens_wtd.stdv = sqrt(bulk_dens_wtd.var), ph_wtd.stdv = sqrt(ph_wtd.var), awc_wtd.stdv = sqrt(awc_wtd.var), clay_frac_wtd.stdv  = sqrt(clay_frac_wtd.var), sand_frac_wtd.stdv = sqrt(sand_frac_wtd.var), ksat_wtd.stdv = sqrt(ksat_wtd.var), om_wtd.stdv = sqrt(om_wtd.var), soc_wtd.stdv = sqrt(soc_wtd.var), porosity_wtd.stdv = sqrt(porosity_wtd.var), fld_capacity_wtd.stdv = sqrt(porosity_wtd.var), wilt_pt_wtd.stdv = sqrt(wilt_pt_wtd.var), ave_no3_leach_wtd.stdv = sqrt(ave_no3_leach_wtd.var), ave_nh3_vol_wtd.stdv = sqrt(ave_nh3_vol_wtd.var)) -> soil_stats_abs
+
+soil_stats_abs[,1:14] %>%
+  rename(bulk_dens = bulk_dens_weighted.mean, ph = ph_weighted.mean, awc = awc_weighted.mean, clay_frac = clay_frac_weighted.mean, sand_frac = sand_frac_weighted.mean, ksat = ksat_weighted.mean,om = om_weighted.mean, soc = soc_weighted.mean, porosity = porosity_weighted.mean, fld_capacity = fld_capacity_weighted.mean, wilt_pt = wilt_pt_weighted.mean, ave_no3_leach = ave_no3_leach_weighted.mean, ave_nh3_vol = ave_nh3_vol_weighted.mean) %>%
+  gather(bulk_dens, ph, awc, clay_frac, sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, key = property, value = means) -> soil_abs_means
+soil_abs_means$id <- seq_along(soil_abs_means$property)
+
+soil_stats_abs[,c(1,28:40)] %>%
+  rename(bulk_dens = bulk_dens_wtd.stdv, ph = ph_wtd.stdv, awc = awc_wtd.stdv, clay_frac = clay_frac_wtd.stdv, sand_frac = sand_frac_wtd.stdv, ksat = ksat_wtd.stdv, om = om_wtd.stdv, soc = soc_wtd.stdv, porosity = porosity_wtd.stdv, fld_capacity = fld_capacity_wtd.stdv, wilt_pt = wilt_pt_wtd.stdv, ave_no3_leach = ave_no3_leach_wtd.stdv, ave_nh3_vol = ave_nh3_vol_wtd.stdv) %>%
+  gather(bulk_dens, ph, awc, clay_frac, sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, key = property, value = sd)  -> soil_abs_sd
+soil_abs_sd$id <- seq_along(soil_abs_sd$property)
+
+soil_abs_means %>%
+  left_join(soil_abs_sd[,3:4], by = "id") -> soil_stats_abs_aggr
+
+ggplot(soil_stats_abs_aggr, aes(x = property, y = means, fill = leach_category)) +
+  geom_bar(position = position_dodge(.9), color = "black", stat="identity") +
+  geom_errorbar(position=position_dodge(.9), width=.25, aes(ymin=means, ymax=means+sd)) +
+  theme_b_border() +
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5, size=12))
+```
+
+
+
+```{r barplot, fig.cap = "Figure 14: Nitrate leaching, ammonium volatilization, and soil parameters as weighted averages for soils in Woodbury, Plymouth and Lyon County, leaching < 0.1 kg/ha (low) and soils leaching > 20 kg/ha adjacent the low leaching soils (norm). Values are normalized relative to the range of values for the three counties."}
+soil_stats_norm[1:2,] %>%
+  mutate(bulk_dens_wtd.stdv = sqrt(bulk_dens_wtd.var), ph_wtd.stdv = sqrt(ph_wtd.var), awc_wtd.stdv = sqrt(awc_wtd.var), clay_frac_wtd.stdv  = sqrt(clay_frac_wtd.var), sand_frac_wtd.stdv = sqrt(sand_frac_wtd.var), ksat_wtd.stdv = sqrt(ksat_wtd.var), om_wtd.stdv = sqrt(om_wtd.var), soc_wtd.stdv = sqrt(soc_wtd.var), porosity_wtd.stdv = sqrt(porosity_wtd.var), fld_capacity_wtd.stdv = sqrt(porosity_wtd.var), wilt_pt_wtd.stdv = sqrt(wilt_pt_wtd.var), ave_no3_leach_wtd.stdv = sqrt(ave_no3_leach_wtd.var), ave_nh3_vol_wtd.stdv = sqrt(ave_nh3_vol_wtd.var)) -> soil_stats_norm
+
+soil_stats_norm[,1:14] %>%
+  rename(bulk_dens = bulk_dens_weighted.mean, ph = ph_weighted.mean, awc = awc_weighted.mean, clay_frac = clay_frac_weighted.mean, sand_frac = sand_frac_weighted.mean, ksat = ksat_weighted.mean,om = om_weighted.mean, soc = soc_weighted.mean, porosity = porosity_weighted.mean, fld_capacity = fld_capacity_weighted.mean, wilt_pt = wilt_pt_weighted.mean, ave_no3_leach = ave_no3_leach_weighted.mean, ave_nh3_vol = ave_nh3_vol_weighted.mean) %>%
+  gather(bulk_dens, ph, awc, clay_frac, sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, key = property, value = means) -> soil_means
+soil_means$id <- seq_along(soil_means$property)
+
+soil_stats_norm[,c(1,28:40)] %>%
+  rename(bulk_dens = bulk_dens_wtd.stdv, ph = ph_wtd.stdv, awc = awc_wtd.stdv, clay_frac = clay_frac_wtd.stdv, sand_frac = sand_frac_wtd.stdv, ksat = ksat_wtd.stdv, om = om_wtd.stdv, soc = soc_wtd.stdv, porosity = porosity_wtd.stdv, fld_capacity = fld_capacity_wtd.stdv, wilt_pt = wilt_pt_wtd.stdv, ave_no3_leach = ave_no3_leach_wtd.stdv, ave_nh3_vol = ave_nh3_vol_wtd.stdv) %>%
+  gather(bulk_dens, ph, awc, clay_frac, sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, ave_no3_leach, ave_nh3_vol, key = property, value = sd)  -> soil_sd
+soil_sd$id <- seq_along(soil_sd$property)
+
+soil_means %>%
+  left_join(soil_sd[,3:4], by = "id") -> soil_stats_aggr
+
+ggplot(soil_stats_aggr, aes(x = property, y = means, fill = leach_category)) +
+  geom_bar(position = position_dodge(.9), color = "black", stat="identity") +
+  geom_errorbar(position=position_dodge(.9), width=.25, aes(ymin=means, ymax=means+sd)) +
+  theme_b_border() +
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5, size=12))
+```
+
+
+```{r map_unit_examples_quintiles, cache=TRUE, fig.width=9, fig.height=4, fig.cap="Figure 14: Soil parameters, nitrate leaching and ammonia volatilization (values are normalized and range between 0 and 1 for all variables), for five map units manually selected based on their average nitrate leaching value (near the minimum, 25. percentlie, 50. percentile, 75. percentile, and maximum). nitrate leaching and ammonia volatilization are area weighted averages across all subfield polygons in the map unit. All other variables are constant within each given map unit."}
+
+ex_soils <- tbl(db_con, "05_iowa_soils_contrast") %>%
+   as.data.frame()
+
+ex_soils %>%
+  select(mukey, bulk_dens, ph, awc, clay_frac,sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, avg_leach_mukey, avg_vol_mukey, iacornsr) %>%
+  arrange(avg_leach_mukey) %>%
+  mutate_if(is.character, as.numeric) %>%
+  mutate_each(funs(rescale), -mukey) %>%
+  gather(bulk_dens, ph, awc, clay_frac, sand_frac, ksat, om, soc, porosity, fld_capacity, wilt_pt, avg_leach_mukey, avg_vol_mukey, iacornsr, key = property, value = norm_value)  -> soils_multi
+soils_multi$mukey <- factor(soils_multi$mukey, levels = c("411231", "410443", "406511", "408688", "403497"))
+
+labels <- c('411231' = "minimum", '410443' = "25. percentile", '406511'= "50. percentile", '408688'= "75. percentile", '403497' = "maximum")
+
+
+ggplot(soils_multi, aes(x=property, y = norm_value)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  coord_flip() +
+  facet_wrap(~mukey, ncol = 5, labeller = as_labeller(labels))
+
+```
+
+```{r leach_csr2, fig.width=11, fig.height=4, fig.cap ="Figure 15: Nitrate leaching, ammonium volatilization and nitrous oxide flux plotted against CSR2."}
+leach_csr2 <- tbl(db_con, "05_leaching_csr2") %>%
+  as.data.frame() %>%
+  mutate_if(is.character, as.numeric)
+
+plot1 <- ggplot() +
+  geom_point(data = leach_csr2, aes(x = iacornsr, y = avg_leach_mukey), alpha=0.2, stroke=0) +
+  theme_b_border() 
+
+plot2 <- ggplot() +
+  geom_point(data = leach_csr2, aes(x = iacornsr, y = avg_vol_mukey), alpha=0.2, stroke=0) +
+  theme_b_border() 
+
+plot3 <- ggplot() +
+  geom_point(data = leach_csr2, aes(x = iacornsr, y = avg_flux_mukey), alpha=0.2, stroke=0) +
+  theme_b_border() 
+
+grid.arrange(plot1, plot2, plot3, ncol = 3)
+```
+
 
 
 ```{r shut, message=FALSE, include=FALSE}
