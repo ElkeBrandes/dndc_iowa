@@ -52,7 +52,7 @@ print("Saving table containing attributes to Geodatabase...")
 in_table = str(table_path) + str(sys.argv[2])
 out_path = work_path
 out_name = sys.argv[3]
-arcpy.TableToTable_conversion(in_table, out_path, out_name)
+#arcpy.TableToTable_conversion(in_table, out_path, out_name)
 
 print("")
 print("Joining with attribute data ...")
@@ -64,7 +64,14 @@ join_table = out_name
 field = sys.argv[4]  # field or field list
 
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field)
-
+print("")
+print("Fields in feature class:")
+print("")
+# read the fields in a feature class
+fieldList = arcpy.ListFields(featureClass)
+# loop through each field in the list and print the name
+for field in fieldList:
+    print field.name
 print("")
 print("Done. Yippie!")
 
