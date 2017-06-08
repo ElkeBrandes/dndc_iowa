@@ -76,9 +76,9 @@ Progress on reducing nutrient loss from annual croplands has been hampered by th
 ## Introduction
 
 
-DOwnstream from major agricultural regions worldwide, eutrophication of marine coastal ecosystems has been exponentially increasing since industrially produced nitrogen fertilizer was introduced [@diaz2008spreading]. As an example, non-point nutrient pollution from cropland in the Mississippi River Basin has been exacerbating the ~ 15,000 km^2^ hypoxic zone in the Gulf of Mexico [@turner2003linking]. Over half of the nitrogen (N) delivered through this route originate from cropland cultivated with maize (*Zea mays* L.)  and soybeans (*Glycine max* (L.) Merr.) - the main crops grown in the US Midwest agricultural region. Efforts to decrease the hypoxic zone's 5 year average to under 5000 km^2^ were stipulated in a federal action plan [@river2008action]. When this goal was missed in 2015, it was moved to 2035 by the Hypoxia Task Force [-@htf2015report]. 
+Downstream from major agricultural regions worldwide, eutrophication of marine coastal ecosystems has been exponentially increasing since industrially produced nitrogen fertilizer was introduced [@diaz2008spreading]. As a prominent example, nutrient pollution from cropland in the Mississippi River Basin has been exacerbating the ~ 15,000 km^2^ hypoxic zone in the Gulf of Mexico [@turner2003linking]. Over half of the nitrogen (N) delivered through this route originates from cropland cultivated with maize (*Zea mays* L.)  and soybeans (*Glycine max* (L.) Merr.) - the main crops grown in the US Midwest agricultural region. Efforts to decrease the hypoxic zone's 5 year average to under 5000 km^2^ were stipulated in a federal action plan [@river2008action]. When this goal was missed in 2015, it was moved to 2035 by the Hypoxia Task Force [-@htf2015report]. 
 
-Iowa, a central agricultural state in the US Midwest Maize Belt, is the second largest contributor of eutrifying nutrients to the gulf [@alexander2008differences] and plays a prominent role in nutrient reduction efforts. Agriculture is the most important industry in Iowa’s economy, generating 10% of U.S. maize exports at a value of 1.2 billion US$ in 2016 [@uscensus2016exports]. However, even highly productive cropland in Iowa has been unprofitable on average in recent years [@hart2015planting], throwing into sharp relief the often criticized practice of risking environmental quality for economic gain (REF). In addition to impacting aquatic life, nitrate-N (NO~3~-N) concentrations in drinking water pose a health threat to humans. In Iowa, the North Raccoon River Watershed gained scientific and public attention when the Des Moines Waterworks sued three of its counties under the federal Clean Water Act. This watershed provides drinking water for the state's capital and is covered 80 % with maize and soybeans [@jones2011agricultural]. The lawsuit was ultimately dismissed, but set a precedent for arguing that tile drains carrying NO~3~-N-laden water constitute a “point source” of pollution where they empty into streams.  
+Iowa, a central agricultural state in the US Midwest Maize Belt, is the second largest contributor of eutrophying nutrients to the gulf [@alexander2008differences] and plays a prominent role in nutrient reduction efforts. Agriculture is the most important industry in Iowa’s economy, generating 10% of U.S. maize exports at a value of 1.2 billion US$ in 2016 [@uscensus2016exports]. However, even highly productive cropland in Iowa has been unprofitable on average in recent years [@hart2015planting], throwing into sharp relief the often criticized practice of risking environmental quality for economic gain (REF). In addition to impacting aquatic life, nitrate-N (NO~3~-N) concentrations in drinking water pose a health threat to humans. In Iowa, the North Raccoon River Watershed gained scientific and public attention when the Des Moines Waterworks sued three of its counties under the federal Clean Water Act. This watershed provides drinking water for the state's capital and is covered 80 % with maize and soybeans [@jones2011agricultural]. The lawsuit was ultimately dismissed, but set a precedent for arguing that tile drains carrying NO~3~-N-laden water constitute a “point source” of pollution where they empty into streams.  
 
 To meet the Hypoxia Task Force goal, Iowa must reduce NO~3~-N in surface waters by 41% [@inrs2013]. The strategy recommends a wide range of N conservation practices including converting annual cropland to perennial vegetation. In contrast to annual crops, perennial plants have highly developed root systems that intercept water and N for more of the year. Efforts have been made recently to develop landscape designs that meet agricultural needs while mitigating environmental risk through targeted placement of conservation management practices [@mcconnell2011precision]. This precision conservation approach can potentially include perennial crops for sustainable cellulosic bioenergy production [@chaubey2016precision]. Because perennial cellulosic energy crops have multiple benefits to water and soil quality, they have been considered suitable for conservation purposes while providing feedstock for a growing bioeconomy [@tilman2009beneficial; @langholtz2016billion]. In fact, perennial crops such as giant miscanthus (*Miscanthus* x *giganteus* J.M.Greef & Deuter), switchgrass (*Panicum virgatum* L.), or diverse prairie species mixes reduced NO~3~-N more than 90% compared to maize-soybean rotations when planted on fertile soils  [@mcisaac2010miscanthus; @smith2013reduced; @daigh2015subsurface]. Besides these field experiments, landscape-scale modeling studies to evaluate the environmental effects of integrated perennial bioenergy crops into US farmland have been conducted at the regional and national level. Currently the US diverts approximately 40 % of annual maize production to produce ethanol. @vanloocke2016din found that replacing 40 % of the land where maize is currently grown with cellulosic biomass crops in the Mississippi and Atchafalaya River Basin could reduce dissolved inorganic nitrogen (DIN) export to the Gulf of Mexico by 15 to 20 %. Simulating nitrate leaching for scenarios in which 30 % of current maize fields are converted to second generation biofuel feedstocks, @davis2012impact found nitrate leaching reduction of 15 to 22 % in the US Midwest region. Both studies provide high-level indications for water quality improvement, but were conducted on a scale too coarse to reflect farming units relevant for decision making. @vanloocke2016din suggest that integration of perennial grasses targeted to areas of low row crop productivity and high leaching rates could further increase surface water quality. However, this requires a modelling framework that includes spatial agronomic information and biochemistry processes at a finer resolution.
 
@@ -92,11 +92,11 @@ Switchgrass, a dominant species of native North American prairies, has been iden
 
 - A 'nutrient reduction' scenario, in which we identified areas where the Iowa N reduction goal (41%) can be realized through dedicated biomass production.
 
-Within these two alternative scenarios, we identify areas in Iowa where switchgrass integration will make the largest economic and environmental impacts and how much dedicated energy crop would be produced. We elucidate the extent and limitations of NO~3~-N leaching reduction that can be expected from using socio-economic constraints to motivate crop choice. We focus on the Upper North Raccoon River Watershed as an example impaired watershed to assess potential mitigation efforts and their effectiveness. Our scenarios represent three points along a broad spectrum of possible schemes for the strategic integration of perennials in landscapes dominated by annual crops.
+Within these two alternative scenarios, we identify areas in Iowa where switchgrass integration will make the largest environmental impact and how much dedicated energy crop would be produced. We elucidate the extent and limitations of NO~3~-N leaching reduction that can be expected from using socio-economic constraints to motivate crop choice. We focus on the Upper North Raccoon River Watershed as an example impaired watershed to assess potential mitigation efforts and their effectiveness. Our scenarios represent three points along a broad spectrum of possible schemes for the strategic integration of perennials in landscapes dominated by annual crops.
 
 ## Methods
 
-Using publicly available data, we combined a subfield profitability analysis with the Landscape Environmental Assessment Framework (LEAF) developed by @muth2013integrated to assess environmental impacts of land management (figure 1).
+Using publicly available data, we combined a subfield profitability analysis with the Landscape Environmental Assessment Framework (LEAF) developed by @muth2013integrated to assess environmental impacts of land management (Fig. 1).
 
 *Gabe: A sentence on LEAF and DNDC integrated into the framework here?*
 
@@ -146,7 +146,7 @@ kable(para, digits = 2, col.names=c(" ", "Maize", "Soybeans", "Switchgrass"), al
 *do we need to specify the model outputs as well? Gabe, Andy, please add anything you find important*
 
 ### State-wide switchgrass integration threshold combinations
-In the management decision framework presented in this study, subfield areas with the lowest profit and highest NO~3~-N leaching in the baseline scenario were targeted for switchgrass integration. We constructed a factorial combination of profitability and NO~3~-N leaching thresholds, covering the range of 2012-2015 mean profitability (US\$ -800 ha^-1^ to US\$ 700 ha^-1^, by steps of US\$ 100 ha^-1^) as well as the range of 2012-2015 mean NO~3~-N leaching (0 - 150 kg ha^-1^, by steps of 10 kg ha^-1^), resulting in 256 (16 x 16) distinct combinations. To visualize the state-wide outcomes for each threshold combination, we displayed them as a surface in a two-dimensional decision matrix of the two factors (figure 6). Since the state-wide model outcomes showed a low sensitivity to switchgrass yield (figure S5), we created the decision matrix and performed further analysis only with the medium switchgrass yield of 10,000 kg ha^-1^. We examined the state-wide model outcomes for (i) relative cropland area converted to switchgrass, (ii) biomass production from switchgrass, and (iii) relative NO~3~-N leaching reduction, as a function of both profitability and NO~3~-N leaching threshold decision points.  
+In the management decision framework presented in this study, subfield areas with the lowest profit and highest NO~3~-N leaching in the baseline scenario were targeted for switchgrass integration. We constructed a factorial combination of profitability and NO~3~-N leaching thresholds, covering the range of 2012-2015 mean profitability (US\$ -800 ha^-1^ to US\$ 700 ha^-1^, by steps of US\$ 100 ha^-1^) as well as the range of 2012-2015 mean NO~3~-N leaching (0 - 150 kg ha^-1^, by steps of 10 kg ha^-1^), resulting in 256 (16 x 16) distinct combinations. To visualize the state-wide outcomes for each threshold combination, we displayed them as a surface in a two-dimensional decision matrix of the two factors (Fig. 6). Since the state-wide model outcomes showed a low sensitivity to switchgrass yield (Fig. S5), we created the decision matrix and performed further analysis only with the medium switchgrass yield of 10,000 kg ha^-1^. We examined the state-wide model outcomes for (i) relative cropland area converted to switchgrass, (ii) biomass production from switchgrass, and (iii) relative NO~3~-N leaching reduction, as a function of both profitability and NO~3~-N leaching threshold decision points.  
 
 ### Closer look at select threshold combinations
 From the possible combinations of profitability and nitrate leaching levels that could be used as decision-making thresholds for changing from grain to switchgrass, we selected two cases to analyze in further detail. We designated all cropland that lost more than US$ 100 ha^-1^ y^-1^ on average over the four years considered as highly unprofitable land. The 'conservative' scenario converted all annual cropland with profitability of < US\$ -100 ha^-1^ and NO~3~-N leaching of > 50 kg N ha^-1^ to switchgrass. These thresholds are above the median of the state wide profitability and nitrate leaching distributions. This scenario was driven by the goal to convert only land of high economic and environmental risk and therefore offer a substantial opportunity for improvement. The 'nutrient reduction' scenario converted all unprofitable annual cropland (profitability < US\$ 0 ha^-1^) that also lost > 20 kg N ha^-1^ through NO~3~-N leaching to switchgrass. This scenario was driven by the goal to reach a substantial portion of the NO~3~-N leaching reduction goal (41\%) set in the Iowa Nutrient Reduction Strategy to meet Hypoxia Task Force targets. For the 'conservative' scenario, we compared leaching results to the baseline on a county resolution to identify counties with high potential for water quality improvement. We also studied the impaired upper part of the North Raccoon River Watershed to relate opportunities for water quality improvement with perennial integration to the rest of Iowa.
@@ -155,7 +155,7 @@ From the possible combinations of profitability and nitrate leaching levels that
 
 ### Profitability and NO~3~-N loss through leaching within the baseline scenario
 
-Mean profitability in 2012-2015 ranged from US\$ -478 ha^-1^ to US\$ 385 ha^-1^ on 95 % of cropland (disregarding the lowest and highest 2.5 %, respectively) with a median of US$ 53 ha^-1^. Twenty-three percent of cropland was losing > US\$ 100 ha^-1^ (figure 2 (a)). Aggregating these areas of highly unprofitable cropland to the county level revealed spatial heterogeneity in its relative and absolute extent across Iowa. The counties with the most highly unprofitable land were in west and central Iowa and those with the highest relative areas were in the west, central, and south part of the state (figure 3). NO~3~-N leaching ranged from 9 to 113 kg N ha^-1^, when disregarding the 2.5 % of lowest and highest leaching cropland, respectively, with a median of 42 kg N ha^-1^ (figure 2 (b)). The spatial pattern of NO~3~-N leaching in Iowa shows highest leaching in the counties on the Des Moines Lobe Landform (figure S6) and in the north east of the state (figure 4). The relationship between mean profitability and mean NO~3~-N leaching is characterized by an increased variability in leaching with decreasing profitability (figure 5).
+Mean profitability in 2012-2015 ranged from US\$ -478 ha^-1^ to US\$ 385 ha^-1^ on 95 % of cropland (disregarding the lowest and highest 2.5 %, respectively) with a median of US$ 53 ha^-1^. Twenty-three percent of cropland was losing > US\$ 100 ha^-1^ (Fig. 2a). Aggregating these areas of highly unprofitable cropland to the county level revealed spatial heterogeneity in its relative and absolute extent across Iowa. The counties with the most highly unprofitable land were in west and central Iowa and those with the highest relative areas were in the west, central, and south part of the state (Fig. 3). NO~3~-N leaching ranged from 9 to 113 kg N ha^-1^, when disregarding the 2.5 % of lowest and highest leaching cropland, respectively, with a median of 42 kg N ha^-1^ (Fig. 2b). The spatial pattern of NO~3~-N leaching in Iowa shows highest leaching in the counties on the Des Moines Lobe Landform (Fig. S6) and in the north east of the state (Fig. 4). The relationship between mean profitability and mean NO~3~-N leaching is characterized by an increased variability in leaching with decreasing profitability (Fig. 5).
 
 
 
@@ -164,7 +164,7 @@ Mean profitability in 2012-2015 ranged from US\$ -478 ha^-1^ to US\$ 385 ha^-1^ 
 ```{r connect_dplyr}
 
 # with dplyr:
-pw <- "****" # enter password here
+pw <- "angst-vrpFhB" # enter password here
 HeatonAgsolver_db <- src_postgres(dbname = 'AgSolver',
                            host = 'heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com',
                            port = 5432,
@@ -183,7 +183,12 @@ con <- dbConnect(drv, dbname = "AgSolver",  # creates a connection to the postgr
 ```
 
 ```{r theme, cache=TRUE}
-# I am using a modified theme for ggplot that has a black border and white background:
+# I am using a modified theme for ggplot adjusted to GCBB requirements
+# black border and white background
+# tick marks inwards
+# ...
+
+
 theme_b_border <- function (base_size = 12, base_family = "") 
 {
   theme_grey(base_size = base_size, base_family = base_family) %+replace% 
@@ -197,6 +202,26 @@ theme_b_border <- function (base_size = 12, base_family = "")
       size = 0.2), panel.grid.minor = element_line(colour = NA, 
       size = 0.5), strip.background = element_rect(fill = "grey80", 
       colour = "grey50", size = 0.2))
+}
+
+theme_gcbb <- function (base_size = 10, base_family = "") 
+{
+  theme_grey(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      # axis.title.x = element_text(margin = margin(r = 10)),
+      # axis.title.y = element_text(margin = margin(r = 10)),      
+      axis.text = element_text(size = rel(0.8)),  
+      axis.text.x = element_text(margin=unit(c(0.3,0.3,0.3,0.3), "cm")),
+      axis.text.y = element_text(margin=unit(c(0.3,0.3,0.3,0.3), "cm")),
+      axis.ticks = element_line(colour = "black"),
+      axis.ticks.length = unit(-0.15, "cm"),
+      legend.key = element_rect(colour = NA), 
+      panel.background = element_rect(fill = "white", colour = NA), 
+      panel.border = element_rect(fill = NA, colour = "black", size = 0.5), 
+      panel.grid.major = element_line(colour = NA, size = 0.2), 
+      panel.grid.minor = element_line(colour = NA, size = 0.5), 
+      strip.background = element_rect(fill = "grey80", colour = "black"), 
+      strip.text = element_text(size=rel(0.8)))
 }
 
 # I am using a modified filled contour plot function for the figure that shows switchgrass area as a function of cut off values:
@@ -284,12 +309,12 @@ median_cgsb_profit <- weightedMedian(profit[-1,1], w=profit[-1,2])
 # plot profit distribution:
 plot_profit <- ggplot(profit, aes(profit_ha_rounded, weight = area_Mha)) + 
   geom_histogram(binwidth=20, alpha = .5, position="identity") +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Mean~profitability~("US$"~ha^{-1}~yr^{-1})),
        y=expression(Area~(Mha))) +
   scale_x_continuous(lim = c(-1000,1000)) +
   scale_y_continuous() +
-  annotate("text", x = -1000, y = .4, label = "(a)", size = 5) +
+  annotate("text", x = -960, y = .4, label = "(a)", size = 5) +
   geom_vline(aes(xintercept= -100), linetype= "solid", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles[1]), linetype = "dashed", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles[2]), linetype = "dashed", show.legend = FALSE) +
@@ -308,12 +333,12 @@ median_cgsb_leach <- weightedMedian(cgsb_no3_leach[-1,1], w=cgsb_no3_leach[-1,2]
 # plot leaching distribution:
 plot_leach <- plot_leach <- ggplot(cgsb_no3_leach, aes(ave_no3_leach_cgsb_round, weight = area_Mha)) +
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Mean~NO[3]-N~leaching~(kg~N~ha^{-1}~yr^{-1})),
        y=expression(Area~(Mha))) +
   scale_x_continuous(lim = c(-1,200)) +
   scale_y_continuous() +
-  annotate("text", x = 0, y = .4, label = "(b)", size = 5) +
+  annotate("text", x = 4, y = .4, label = "(b)", size = 5) +
   geom_vline(aes(xintercept = percentiles_leach[1]), linetype = "dashed", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles_leach[2]), linetype = "dashed", show.legend = FALSE) +
   geom_vline(aes(xintercept = median_cgsb_leach), linetype = "dotted", show.legend = FALSE)  
@@ -348,12 +373,21 @@ centroids$id <- as.character(0:98)
 # join the total N leaching data to the centroids 
 counties_profit_df <- left_join(counties_profit_df, centroids)
 
-# create a theme without axes:
+# create a theme without axes and without border:
 ditch_the_axes <- theme(
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
   panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+# create a theme without axes but with border (for facet plots):
+ditch_the_axes_with_border <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank()
   )
@@ -365,7 +399,7 @@ ggplot() +
   geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "orange") +
   labs(size = expression(Total~area~losing~"US$"~">100"~ha^{-1}~yr^{-1})) +
   coord_equal() +
-  theme_b_border() +
+  theme_gcbb() +
   ditch_the_axes +
   labs(fill = expression(Relative~area~losing~"US$"~">100"~ha^{-1}~yr^{-1}~("%"))) +
   scale_fill_gradient(low = "white", high="dark blue", guide = "colourbar") 
@@ -403,15 +437,14 @@ centroids$id <- as.character(0:98)
 ```{r data_n_loss_maps, cache=TRUE}
 # set up the data frame 
 counties_swg <- data.frame(id = rep(counties$id,3),
-                         scenario = c(rep("swg_7500", length(counties$id)), rep("swg_10000", length(counties$id)), 
-                                                                               rep("swg_12500", length(counties$id))),
-                         tot_no3_leach = c(counties$tot_no3_leach_7500, counties$tot_no3_leach_10000_1,
-                                           counties$tot_no3_leach_12500),
-                         ave_no3_leach = c(counties$ave_no3_leach_7500, counties$ave_no3_leach_10000_1, counties$ave_no3_leach_12500),
-                         no3_leach_red = c(counties$no3_leach_change_7500, counties$no3_leach_change_10000_1,
-                                       counties$no3_leach_change_12500))
+                         scenario = factor(c(rep(1, length(counties$id)), rep(2, length(counties$id)), 
+                                                                               rep(3, length(counties$id))), levels = c(1,2,3), labels = c("baseline", "conservative", "nutrient reduction")),
+                         tot_no3_leach = c(counties$tot_no3_leach_cgsb, counties$tot_no3_leach_10000_1,
+                                           counties$tot_no3_leach_10000_2),
+                         ave_no3_leach = c(counties$ave_no3_leach_cgsb, counties$ave_no3_leach_10000_1, counties$ave_no3_leach_10000_2),
+                         no3_leach_red = c(rep(0,length(counties$id)), counties$no3_leach_change_10000_1,
+                                       counties$no3_leach_change_10000_2))
 
-counties_swg$scenario <- factor(counties_swg$scenario, levels = c("swg_7500", "swg_10000", "swg_12500"))
 # join data frame with the data frame extracted out of the spatial data frame
 counties_swg_df <- left_join(counties_df, counties_swg) %>%
   left_join(centroids)
@@ -419,9 +452,9 @@ counties_swg_df <- left_join(counties_df, counties_swg) %>%
 
 ```{r plot_n_loss_map, cache = TRUE, fig.width=8, fig.height=4, fig.cap = "Figure 4: Total (cardinal circles) and mean (gold shades) NO~3~-N leached annually from maize and soybean cropland in Iowa by county, averaged over 2012-2015, for the baseline scenario."}
 
-counties_swg_med_df <- filter(counties_swg_df, scenario == "swg_10000")
+counties_baseline_df <- filter(counties_swg_df, scenario == "baseline")
 
-ggplot(counties_swg_med_df) +
+ggplot(counties_baseline_df) +
   geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "grey") +
   scale_fill_gradient(low = "white", high="#F1BE48", guide = "colourbar") +  
   labs(fill = expression(atop(Mean~annual~NO[3]-N, paste("leached (kg N ha"^{-1}~yr^{-1},")")))) +  
@@ -429,7 +462,7 @@ ggplot(counties_swg_med_df) +
   labs(size = expression(Total~leached~NO[3]-N~(Mg~N~yr^{-1}))) +
   scale_size(range = c(0, 6)) +
   coord_equal() +
-  theme_b_border() +
+  theme_gcbb() +
   ditch_the_axes 
 ```
 
@@ -450,7 +483,7 @@ ggplot() +
   geom_rect(aes(xmin = -Inf, xmax = -100, ymin = 50, ymax = Inf), fill = "red", alpha= 0.3) +
   geom_rect(aes(xmin = -Inf, xmax = 0, ymin = 20, ymax = Inf), fill = "red", alpha= 0.2) +
   geom_point(data = sample_leach, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha = .2, stroke=0) +
-  theme_b_border() +
+  theme_gcbb() +
   labs(y=expression(NO[3]^{"-"}~leaching~(kg~N~ha^{-1}~yr^{-1})),
        x=expression(Profitability~("US$"~ha^{-1}~yr^{-1}))) +
   geom_vline(xintercept= -100, linetype= "solid", color = "red",  show.legend = FALSE) +
@@ -463,7 +496,7 @@ ggplot() +
 
 ### Changes in state-wide switchgrass area, cellulosic biomass, and NO~3~-N leached with switchgrass integration
 
-Baseline analysis indicated that 11.5 % of total Iowa cropland lost > US\$ 100 and leached > 50 kg N per hectare and year on average. This cropland was converted to switchgrass in the 'conservative' scenario. In total, state-wide mean annual N loss by leaching from cropland in maize/soybeans between 2012 and 2015 amounted to 0.44 million Mg. On average, converting all areas losing > US\$ 100 ha^-1^ and leaching > 50 kg N ha^-1^  to switchgrass would reduce state wide NO~3~-N leaching by 17.3, 18.1, and 18.6 % at assumed low, medium, and high switchgrass yields, respectively (table 3). Because of the low sensitivity of model outcomes to switchgrass yield (table 3, figure S5), we conducted further analysis on the medium yield data set only.
+Baseline analysis indicated that 11.5 % of total Iowa cropland lost > US\$ 100 and leached > 50 kg N per hectare and year on average. This cropland was converted to switchgrass in the 'conservative' scenario. In total, state-wide mean annual N loss by leaching from cropland in maize/soybeans between 2012 and 2015 amounted to 0.44 million Mg. On average, converting all areas losing > US\$ 100 ha^-1^ and leaching > 50 kg N ha^-1^  to switchgrass would reduce state wide NO~3~-N leaching by 17.3, 18.1, and 18.6 % at assumed low, medium, and high switchgrass yields, respectively (table 3). Because of the low sensitivity of model outcomes to switchgrass yield (Table 3, Fig. S5), we conducted further analysis on the medium yield data set only.
 
 
 
@@ -485,7 +518,7 @@ kable(no3_table, digits = 1, format.args = list(big.mark = ','), col.names=c("Sw
 
 ```
 
-Moving the decision thresholds toward higher profitability and lower leaching values (i.e., targeting increasingly favorable cropland for conversion to switchgrass) resulted in successively more area in switchgrass, more switchgrass biomass production, and less NO~3~-N leached state wide (figures 6, 7). The contour plots (figure 7) serve as a tool to look up a model outcome value visualized as the "elevation" for the corresponding threshold for profitability and NO~3~-N leaching. The 'conservative' scenario resulted in 10.7 million Mg of switchgrass biomass and an 18.1 % reduction in NO~3~-N leaching. The 'nutrient reduction' scenario, which converted cropland of mean profitability < US\$ 0 ha^-1^ and NO~3~-N leaching > 20 kg ha^-1^, resulted in 35.0 % of cropland in switchgrass, producing 32.8 million Mg biomass, and reducing NO~3~-N leaching by 37.9 %  (dashed and solid lines in figure 7, all scenario results in tables S1-S3). We selected this scenario even though it did not result in the 41 % reduction required in the Nutrient Reduction Strategy, because to reach this goal, profitable cropland would have to be converted to switchgrass (figure 7).
+Moving the decision thresholds toward higher profitability and lower leaching values (i.e., targeting increasingly favorable cropland for conversion to switchgrass) resulted in successively more area in switchgrass, more switchgrass biomass production, and less NO~3~-N leached state wide (Fig. 6, 7). The contour plots (Fig. 7) serve as a tool to look up a model outcome value visualized as the "elevation" for the corresponding threshold for profitability and NO~3~-N leaching. The 'conservative' scenario resulted in 10.7 million Mg of switchgrass biomass and an 18.1 % reduction in NO~3~-N leaching. The 'nutrient reduction' scenario, which converted cropland of mean profitability < US\$ 0 ha^-1^ and NO~3~-N leaching > 20 kg ha^-1^, resulted in 35.0 % of cropland in switchgrass, producing 32.8 million Mg biomass, and reducing NO~3~-N leaching by 37.9 %  (dashed and solid lines in Fig. 7, all scenario results in tables S1-S3). We selected this scenario even though it did not result in the 41 % reduction required in the Nutrient Reduction Strategy, because to reach this goal, profitable cropland would have to be converted to switchgrass (Fig. 7).
 
 ```{r swg_areas_two_thresholds_prepare, cache=TRUE}
 # In this chunk, the areas in switchgrass are calculated for all possible combinations of 
@@ -586,20 +619,24 @@ y <- n_loss_cutoffs_16
 # create a matrix out of the z values (in Mha):
 swg_matrix <- matrix(swg_areas[,3] * 1e-6
 , nrow=16, ncol=16)
-#calculate % of total cropland (9374363 ha)
-tot_area <- 9.374363
+#calculate % of total cropland (9413900 ha)
+tot_area <- 9.413900
 swg_matrix_perc <- (swg_matrix/tot_area)*100
 z <- swg_matrix_perc
 
+
+tiff('fig7.tif', width = 169, height = 300, units = "mm", res = 300)
+
 # create figure with three plots 
 plot.new()
-
+par(din = c(6.6,12))
 #I am organizing where the plots appear on the page using the "plt" argument in "par()"
 
-# top left plot:
-par(new = "TRUE",              
-    plt = c(0.05,0.45,0.55,0.9),   # using plt instead of mfcol (compare
-                                  # coordinates in other plots)
+# top left plot (swg area surface):
+par(new = "TRUE",
+    pin = c(3,3), 
+    plt = c(0.05,0.5,0.65,0.9),   # using plt instead of mfcol (compare
+                             # coordinates in other plots)
     las = 1,                      # orientation of axis labels
     cex.axis = 1,                 # size of axis annotation
     tck = 0.02 )                  # major tick size and direction, < 0 means outside
@@ -618,9 +655,46 @@ text3D(x=900,y=150, z=109, "(a)", cex = 1.5, font = 2, phi = 10, theta = -150, a
 swg_matrix_bm <- (swg_matrix * 10)
 z_bm <- swg_matrix_bm
 
-#Top right plot:
+
+# top right plot (swg area contour):
 par(new = "TRUE",
-    plt = c(0.55,0.95,0.55,0.9),  # defining window for second plot
+    pin = c(3,3), 
+    plt = c(0.65,0.95,0.7,0.9),   # using plt instead of mfcol (compare
+                                  # coordinates in other plots)
+    las = 1,                      # orientation of axis labels
+    cex.axis = 1,                 # size of axis annotation
+    tck = -0.02 )                  # major tick size and direction, < 0 means outside
+
+mylevels <- c(seq(0,70,10),100)
+filled.contour3(x, y, z, 
+                col = brewer.pal(length(mylevels),"YlGn"), 
+                levels=mylevels, 
+                xlab="", 
+                ylab=expression(NO[3]^{"-"}~leaching~threshold~(kg~ha^{-1}~yr^{-1})),
+                xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
+abline(h = 20, col = "dark gray", lty = 1)
+abline(v = 0, col = "dark gray", lty = 1)
+
+# An annotation inside first plot
+#The xpd=NA allows for writing outside the plot limits, but still using the the x and y axes to place the text
+par(xpd = NA)
+text(x=-360,y=107,expression((a)~Cropland~"in"~switchgrass),cex = 1,font = 2, adj = c(0,0))
+
+
+
+
+#Middle left plot (biomass surface):
+
+par(new = "TRUE",
+    pin = c(3,3),
+    plt = c(0.15,0.5,0.35,0.6),  # defining window for second plot
     las = 1,
     cex.axis = 1)
 
@@ -632,6 +706,32 @@ persp3D(x, y, z_bm, colvar = z_bm, phi = 10, theta = -150, col = brewer.pal(8,"Y
 
 text3D(x=900,y=150, z=102, "(b)", cex = 1.5, font = 2, phi = 10, theta = -150, add= TRUE)
 
+# Middle right plot (biomass contour):
+
+par(new = "TRUE",
+    pin = c(3,3),
+    plt = c(0.6,0.8,0.4,0.6),  # defining window for second plot
+    las = 1,
+    cex.axis = 1)
+
+filled.contour3(x, y, z_bm, 
+                col = brewer.pal(length(mylevels),"YlOrBr"), 
+                levels=mylevels, 
+                xlab=expression(Profitability~threshold~("US$"~ha^{-1}~yr^{-1})), 
+                ylab="",
+                xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z_bm, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
+abline(h = 20, col = "dark gray", lty = 1)
+abline(v = 0, col = "dark gray", lty = 1)
+
+par(xpd = NA)
+text(x=-360,y=107,expression((b)~Biomass~produced),cex = 1,font = 2, adj = c(0,0))
 
 
 
@@ -644,9 +744,11 @@ cgsb_no3_leach <- no3_leach_tot[1,1]
 swg_matrix_nlr <- (cgsb_no3_leach - swg_matrix_nl) *100 / cgsb_no3_leach
 z_nlr <- swg_matrix_nlr
 
-#Bottom left plot:
+#Bottom left plot (nut. red. surface):
+
 par(new = "TRUE",
-    plt = c(0.05,0.45,0.05,0.4),
+    pin = c(3,3),
+    plt = c(0.15,0.5,0.05,0.3),
     las = 1,
     cex.axis = 1)
 
@@ -658,9 +760,38 @@ ticktype = "detailed")
 
 text3D(x=900,y=150, z=88, "(c)", cex = 1.5, font = 2, phi = 10, theta = -150, add= TRUE)
 
+# Bottom right plot (nut. red. contour):
+
+par(new = "TRUE",
+    pin = c(3,3),
+    plt = c(0.6,0.8,0.1,0.3),
+    las = 1,
+    cex.axis = 1)
+
+filled.contour3(x, y, z_nlr, 
+                col = brewer.pal(length(mylevels),"YlGnBu"), 
+                levels=mylevels, 
+                xlab=expression(Profitability~threshold~("US$"~ha^{-1}~yr^{-1})), 
+                ylab=expression(NO[3]^{"-"}~leaching~threshold~(kg~ha^{-1}~yr^{-1})), 
+                xlim = c(-400,700), ylim = c(0,120))
+contour(x, y, z_nlr, 
+        levels=mylevels, 
+        add = TRUE, 
+        xlim = c(-400,700), ylim = c(0,120))
+par(xpd = FALSE) # restricts the lines to the plot region
+abline(h = 50, col = "dark gray", lty = 2)
+abline(v = -100, col = "dark gray", lty = 2)
+abline(h = 20, col = "dark gray", lty = 1)
+abline(v = 0, col = "dark gray", lty = 1)
+
+par(xpd = NA)
+text(x=-360,y=107,expression((c)~NO[3]-N~reduction),cex = 1,font = 2, adj = c(0,0))
+
+dev.off()
 ```
 
 ```{r area_contourplot, cache = TRUE, fig.height=7, fig.width=8, fig.cap="Figure 7: Contour plots (vertical projections of Figure 6) showing (a) the resulting areas converted to switchgrass (in % of row cropland), (b) total switchgrass biomass production (in million Mg), and (c) total NO~3~-N leaching reduction (in % of the baseline) as a function of NO~3~-N leaching and profitability threshold values of the baseline scenario. In each plot, isolines with numbers 10-70 show the threshold combinations with similar resulting values. The grey dashed lines show an example how to read the plot: If cropland losing > 50 kg N ha^-1^ and losing > US$ 100 ha^-1^ was considered for conversion to switchgrass ('conservative' scenario), a little over 10% of cropland currently in row crop would be in switchgrass (a), approx. 10 million Mg of biomass would be produced (b), and the N loss through leaching would be reduced by almost 20% (c). Similarly, the solid lines show the outcomes for the 'nutrient reduction' scenario."}
+
 
 
 # multiple panel plot with the modified function filled.contour3()
@@ -752,11 +883,12 @@ par(xpd = NA)
 text(x=-360,y=107,expression((c)~NO[3]-N~reduction),cex = 1,font = 2, adj = c(0,0))
 
 
+
 ```
 
 ### Statewide N balance
 
-At the state-wide level, the difference in N input sources between the baseline and the 'conservative' switchgrass integration scenario is mainly attributed a decreased fertilization rate (figure 8). Amongst the output N components, largest decreases are apparent in NO~3~-N leaching and runoff. In both scenarios, output exceeded the input N, leading to an overall decrease in soil N.
+At the state-wide level, the difference in N input sources between the baseline and the 'conservative' switchgrass integration scenario is mainly attributed a decreased fertilization rate (Fig. 8). Amongst the output N components, largest decreases are apparent in NO~3~-N leaching and runoff. In both scenarios, output exceeded the input N, leading to an overall decrease in soil N.
 
 ```{r n_balance_figure, cache = TRUE, fig.height=5, fig.width=5, fig.cap="Figure 8: Nitrogen balance of the baseline, 'conservative', and 'nutrient reduction' scenario. Values are averaged over the modeled time period (4 years for row crops and 10 years for switchgrass). Numbers above each set of N inputs and outputs indicate the overall N balance." }
 
@@ -802,10 +934,10 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 
 
 ggplot(mapping=aes(x=scenario)) +
+theme_gcbb() +
 geom_bar(data = n_state_in, aes(x=scenario-0.8, y=n_kg_ha, fill = n_comp), width=0.8, stat="identity") +
 geom_bar(data = n_state_out, aes(x=scenario, y=n_kg_ha, fill = n_comp), width=0.8,  stat="identity") +
 scale_fill_manual(values=cbPalette) +
-theme_b_border() +
 scale_y_continuous(name = expression(Nitrogen~(kg~N^{"-1"}))) +
 scale_x_continuous(name = " ", breaks = c(1.6,3.6,5.6), labels = c("Baseline", "'Cons.'", "'Nutr. red.'"), limits = c(0.25, 7)) +
 scale_fill_manual(name="",  values=cbPalette,
@@ -826,22 +958,28 @@ annotate("text", x = 5.6, y = 200, label = balance_n_state_nutr, size = 3)
 
 ### Spatial distributions of leaching reduction
 
-Our results suggest that highest NO~3~-N leaching reduction under the 'conservative' switchgrass integration scenario can be achieved in some of the central and eastern counties (figure 9). The counties of highest NO~3~-N leaching in the baseline scenario do not necessarily line up with those of highest reduction potential. This indicates that including socio-economic thresholds concomitantly with environmental ones produces different targets for subfield intervention than would have been identified with an economic or biophysical model alone.
+Our results suggest that highest NO~3~-N leaching reduction under the 'conservative' and 'nutrient reduction' switchgrass integration scenario can be achieved in some of the central, eastern, and southern counties (Fig. 9). The counties of highest NO~3~-N leaching in the baseline scenario do not necessarily line up with those of highest reduction potential. 
 
 
 
 ```{r plot_n_loss_reduction_map, cache = TRUE, fig.width=8, fig.height=4, fig.cap= "Figure 9: Relative reduction in nitrogen leaching per county when switchgrass is grown on areas that loose > US$ 100 ha^-1^ and leach > 50 kg N ha^-1^ ('conservative' scenario), assuming medium (10,000 kg ha^-1^) switchgrass yield, as compared to the status quo in Figure 4."}
-ggplot(counties_swg_med_df) +
-  geom_polygon(aes(long, lat, group = group, fill=no3_leach_red), color = "white") +
+counties_red_swg_df <- filter(counties_swg_df, scenario %in% c("conservative", "nutrient reduction"))
+
+scenarios <- c('conservative'= "(a) 'conservative' scenario",'nutrient reduction'= "(b) 'nutrient reduction' scenario")
+
+ggplot(counties_red_swg_df) +
+  theme_gcbb() +
+  ditch_the_axes_with_border +
+  geom_polygon(aes(long, lat, group = group, fill=no3_leach_red), color = "grey") +
   scale_fill_gradient(low = "white", high="#0072B2", guide = "colourbar") +  
   coord_equal() +
-  ditch_the_axes +
-  labs(fill = expression(NO[3]-N~leaching~reduction~("%"))) 
+  labs(fill = expression(NO[3]-N~leaching~reduction~("%"))) +
+  facet_wrap(~scenario, ncol = 2, labeller = as_labeller(scenarios))
 ```
 
-The subfield resolution maps of NO~3~-N leaching reduction (figure 10) illustrate the spatial heterogeneity of environmental outcomes under the biomass crop integration scenarios. In the 'conservative' scenario, the areas in switchgrass are not evenly distributed across Iowa but clustered along the Raccoon, upper South Skunk, and Cedar Watersheds (figure 10(a)). The 'nutrient reduction' scenario would require much more cropland to be converted to switchgrass, but some regions in the north west and south east would not see significant management changes (figure 10(b)).
+The subfield resolution maps of NO~3~-N leaching reduction (Fig. 10) illustrate the spatial heterogeneity of environmental outcomes under the biomass crop integration scenarios. In the 'conservative' scenario, the areas in switchgrass are not evenly distributed across Iowa but clustered along the Raccoon, upper South Skunk, and Cedar Watersheds (Fig. 10a). The 'nutrient reduction' scenario would require much more cropland to be converted to switchgrass, but some regions in the north west and south east would not see significant management changes (Fig. 10b).
 
-Focusing on the Upper North Raccoon River Watershed as an example of an impaired watershed reveals a varying pattern of switchgrass fields (figure 10(c), (d)). In some regions, whole fields are converted while in others, subfield areas are patchy and more fragmented. In the selected portion of the watershed, a region where 80 % of land is in row crops, the 'conservative' scenario (converting cropland that loses > US$ 100 and leaches > 50 kg N ha^-1^ to switchgrass) would result in 14.3 % in switchgrass and a NO~3~-N leaching reduction of 11.3 % (figure 10(c)). Most subfield areas converted to switchgrass display NO~3~-N leaching reduction of over 50 %, but the relative small conversion area (due to relatively high row crop profitability in this watershed) results in a low mean NO~3~-N leaching reduction. The 'nutrient reduction' scenario (converting all unprofitable land that is leaching > 20 kg N ha^-1^ to switchgrass) would result in 39.7 % of row crops converted to switchgrass and a NO~3~-N leaching reduction of 31.4 % (figure 10(d)).
+Focusing on the Upper North Raccoon River Watershed as an example of an impaired watershed reveals a varying pattern of switchgrass fields (Fig. 10c,d). In some regions, whole fields are converted while in others, subfield areas are patchy and more fragmented. In the selected portion of the watershed, a region where 80 % of land is in row crops, the 'conservative' scenario (converting cropland that loses > US$ 100 and leaches > 50 kg N ha^-1^ to switchgrass) would result in 14.3 % in switchgrass and a NO~3~-N leaching reduction of 11.3 % (Fig. 10c). Most subfield areas converted to switchgrass display NO~3~-N leaching reduction of over 50 %, but the relative small conversion area (due to relatively high row crop profitability in this watershed) results in a low mean NO~3~-N leaching reduction. The 'nutrient reduction' scenario (converting all unprofitable land that is leaching > 20 kg N ha^-1^ to switchgrass) would result in 39.7 % of row crops converted to switchgrass and a NO~3~-N leaching reduction of 31.4 % (Fig. 10d).
 
 ```{r subfield_n_red_iowa_zoom, cache = TRUE, fig.height=5, fig.width=5, fig.cap="Figure 10: Subfield-scale NO~3~-N leaching reduction relative to the baseline scenario in Iowa (a, b) and in the northern part of the North Raccoon River Watershed, spanning across Buena Vista, Pocahontas, Sac, and Calhoun County (c, d). (a) and (c) show the 'conservative' scenario where switchgrass is grown on areas that loose > US$ 100 ha^-1^ and leach > 50 kg N ha^-1^. (b) and (d) show the 'nutrient reduction' scenario where switchgrass is grown on unprofitable areas that leach > 20 kg N ha^-1^."}
 
@@ -858,20 +996,15 @@ To reach the Iowa Nutrient Reduction Strategy's goal of 41 % NO~3~-N leaching re
 
 Our focus on the Upper North Raccoon River Watershed highlights a relevant issue of nutrient leaching concerning the local scale: Its basin provides municipal drinking water for over 500,000 Iowa residents and its area is dominated by intensively managed agriculture. The state capital's utility, the Des Moines Water Works, recently filed a lawsuit against drainage districts of three upstream counties, claiming the need for regulation of tile drainage discharge as a "point source" of NO~3~-N pollution. The lawsuit was dismissed by the Supreme Court early this year, but the topic remains highly controversial in terms of responsibilities and regulatory requirements to protect public health.
 
-Our predictions for reductions in NO~3~-N leaching are consistent with field measurements and other modeling studies. As part of a high level nutrient budget for Iowa, @christianson2012nitrogen estimated NO~3~-N leaching from fertilizer inputs as 36 and 24 kg N ha^-1^ for continuous maize and maize after soybeans, respectively. Their approach did not take into account weather and soil related variability, but their results lie within our modeled distribution (figure 2 (b)). Our state-wide averages for N inputs is in the same range, while N outputs are slightly higher in our approach (figure 8).  Total annual average NO~3~-N leaching per county (figure 4) is comparable with values for maize cropland in Iowa modeled by @davis2012impact, who found most counties in the northern half of the state losing more than 3200 Mg N.
+Our predictions for reductions in NO~3~-N leaching are consistent with field measurements and other modeling studies. As part of a high level nutrient budget for Iowa, @christianson2012nitrogen estimated NO~3~-N leaching from fertilizer inputs as 36 and 24 kg N ha^-1^ for continuous maize and maize after soybeans, respectively. Their approach did not take into account weather and soil related variability, but their results lie within our modeled distribution (Fig. 2b). Our state-wide averages for N inputs is in the same range, while N outputs are slightly higher in our approach (Fig. 8).  Total annual average NO~3~-N leaching per county (Fig. 4) is comparable with values for maize cropland in Iowa modeled by @davis2012impact, who found most counties in the northern half of the state losing more than 3200 Mg N.
 
-In comparison to a maize-maize-soybean rotation, miscanthus, switchgrass, and prairie reduced NO~3~-N leaching at 50 cm soil depth by more than 90 % in the fourth year of an experiment on deep loess soils in Illinois [@smith2013reduced]. @mcisaac2010miscanthus showed a 97 % reduction in NO~3~-N leaching at 50 cm soil depth in established miscanthus and switchgrass plots compared to maize-soybean rotation on similar soils.  @daigh2015subsurface showed that fertilized, reconstructed prairie lost 89-99 % less NO~3~-N to tile drainage water compared to row crops on fertile soils in central Iowa. These reduction rates are at the high end of our modeled NO~3~-N leaching reduction distributions (figure S4). The wider distributions expanding to lower reduction rates across Iowa are realistic, since our results are averaged over a 10 year growing horizon for switchgrass, and span over a variety of soil characteristics and weather conditions. The annual variability in NO~3~-N leaching due to weather conditions has been observed elsewhere [@sprague2011nitrate]. @hatfield2009nitrate found that annual NO~3~-N leaching variations are related to precipitation of the first five months of a year. Projected increases in extreme rain events associated with climate change [@easterling2000observed] are likely to exacerbate nutrient loss through leaching and erosion, reinforcing the need for conservation practices that address multiple environmental risks. The integration of perennial vegetation meets this need by enhancing nutrient uptake and erosion control, while delivering additional ecosystem services such as carbon sequestration, soil production, and biodiversity. 
+In comparison to a maize-maize-soybean rotation, miscanthus, switchgrass, and prairie reduced NO~3~-N leaching at 50 cm soil depth by more than 90 % in the fourth year of an experiment on deep loess soils in Illinois [@smith2013reduced]. @mcisaac2010miscanthus showed a 97 % reduction in NO~3~-N leaching at 50 cm soil depth in established miscanthus and switchgrass plots compared to maize-soybean rotation on similar soils.  @daigh2015subsurface showed that fertilized, reconstructed prairie lost 89-99 % less NO~3~-N to tile drainage water compared to row crops on fertile soils in central Iowa. These reduction rates are at the high end of our modeled NO~3~-N leaching reduction distributions (Fig. S4). The wider distributions expanding to lower reduction rates across Iowa are realistic, since our results are averaged over a 10 year growing horizon for switchgrass, and span over a variety of soil characteristics and weather conditions. The annual variability in NO~3~-N leaching due to weather conditions has been observed elsewhere [@sprague2011nitrate]. @hatfield2009nitrate found that annual NO~3~-N leaching variations are related to precipitation of the first five months of a year. Projected increases in extreme rain events associated with climate change [@easterling2000observed] are likely to exacerbate nutrient loss through leaching and erosion, reinforcing the need for conservation practices that address multiple environmental risks. The integration of perennial vegetation meets this need by enhancing nutrient uptake and erosion control, while delivering additional ecosystem services such as carbon sequestration, soil production, and biodiversity. 
 
-Our spatial results can be used as indicators to identify nonlinear (disproportionate) responses of NO~3~-N leaching reduction to conversion of land to perennial grasses in order to find "sweet spots" where large improvements can be obtained by conversion of relatively small portions of cropland [@qiu2015landscape]. Applied to smaller management units and fed with more detailed and accurate inputs such as yield monitor data, our approach provides a decision making tool for farmers.
+Our spatial results can be used as indicators to identify nonlinear (disproportionate) responses of NO~3~-N leaching reduction to conversion of land to perennial grasses in order to find "sweet spots" where large improvements can be obtained by conversion of relatively small portions of cropland [@qiu2015landscape]. It also highlights regions where high baseline NO~3~-N leaching does not align with high leaching reduction potential. This indicates that including socio-economic thresholds concomitantly with environmental ones produces different targets for subfield intervention than would have been identified with an economic or biophysical model alone.  Applied to smaller management units and fed with more detailed and accurate inputs such as yield monitor data, our approach provides a multi-criteria decision making tool for farmers.
 
-Our methodological setup is not intended to estimate total NO~3~-N fluxes leaving Iowa's geographic area through surface waters. DNDC models leaching at a soil depth of 50 cm and does not account for further reduction in NO~3~-N concentration observed in tile drainage water [@smith2013reduced] and surface waters due to benthic denitrification [@donner2003evaluating]. However, our approach serves to compare different cropping systems and management on a subfield resolution. We make the simplifying assumption that the reduction of NO~3~-N leaching at 50 cm is proportional to the reduction of NO~3~-N in tile drainage and surface waters. Our framework of cropland area selection and scenario-based land management simulation combines two modeling approaches with assumptions limited by publicly available data. For both the economic estimation and the biogeochemistry model, management practices and crop budgets were assumed to be equal across the state, and only varying with crop rotation [for details on the limitations of the profitability analysis see also @brandes2016subfield]. A preliminary analysis showed that yields of the new switchgrass variety Liberty, chosen as cropping alternative to maize and soybeans due to its high yield potential and cold tolerance, did not linearly respond to cropland quality in multilocation trials (data not shown). Because a sensitivity analysis revealed weak response of the model outcomes to yield variations (figure S5), we argue that yield is not an important factor on a landscape scale when only fractions of existing cropland are converted to perennial vegetation. This argument has to be re-evaluated when better switchgrass yield data become available. DNDC does not account for lateral water flow that is caused by topography and for possible NO~3~-N uptake by roots growing below 50 cm. The latter is likely to occur especially in perennial cropping systems, suggesting that our leaching results for switchgrass are overestimated. We are not assuming variable rate fertilization, so on some cropland our fertilizer might be over- or underestimated. Also, we do not include manure application due to missing spatial data on amounts and type.
+Our methodological setup is not intended to estimate total NO~3~-N fluxes leaving Iowa's geographic area through surface waters. DNDC models leaching at a soil depth of 50 cm and does not account for further reduction in NO~3~-N concentration observed in tile drainage water [@smith2013reduced] and surface waters due to benthic denitrification [@donner2003evaluating]. However, our approach serves to compare different cropping systems and management on a subfield resolution. We make the simplifying assumption that the reduction of NO~3~-N leaching at 50 cm is proportional to the reduction of NO~3~-N in tile drainage and surface waters. Our framework of cropland area selection and scenario-based land management simulation combines two modeling approaches with assumptions limited by publicly available data. For both the economic estimation and the biogeochemistry model, management practices and crop budgets were assumed to be equal across the state, and only varying with crop rotation [for details on the limitations of the profitability analysis see also @brandes2016subfield]. A preliminary analysis showed that yields of the new switchgrass variety Liberty, chosen as cropping alternative to maize and soybeans due to its high yield potential and cold tolerance, did not linearly respond to cropland quality in multilocation trials (data not shown). Because a sensitivity analysis revealed weak response of the model outcomes to yield variations (Fig. S5), we argue that yield is not an important factor on a landscape scale when only fractions of existing cropland are converted to perennial vegetation. This argument has to be re-evaluated when better switchgrass yield data become available. DNDC does not account for lateral water flow that is caused by topography and for possible NO~3~-N uptake by roots growing below 50 cm. The latter is likely to occur especially in perennial cropping systems, suggesting that our leaching results for switchgrass are overestimated. We are not assuming variable rate fertilization, so on some cropland our fertilizer might be over- or underestimated. Also, we do not include manure application due to missing spatial data on amounts and type.
 
-
-## Conclusions
-
-This analysis disaggregates previously published approaches to nitrogen balance estimation based on county or watershed data down to a finer resolution and takes into account the biogeochemical processes driving NO~3~-N loss in agroecosystems. The inclusion of perennial crops is particularly promising due to potential synergies between multiple ecosystem functions besides water quality, such as carbon sequestration and erosion control, especially with regards to increasing threats to agricultural systems associated with global warming. 
-NO~3~-N leaching reductions by perennial integration are consistently high relative to the affected land area. The requirement to sacrifice only the least performing fraction of farmland to perennials might compensate for the long-term commitment associated with perennial crops. While cover crops can be planted temporarily, their leaching reduction efficiency has been found to be highly variable, and their management concerns the entire cropland in order to achieve meaningful NO~3~-N leaching reductions.
-We present two scenarios to reflect possible future developments: The 'conservative' scenario allows to maintain current grain production in Iowa, slightly offset by the conversion of the least productive 11.5 % of cropland to switchgrass, while the 'nutrient reduction' scenario outlines a more transformational future with demand structures and policies supporting bioenergy feedstock production and therefore allowing a more profound land use conversion in the Midwest Maize Belt.
+This analysis disaggregates previously published approaches to nitrogen balance estimation based on county or watershed data down to a finer resolution and takes into account the biogeochemical processes driving NO~3~-N loss in agroecosystems. The inclusion of perennial crops is particularly promising due to potential synergies between multiple ecosystem functions besides water quality, such as carbon sequestration and erosion control, especially with regards to increasing threats to agricultural systems associated with global warming. NO~3~-N leaching reductions by perennial integration are consistently high relative to the affected land area. The requirement to sacrifice only the least performing fraction of farmland to perennials might compensate for the long-term commitment associated with perennial crops. While cover crops can be planted temporarily, their leaching reduction efficiency has been found to be highly variable, and their management concerns the entire cropland in order to achieve meaningful NO~3~-N leaching reductions. We present two scenarios to reflect possible future developments: The 'conservative' scenario allows to maintain current grain production in Iowa, slightly offset by the conversion of the least productive 11.5 % of cropland to switchgrass, while the 'nutrient reduction' scenario outlines a more transformational future with demand structures and policies supporting bioenergy feedstock production and therefore allowing a more profound land use conversion in the Midwest Maize Belt.
 
 
 ## Supplementary Information
@@ -943,7 +1076,7 @@ plot1 <- ggplot(leach_weather) +
   geom_point(aes(x = precip, y = avg_leach, color = year, shape = year)) +
   geom_text(data=subset(leach_weather, fips == "IA193"), # to label only the values where fips = IA193
             aes(precip, avg_leach, label=fips)) +
-  theme_b_border() +
+  theme_gcbb() +
   theme(legend.justification=c(0.02,0.98), legend.position=c(0.02,0.98)) +
   labs(x=expression(Annual~precipitation~(mm)),
        y=expression(Annual~NO[3]-N~leaching~(kg~N~ha^{-1}))) +
@@ -957,7 +1090,7 @@ plot2 <- ggplot(leach_weather) +
   geom_point(aes(x = temp_min, y = avg_leach, col = year, shape = year)) +
   geom_text(data=subset(leach_weather, fips == "IA193"), # to label only the values where fips = IA193
             aes(temp_min, avg_leach, label=fips)) +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(paste("Minimum temperature (",degree, "C)")),
        y=expression(Annual~NO[3]-N~leaching~(kg~N~ha^{-1}))) +
   scale_x_continuous() +
@@ -969,7 +1102,7 @@ plot3 <- ggplot(leach_weather) +
   geom_point(aes(x = temp_max, y = avg_leach, col = year, shape = year)) +
   geom_text(data=subset(leach_weather, fips == "IA193"), # to label only the values where fips = IA193
             aes(temp_max, avg_leach, label=fips)) +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(paste("Maximum temperature (",degree, "C)")),
        y=expression(Annual~NO[3]-N~leaching~(kg~N~ha^{-1}))) +
   scale_x_continuous() +
@@ -1060,13 +1193,13 @@ scenarios <- c('cgsb_n_loss'= "(a) N loss (corn/soybeans)",'cgsb_no3_leach'= "(b
 
 ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Mean~nitrogen~loss~(kg~N~ha^{-1})),
        y=expression(Area~(Mha))) +
   scale_x_continuous(lim = c(-1,150)) +
   scale_y_continuous() +
   geom_vline(data = medians_df, aes(xintercept=median), color = "black", linetype = "dashed") +
-  theme(legend.position="bottom") +
+#  theme(legend.position="bottom") +
   facet_wrap( ~ scenario, ncol=3, labeller = as_labeller(scenarios)) 
 ```
 
@@ -1094,7 +1227,7 @@ scenarios <- c('nutred'= "Nutrient Reduction",'tweak'= "Tweak")
 
 ggplot(leach_red, aes(leach_red, weight = area_ha)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Mean~NO[3]-N~leaching~reduction~("%")),
        y=expression(Area~(Mha))) +
   scale_x_continuous() +
@@ -1174,9 +1307,9 @@ relation <- data.frame(swg_yield, profit_cutoff, swg_area_percent, leach_red)
 
 ```{r relations, cache=TRUE,  fig.width=8, fig.height=3,  fig.cap="Figure S5: State-wide NO~3~-N leaching reduction as a function of area in switchgrass (a) and of the profitability threshold (b). The threshold for NO~3~-N leaching is held constant at 50 kg N ha^-1^ (only areas losing > 50 kg N ha^-1^ through leaching are considered for conversion to switchgrass)."}
 
-plot1 <- ggplot() + 
+plot1 <- ggplot() +  
   geom_point(data = relation, aes(x = swg_area_percent, y = leach_red, color=swg_yield)) +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Area~"in"~switchgrass~("%")),
        y=expression(NO[3]-N~leaching~reduction~("%"~N))) +
   scale_x_continuous() +
@@ -1187,7 +1320,7 @@ plot1 <- ggplot() +
 
 plot2 <- ggplot() +
   geom_point(data = relation, aes(x = profit_cutoff, y = leach_red, color=swg_yield)) +
-  theme_b_border() +
+  theme_gcbb() +
   labs(x=expression(Profitability~threshold~("US$"~ha^{-1})),
        y=expression(NO[3]-N~leaching~reduction~("%"~N))) +
   scale_x_continuous(breaks=seq(from=-500, to=200, by= 100)) +
@@ -1207,21 +1340,21 @@ colnames(z) <- seq(from=0, to=150, by=10)
 z_t <- t(z) # transpose matrix (swap rows and columns)
 z_table <- z_t[rev(seq_len(nrow(z_t))),] # reverse the order of the rows so that the matrix looks like the contour plots
 
-kable(z_table, digits = 1, caption="Table S1: Area in switchgrass (%) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Figure 2(a) and Figure 3(a)." )
+kable(z_table, digits = 1, caption="Table S1: Area in switchgrass (%) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Fig. 2a and Fig. 3a." )
 
 rownames(z_bm) <- seq(from=-800, to=700, by= 100)
 colnames(z_bm) <- seq(from=0, to=150, by=10)
 z_bm_t <- t(z_bm)
 z_bm_table <- z_bm_t[rev(seq_len(nrow(z_bm_t))),] # reverse the order of the columns so that the matrix looks like the contour plots
 
-kable(z_bm_table, digits = 1, caption="Table S2: Biomass production from switchgrass (million metric tonnes) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Figure 2(b) and Figure 3(b)." )
+kable(z_bm_table, digits = 1, caption="Table S2: Biomass production from switchgrass (million metric tonnes) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Fig. 2b and Fig. 3b." )
 
 rownames(z_nlr) <- seq(from=-800, to=700, by= 100)
 colnames(z_nlr) <- seq(from=0, to=150, by=10)
 z_nlr_t <- t(z_nlr)
 z_nlr_table <- z_nlr_t[rev(seq_len(nrow(z_nlr_t))),] # reverse the order of the columns so that the matrix looks like the contour plots
 
-kable(z_nlr_table, digits = 1, caption="Table S3: NO~3~-N leaching reduction (%) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Figure 2(c) and Figure 3(c)." )
+kable(z_nlr_table, digits = 1, caption="Table S3: NO~3~-N leaching reduction (%) under all possible conversion threshold scenarios. The profitability cut-off changes along the columns (profitability < US$ -800 ha^-1^ - US$ 700 ha^-1^) and the NO~3~-N leaching cut-off changes along the rows (NO~3~-N leaching > 150 kg N ha^-1^ - 0 kg N ha^-1^). This matrix shows the data underlying the surface plot in Fig. 2c and Fig. 3c." )
 
 ```
 
