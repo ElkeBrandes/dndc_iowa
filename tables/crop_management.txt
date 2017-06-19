@@ -1,24 +1,30 @@
-crop_sys	N_kg_ha	date	activity			
-maize after maize	208	2-Nov	"anhydrous N, knifed in (30 inches)"
-		4-Nov	"chisel plow, disk"
-		25-Apr	"spray, pre-emergence"
-		8-May	cultivator
-		11-May	planter
-		1-Jun	 fertilizer surface broadcast
-		20-Jun	"spray, post-emergence"
-		9-Oct	harvest
-maize after soybeans	147	2-Nov	"anhydrous N, knifed in (30 inches)"
-		25-Apr	"spray, pre-emergence"
-		8-May	cultivator
-		11-May	planter
-		1-Jun	 fertilizer surface broadcast
-		20-Jun	"spray, post-emergence"
-		9-Oct	harvest
-soybeans		4-Nov	"chisel plow, disk"
-		1-May	"spray, pre-emergence"
-		15-May	cultivator
-		18-May	planter
-		1-Jun	 fertilizer surface broadcast
-		20-Jun	"spray, post-emergence"
-		20-Oct	harvest
-switchgrass	50			
+cropping_system	N_kg_ha	date	activity
+maize after maize		5-Apr	disk 
+	208	10-Apr	"anhydrous N, knifed in (30 inches)"
+		20-Apr	cultivator
+		25-Apr	planter
+		5-May	"spray, post-emergence"
+		10-Oct	harvest
+		20-Oct	chisel plow
+maize after soybeans		5-Apr	disk 
+	147	10-Apr	"anhydrous N, knifed in (30 inches)"
+		20-Apr	cultivator
+		25-Apr	planter
+		5-May	"spray, post-emergence"
+		10-Oct	harvest
+		20-Oct	chisel plow
+soybeans		1-May	disk
+		20-May	cultivator
+		25-May	planter
+		1-Jun	"spray, post-emergence"
+		25-Jun	"spray, post-emergence"
+		25-Sep	harvest
+switchgrass		5-Apr	"disk, year 1"
+	50	15-Apr	"surface broadcast, year 1"
+		20-Apr	"cultivator, year 1"
+		25-Apr	"seeding, year 1"
+		1-Jun	"spray, post-emergence, year 1"
+		25-Oct	"harvest, year 1"
+		1-Apr	"begin of growth, year 2-10"
+	50	1-May	"fertilizer surface broadcast, year 2-10"
+		25-Oct	"harvest, year 2-10"

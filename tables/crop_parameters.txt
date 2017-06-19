@@ -1,17 +1,16 @@
-	maize	soybean	switchgrass		
-simulated years	2012-2015	2012-2015	2006-2015		
-parameter 					
-yield (Mg ha-1)	"f(CSR2, county yield)"	"f(CSR2, county yield)"	"7.5, 10, 12.5 "		
-C/N above ground			75		
-C/N below ground			60		
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
+	maize	soybean	switchgrass
+simulated years	2012-2015	2012-2015	2006-2015
+parameter: 			
+yield (Mg ha-1)	"f(CSR2, county yield)"	"f(CSR2, county yield)"	7.5; 10; 12.5 
+grain C/N	50	10	NA
+leaf C/N	80	45	75
+stem C/N	80	45	75
+root C/N	80	24	60
+max. biomass C (kg C ha-1)	10309	3512	10000	
+grain fraction	0.5	0.35	0	
+leaf fraction	0.2	0.22	0.25
+stem fraction	0.2	0.22	0.25
+root fraction	0.1	0.2	0.5
+Water demand (kg H2O kg DW-1)	200	350	300
+opt. T (degree C)	30	25	21	
+TDD (degree C)	2800	2000	2000	
