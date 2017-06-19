@@ -37,11 +37,11 @@ With dplyr:
 ```{r connect_dplyr, message=FALSE}
 
 
-pw <- "5QUXJHTbxj" # enter password here
-isuag_db <- src_postgres(dbname = 'isuag',
-                           host = 'isu-ag-db.agsolver.com',
+pw <- "angst-vrpFhB" # enter password here
+HeatonAgsolver_db <- src_postgres(dbname = 'AgSolver',
+                           host = 'heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com',
                            port = 5432,
-                           user = 'isuag',
+                           user = 'heatonlab',
                            password = pw)
 
 ```
@@ -49,9 +49,9 @@ With RPostgreSQL:
 ```{r, connect_rpostgres, message=FALSE}
 
 drv <- dbDriver("PostgreSQL") # loads the PostgreSQL driver
-con <- dbConnect(drv, dbname = "isuag",  # creates a connection to the postgres database
-                 host = "isu-ag-db.agsolver.com", port = 5432,
-                 user = "isuag", password = pw)
+con <- dbConnect(drv, dbname = "AgSolver",  # creates a connection to the postgres database
+                 host = "heatonagsolver.cv5vlzyvdngx.us-east-1.rds.amazonaws.com", port = 5432,
+                 user = "heatonlab", password = pw)
 # note that "con" will be used later in each connection to the database
 ```
 
@@ -153,10 +153,10 @@ ggplot() +
 ### County effects?
 Figure 2 suggests that NASS reported county yields and/or county survey cash rents are reponsible for strong contrasts between neiboring counties (also seen in the profit distribution on a subfield resolution). Therefore, I calculated 2012-2015 means for corn and soybean yield and cash rent per county in PostgreSQL (query script 09_county_mean_yields_cashrents_2012_2015) to visualize them.
 ```{r county_yield_rent, cache=TRUE}
-counties <- readOGR(dsn="././geodata/shapefiles/county.shp",layer="county")
+counties <- readOGR(dsn="shapefiles/county.shp",layer="county")
 names(counties)[9] <- "fips" 
 
-yield_rent_county <- tbl(isuag_db, "09_county_mean_yields_cashrents_2012_2015") %>%
+yield_rent_county <- tbl(HeatonAgsolver_db, "09_county_mean_yields_cashrents_2012_2015") %>%
   as.data.frame() 
 
  for (i in 1:length(yield_rent_county$fips)) {
@@ -261,13 +261,17 @@ The N loss values and respective patch areas were aggregated to the same N loss 
 Use the dplyr PostgreSQL handle into the database and create a data frame:
 ```{r fetch_distr, cache=TRUE}
 
-cgsb_leach <-tbl(isuag_db, "06_cgsb_ave_n_loss_rounded_aggr")  %>%
+cgsb_n_loss <-tbl(HeatonAgsolver_db, "06_cgsb_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
-swg_low <-tbl(isuag_db, "06_swg_7500_ave_n_loss_rounded_aggr")  %>%
+cgsb_no3_leach <-tbl(HeatonAgsolver_db, "06_cgsb_ave_no3_leach_rounded_aggr")  %>%
   as.data.frame()
-swg_med <-tbl(isuag_db, "06_swg_10000_ave_n_loss_rounded_aggr")  %>%
+cgsb_nh3_vol <-tbl(HeatonAgsolver_db, "06_cgsb_ave_nh3_vol_rounded_aggr")  %>%
   as.data.frame()
-swg_hi <-tbl(isuag_db, "06_swg_12500_ave_n_loss_rounded_aggr")  %>%
+swg_low <-tbl(HeatonAgsolver_db, "06_swg_7500_ave_n_loss_rounded_aggr")  %>%
+  as.data.frame()
+swg_med <-tbl(HeatonAgsolver_db, "06_swg_10000_ave_n_loss_rounded_aggr")  %>%
+  as.data.frame()
+swg_hi <-tbl(HeatonAgsolver_db, "06_swg_12500_ave_n_loss_rounded_aggr")  %>%
   as.data.frame()
 ```
 
@@ -275,45 +279,50 @@ I can run some test here:
 ```{r test_distr}
 # send a query through dplyr
 query = "SELECT SUM(area_ha) FROM \"06_cgsb_ave_n_loss_rounded_aggr\" WHERE ave_n_loss_cgsb_round > 60"
-sum = tbl(isuag_db, sql(query))
+sum = tbl(HeatonAgsolver_db, sql(query))
 sum
 ```
 
 Create a list of data frames:
 ```{r list}
-data_list <- list(cgsb_leach, swg_low, swg_med, swg_hi)
+data_list <- list(cgsb_n_loss, cgsb_no3_leach, cgsb_nh3_vol, swg_low, swg_med, swg_hi)
 str(data_list[[1]])
 ```
 
-Prepare a data frame to be used for the NO~3~ leaching facet plot:
-```{r data, message=FALSE, cache=TRUE}
-scenario <- c(rep("cgsb", sum(sapply(data_list[1],nrow))), rep("swg_low", sum(sapply(data_list[2],nrow))), rep("swg_med", sum(sapply(data_list[3],nrow))), rep("swg_hi", sum(sapply(data_list[4],nrow)))) %>%
-factor(levels= c('cgsb', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
+Prepare a data frame to be used for the N loss facet plot:
+```{r data_n_loss_distributions, message=FALSE, cache=TRUE}
+scenario <- c(rep("cgsb_n_loss", sum(sapply(data_list[1],nrow))), 
+              rep("cgsb_no3_leach", sum(sapply(data_list[2],nrow))),
+              rep("cgsb_nh3_vol", sum(sapply(data_list[3],nrow))), 
+              rep("swg_low", sum(sapply(data_list[4],nrow))), 
+              rep("swg_med", sum(sapply(data_list[5],nrow))), 
+              rep("swg_hi", sum(sapply(data_list[6],nrow)))) %>%
+factor(levels= c('cgsb_n_loss', 'cgsb_no3_leach', 'cgsb_nh3_vol', 'swg_low', 'swg_med', 'swg_hi')) # make it a factor so that it is plotted in the right order in the facets
 
-leaching <- vector(mode="numeric", length=0)
+n_loss <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
-   leaching <- append(leaching, data_list[[i]][,1])
-str(leaching)  
+   n_loss <- append(n_loss, data_list[[i]][,1])
+str(n_loss)  
 area <- vector(mode="numeric", length=0)
  for (i in seq(data_list))
    area <- append(area, data_list[[i]][,2])
    
-leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show Mha
+n_loss_df <- data.frame(scenario, n_loss, area = area*1e-6) # this factor to show Mha
 ```
 
 Plot the distributions:
 ```{r histograms, cache=TRUE, warning=FALSE, fig.cap="Figure 3: Distributions of N loss in Iowa. Values were averaged over the mananagement horizon of 10 years, including two establishment years."}
-scenarios <- c('cgsb'= "Status Quo (corn/soybeans)", 'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
+scenarios <- c('cgsb_n_loss'= "N loss (corn/soybeans)",'cgsb_no3_leach'= "NO3 leach. (corn/soybeans)", 'cgsb_nh3_vol'= "NH3 vol. (corn/soybeans)",'swg_low' = "Low yielding switchgrass", 'swg_med' = "Medium yielding switchgrass", 'swg_hi' = "High yielding switchgrass")
 
-ggplot(leach, aes(leaching, weight = area)) + 
+ggplot(n_loss_df, aes(n_loss, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_b_border() +
-  labs(x=expression(Mean~NO[3]^{"-"}~leaching~"+"~NH[3]~volatilization~2006-2015~(kg~N~ha^{-1})),
+  labs(x=expression(Mean~N~loss~(kg~N~ha^{-1})),
        y=expression(Area~(Mha))) +
-  scale_x_continuous() +
+  scale_x_continuous(limits = c(-1,200), breaks = seq(0,200,25)) +
   scale_y_continuous() +
   theme(legend.position="bottom") +
-  facet_wrap( ~ scenario, ncol=2, labeller = as_labeller(scenarios)) 
+  facet_wrap( ~ scenario, ncol=3, labeller = as_labeller(scenarios)) 
 ```
 
 ##3. Correlation between profitability and NO~3~^-^ leaching in corn and soybean fields
@@ -332,35 +341,35 @@ CREATE TABLE "r_dndc_clumu_cgsb_swg_sample" AS SELECT mean_profit_ha, ave_no3_le
 
 Pull the new table into R:
 ```{r data_sample}
-sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_sample") %>%
+sample_leach <- tbl(HeatonAgsolver_db, "r_dndc_clumu_cgsb_swg_sample") %>%
   as.data.frame(sample)
 
-head(sample, n=2)
-str(sample)
+head(sample_leach, n=2)
+str(sample_leach)
 ```
 
 I plot the sample as a scatter plot:
-```{r scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for NO3 leaching (dashed)."}
+```{r scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of profitability and corn/soy leaching data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -100 US$ ha^-1^ for profitability (solid) and 50 kg N ha^-1^ for NO3 leaching (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  geom_point(data = sample_leach, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 50, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
 ```
 ### Areas with very low NO~3~^-^ leaching
 
 There are many records with leaching values close to 0, and then only a few that are higher but below about 10. The next plot zooms in on the y axis to see this better:
-```{r scatterplot_zoom, warning = FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -150 US$ ha^-1^ for profitability."}
+```{r scatterplot_zoom, warning = FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10000) of profitability and corn/soy leaching data on subfield areas in Iowa. The y axis is zoomed in on 0-20 kg N ha^-1^ to better see the low leaching values. The red line indicates a possible cut off value of -100 US$ ha^-1^ for profitability."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
+  geom_point(data = sample_leach, aes(x = mean_profit_ha, y = ave_no3_leach_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
   scale_x_continuous() +
-  scale_y_continuous(limits=c(0,20)) +
+  scale_y_continuous(limits=c(-1,20)) +
   geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE)
   
 ```
@@ -377,6 +386,7 @@ SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb < 
 ```{sql, connection=con, message=FALSE, cache=TRUE}
 SELECT sum(clumuha) FROM "05_dndc_clumu_cgsb_swg" WHERE ave_no3_leach_ha_cgsb > 1 AND ave_no3_leach_ha_cgsb < 10
 ```
+Leaching values are < 1 kg N ha^-1^ on 2.2% of cropland area.
 
 ### Soil properties on low leaching areas
 
@@ -396,7 +406,7 @@ CREATE TABLE "r_leaching_soil_sample" AS SELECT ave_no3_leach_ha_cgsb, avg_sandt
 
 I make a dataframe out of the db table:
 ```{r soil_sample}
-soil = tbl(isuag_db, "r_leaching_soil_sample") %>%
+soil = tbl(HeatonAgsolver_db, "r_leaching_soil_sample") %>%
   as.data.frame()
 head(soil, n=2)
 ```
@@ -408,7 +418,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(Sand~fraction~("%")))
 
 ggplot() +
@@ -416,7 +426,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(Sand~fraction~("%")))
   
 ggplot() +
@@ -424,7 +434,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous() +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(pH))
 
 ggplot() +
@@ -432,7 +442,7 @@ ggplot() +
   theme_b_border() +
   scale_x_continuous() +
   scale_y_continuous(limits=c(0,20)) +
-  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2006-2015~(kg~N~ha^{-1})),
+  labs(y=expression(Mean~NO[3]^{"-"}~leaching~2012-2015~(kg~N~ha^{-1})),
        x=expression(pH))
 ```
 
@@ -441,7 +451,7 @@ ggplot() +
   geom_point(data = soil, aes(x = avg_ph1to1h2o_r, y = avg_ph01mcacl2_r)) +
   theme_b_border() +
   scale_x_continuous() +
-  scale_y_continuous() +
+  scale_y_continuous(lim = c(5,8)) +
   labs(y=expression(pH~CaCl2), x=expression(pH~H2O)) +
   geom_abline(intercept=0, slope = 1)
 
@@ -471,17 +481,17 @@ CREATE TABLE "r_isu_cgsb_clumu_proc_sample" AS SELECT ave_no3_leach, ave_nh3_vol
 
 Pull the new table into R:
 ```{r leach_vol_sample}
-sample = tbl(isuag_db, "r_isu_cgsb_clumu_proc_sample") %>%
+leach_vs_vol <- tbl(isuag_db, "r_isu_cgsb_clumu_proc_sample") %>%
   as.data.frame(sample)
 
-head(sample, n=2)
-str(sample)
+head(leach_vs_vol, n=2)
+str(leach_vs_vol)
 ```
 
 I plot the sample as a scatter plot:
 ```{r leach_vol_scatterplot, warning=FALSE, cache=TRUE, fig.width=4.5, fig.height=3, fig.cap="Figure 4: Scatterplot of a subsample (n=10,000) of corn/soy NO~3~^-^ leaching and NH~3~ volatilization data (averaged over 2012 - 2015) on subfield areas in Iowa."}
 ggplot() +
-  geom_point(data = sample, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
+  geom_point(data = leach_vs_vol, aes(x = ave_no3_leach, y = ave_nh3_vol), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(x=expression(Mean~NO[3]^{"-"}~leaching~(lbs~N~acre^{-1})),
        y=expression(Mean~NH[3]~volatilization~(lbs~N~acre^{-1})))
@@ -499,26 +509,26 @@ SELECT setseed(0.5)
 ```
 
 ```{sql, connection=con, message=FALSE, cache=TRUE}
-CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg_n_loss" ORDER BY random() LIMIT 10000
+CREATE TABLE "r_dndc_clumu_cgsb_swg_n_loss_sample" AS SELECT mean_profit_ha, ave_n_loss_ha_cgsb FROM "05_dndc_clumu_cgsb_swg" ORDER BY random() LIMIT 10000
 ```
 
 
 Pull the new table into R:
 ```{r data_sample_n_loss}
-sample = tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
+sample_loss <- tbl(isuag_db, "r_dndc_clumu_cgsb_swg_n_loss_sample") %>%
   as.data.frame(sample)
 
 ```
 
 I visualize the sample as a scatter plot:
-```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -150 US$ ha^-1^ for profitability (solid) and 60 kg N ha^-1^ for N loss (dashed)."}
+```{r scatterplot_n_loss, warning=FALSE, fig.cap="Figure 8: Scatterplot of a subsample (n=10,000) of profitability and corn/soy N loss data on subfield areas in Iowa. The red lines indicate possible cut off values, such as -100 US$ ha^-1^ for profitability (solid) and 50 kg N ha^-1^ for N loss (dashed)."}
 ggplot() +
-  geom_point(data = sample, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
+  geom_point(data = sample_loss, aes(x = mean_profit_ha, y = ave_n_loss_ha_cgsb), alpha=0.2, stroke=0) +
   theme_b_border() +
   labs(y=expression(Mean~N~loss~2006-2015~(kg~N~ha^{-1})),
        x=expression(Mean~profitability~2012-2015~("US$"~ha^{-1}))) +
-  geom_vline(aes(xintercept= -150, linetype= "dashed", color = "red"),  show.legend = FALSE) +
-  geom_hline(aes(yintercept= 60, linetype= "dotted", color = "red"),  show.legend = FALSE)
+  geom_vline(aes(xintercept= -100, linetype= "dashed", color = "red"),  show.legend = FALSE) +
+  geom_hline(aes(yintercept= 50, linetype= "dotted", color = "red"),  show.legend = FALSE)
   
 ```
 
@@ -618,7 +628,7 @@ swg_areas <- data.frame(profit = comb[,1],
 
 ```
 
-To visualize the results I plot them in a a surface plot amd a contour plot. Trying out the `rgl` package, the R base function `persp()` and the package [`plot3D`](https://cran.r-project.org/web/packages/plot3D/plot3D.pdf), I ended up using the function `persp3D` for the "surface" plot and the function [`filled.contour2()`](http://wiki.cbr.washington.edu/qerm/sites/qerm/images/4/44/Filled.contour2.R) modified from the in-built function `filled.contour()`. I had to correct and error in this function that might stem from the fact that it has been written in an older version of R.To see the contour lines, I added a contour plot with `contour()` according to [these instructions](http://wiki.cbr.washington.edu/qerm/index.php/R/Contour_Plots).
+To visualize the results I plot them in a a surface plot and a contour plot. Trying out the `rgl` package, the R base function `persp()` and the package [`plot3D`](https://cran.r-project.org/web/packages/plot3D/plot3D.pdf), I ended up using the function `persp3D` for the "surface" plot and the function [`filled.contour2()`](http://wiki.cbr.washington.edu/qerm/sites/qerm/images/4/44/Filled.contour2.R) modified from the in-built function `filled.contour()`. I had to correct and error in this function that might stem from the fact that it has been written in an older version of R.To see the contour lines, I added a contour plot with `contour()` according to [these instructions](http://wiki.cbr.washington.edu/qerm/index.php/R/Contour_Plots).
 
 
 This is the corrected function:
@@ -799,16 +809,16 @@ ggplot() +
 
 ##5. Spatial distribution of N loss changes
 
-I read in the table from the isuag database that contains county identifiers ("fips") and leaching results. 
+I read in the table from the isuag database that contains county identifiers ("fips") and leaching/volatilization results. 
 ```{r counties_attributes}
- counties_n_loss = tbl(isuag_db, "07_n_loss_counties") %>%
+ counties_no3_leach = tbl(HeatonAgsolver_db, "07_dndc_counties") %>%
    as.data.frame()
  # change the data in the column named "FIPS", so that is contains the county identifiers in the same format as the spatial file:
- for (i in 1:length(counties_n_loss$fips)) {
-   counties_n_loss$fips[i] <- sub("IA", "19", counties_n_loss$fips[i])
+ for (i in 1:length(counties_no3_leach$fips)) {
+   counties_no3_leach$fips[i] <- sub("IA", "19", counties_no3_leach$fips[i])
     }
  # make it a factor
-  counties_n_loss$fips <- as.factor(counties_n_loss$fips)
+  counties_no3_leach$fips <- as.factor(counties_no3_leach$fips)
 ```
 
 Read in a shape file with county delineations. I could use a map provided in the maps package or read in a file from my directory, which I do in this case:
@@ -822,7 +832,7 @@ head(counties@data, n=2) # shows only the slot "data"
 head(counties@polygons[[1]]@Polygons[[1]]@coords, 2) # shows the coordinates
 
 # join the attribute data with the spatial data, using a left join and the identifier "fips":
-counties@data <- left_join(counties@data, counties_n_loss, by = "fips")
+counties@data <- left_join(counties@data, counties_no3_leach, by = "fips")
 ```
 I can map the attributes using tmap, but I want to use ggplot. Therefore I am not using the following code:
 ```qtm(counties, "ave_n_o3_leach_loss_cgsb")```
@@ -837,7 +847,7 @@ head(counties@data, n = 2)
 counties_baseline_df <- left_join(counties_df, counties@data)
 ```
 
-```{r plot_baseline_map, warning=FALSE, message=FALSE, fig.height=4, fig.cap="Figure 8: County mean annual N loss, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been lost on average per year from each county."} 
+```{r plot_baseline_map, warning=FALSE, message=FALSE,fig.show = "hold",  fig.height=5, fig.cap="Figure 8: County mean annual nitrate leaching, averaged over 2012-2015, from corn and soybean fields in Iowa, are shown as a color scale. Bubbles indicate the total N that has been lost on average per year from each county."} 
 
 # create a theme without axes:
 ditch_the_axes <- theme(
@@ -859,14 +869,25 @@ counties_baseline_df <- left_join(counties_baseline_df, centroids)
 
 
 ggplot() +
-  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_n_loss_cgsb), color = "white") +
-  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_ave_n_loss_cgsb), color = "yellow") +
+  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_no3_leach_cgsb), color = "white") +
+  geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_no3_leach_cgsb), color = "yellow") +
   labs(size = expression(Total~N~loss~(Mg~N~ha^{-1}))) +
   coord_equal() +
   ditch_the_axes +
   labs(fill = expression(Average~N~loss~(kg~N~ha^{-1}))) +
   scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +
-  ggtitle("Average and total annual N loss per county")
+  ggtitle("Average and total annual N loss by nitrate leaching per county")
+
+ggplot() +
+  geom_polygon(data = counties_baseline_df, aes(long, lat, group = group, fill=ave_nh3_vol_cgsb), color = "white") +
+  #geom_point(data = counties_baseline_df, aes(V1, V2, size = tot_no3_leach_cgsb), color = "yellow") +
+  #labs(size = expression(Total~N~loss~(Mg~N~ha^{-1}))) +
+  coord_equal() +
+  ditch_the_axes +
+  labs(fill = expression(Average~N~loss~(kg~N~ha^{-1}))) +
+  scale_fill_gradient(low = "white", high="#009E73", guide = "colourbar") +
+  ggtitle("Average annual N loss by ammonia volatilization per county")
+
 ```
 
 Now, I want to plot three maps in a facet plot that show the N loss results and the loss reduction, when switchgrass is grown on areas losing > 150 US$/ha and losing > 60 kg N/ha when in row crops for each of the three yield scenarios. For the facet plot in ggplot, I need to re-arrange the data, creating the variable "scenario" and adding two columns with values, one for the average leaching and one for the percent change from the baseline to the switchgrass integration scenario.
