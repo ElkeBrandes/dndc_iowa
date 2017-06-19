@@ -28,6 +28,7 @@ Thumbs.db
 
 # Session Data files
 .RData
+.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -47,6 +48,7 @@ vignettes/*.docx
 *.rdx
 *.rdb
 *.html
+*.tif
 n_leaching_cache/html/__packages
 n_leaching_slides_2016-11-15_cache/beamer/__packages
 n_leaching_slides_2016-11-15_cache/html/__packages
