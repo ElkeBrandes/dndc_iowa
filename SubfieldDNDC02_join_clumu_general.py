@@ -33,7 +33,7 @@ arcpy.env.overwriteOutput=True
 arcpy.env.workspace = work_path
 
 # check the spatial reference of the feature class to be used to join the data:
-featureClass = sys.argv[1]
+featureClass = "ia_clumu_2016_single"
 desc = arcpy.Describe(featureClass)
 spatialRef = desc.SpatialReference
 print("Just checking ... spatial reference system is " + str(spatialRef.Name) +".")
@@ -49,10 +49,33 @@ for field in fieldList:
 print("")
 print("Saving table containing attributes to Geodatabase...")     
 # import txt file into database (txt file was exported from PostgreSQL database)
-in_table = str(table_path) + str(sys.argv[2])
+in_table = str(table_path) + "dndc_clumu_profit_dndc.txt"
 out_path = work_path
-out_name = sys.argv[3]
+out_name = "NO3_leach_change"
 #arcpy.TableToTable_conversion(in_table, out_path, out_name)
+
+print("")
+print("Writing new field types of type DOUBLE...")
+# during conversion, data types of most of the fields in the table became strings (all except mean_profit_ha)
+# since I don't know how to use FieldMappings to control the data types, I need to enter a step to
+# add new fields of type DOUBLE and then copy the respective values using the field calculator.
+
+
+in_table = out_name
+field_type = "DOUBLE"
+new_field1 = "ave_no3_leach_ha_cgsb_db"
+#arcpy.AddField_management(in_table, new_field1, field_type)
+
+new_field2 = "ave_nh3_vol_ha_cgsb_db"
+#arcpy.AddField_management(in_table, new_field2, field_type)
+
+new_field3 = "ave_no3_leach_change_perc_10000_1_db"
+#arcpy.AddField_management(in_table, new_field3, field_type)
+
+new_field4 = "ave_no3_leach_change_perc_10000_2_db"
+#arcpy.AddField_management(in_table, new_field4, field_type)
+
+# then I calculate the fields in ArcMAP
 
 print("")
 print("Joining with attribute data ...")
@@ -61,9 +84,9 @@ print("Joining with attribute data ...")
 in_feature_class = featureClass
 in_field = join_field # same as join_field assigned above
 join_table = out_name
-field = sys.argv[4]  # field or field list
-
+field = ["mean_profit_ha", "ave_no3_leach_ha_cgsb_db", "ave_nh3_vol_ha_cgsb_db", "ave_no3_leach_change_perc_10000_1_db", "ave_no3_leach_change_perc_10000_2_db"]  # field or field list
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field)
+
 print("")
 print("Fields in feature class:")
 print("")

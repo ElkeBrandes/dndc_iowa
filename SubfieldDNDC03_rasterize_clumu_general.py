@@ -23,8 +23,7 @@ arcpy.env.overwriteOutput=True
 # specify the workspace to avoid having to write the path for each feature class
 arcpy.env.workspace = "C:\\Users\\ebrandes\\Documents\\ia_clumu\\ia_clumu.gdb"
 
-# starting with the feature class ia_clumu_2016_single (that I joined mean profit, no3 leaching,
-# clu cash rents, and 2015 profit), I create rasters for the different variable to be able to visualize
+# starting with the feature class, I create rasters for the different variable to be able to visualize
 # the differences within the whole state.
 
 # create a feature layer from the input feature class 

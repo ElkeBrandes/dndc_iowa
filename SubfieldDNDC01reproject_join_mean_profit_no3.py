@@ -53,8 +53,8 @@ in_feature_class = featureClass
 in_field = "cluid_mukey" 
 join_table = out_name
 join_field = "cluid_mukey"
-field_list = ["fips", "mukey", "mean_profit_ha", "ave_no3_leach_ha_cgsb", "ave_no3_leach_ha_swg_7500",
-              "ave_no3_leach_ha_swg_10000", "ave_no3_leach_ha_swg_12500"]  
+field_list = ["mean_profit_ha", "ave_no3_leach_ha_cgsb", "ave_nh3_vol_ha_cgsb",
+              "ave_no3_leach_change_perc_10000_1", "ave_no3_leach_change_perc_10000_2"]  
 
 arcpy.JoinField_management(in_feature_class, in_field, join_table, join_field, field_list)
 

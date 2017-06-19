@@ -34,14 +34,14 @@ for field in field_list:
 # there are a lot of null values in the joined data, for those polygons that were not in
 # corn and/or soybeans from 2012 to 2015. I can delete them before doing further
 # calculations to avoid errors later on.
-
+print("")
 print("Deleting polygons with <Null> values ...")
 print("")
 
 feature_class = out_feature_class
 area_field = "SHAPE_Area"
-value_field_1 = "ave_no3_leach_change_perc_10000_12"
-value_field_2 = "ave_no3_leach_change_perc_10000_2"
+value_field_1 = "ave_no3_leach_change_perc_10000_1_db"
+value_field_2 = "ave_no3_leach_change_perc_10000_2_db"
 where_clause = '"' + value_field_1 + '" IS NULL'
 
 with arcpy.da.UpdateCursor(feature_class, (value_field_1, value_field_2), where_clause) as cursor:
@@ -65,7 +65,7 @@ with arcpy.da.SearchCursor(feature_class, (area_field, value_field_1)) as cursor
 
 weighted_mean = round(num / denom, 2)
 print("Area weighted mean nitrate leaching reduction for the North Racoon River Watershed is "
-      + str(abs(weighted_mean)) + " % in the tweak scenario.")
+      + str(abs(weighted_mean)) + " % in the 'conservative' scenario.")
 
 num = 0
 denom = 0
@@ -77,13 +77,13 @@ with arcpy.da.SearchCursor(feature_class, (area_field, value_field_2)) as cursor
 
 weighted_mean = round(num / denom, 2)
 print("Area weighted mean nitrate leaching reduction for the North Racoon River Watershed is "
-      + str(abs(weighted_mean)) + " % in the nutrient reduction scenario.")
+      + str(abs(weighted_mean)) + " % in the 'nutrient reduction' scenario.")
         
-
+print("")
 print("Calculating area in switchgrass in the watershed ...")
 print("")
 
-n_leach_field_1 = "ave_no3_leach_change_perc_10000_12"
+n_leach_field_1 = "ave_no3_leach_change_perc_10000_1_db"
 total_area = 0
 swg_area = 0
 with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_1)) as cursor:
@@ -92,9 +92,9 @@ with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_1)) as curs
         if row[1] < 0: # filtering for negative values indicating N loss reduction
             swg_area += row[0]
 swg_perc = round((swg_area / total_area)*100, 2)
-print("Area in switchgrass is " + str(swg_perc) + " % in the tweak scenario.")
+print("Area in switchgrass is " + str(swg_perc) + " % in the 'conservative' scenario.")
 
-n_leach_field_2 = "ave_no3_leach_change_perc_10000_2"
+n_leach_field_2 = "ave_no3_leach_change_perc_10000_2_db"
 total_area = 0
 swg_area = 0
 with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_2)) as cursor:
@@ -103,6 +103,6 @@ with arcpy.da.SearchCursor(feature_class, (area_field, n_leach_field_2)) as curs
         if row[1] < 0: # filtering for negative values indicating N loss reduction
             swg_area += row[0]
 swg_perc = round((swg_area / total_area)*100, 2)
-print("Area in switchgrass is " + str(swg_perc) + " % in the nutrient reduction scenario.")
+print("Area in switchgrass is " + str(swg_perc) + " % in the 'nutrient reduction' scenario.")
        
 

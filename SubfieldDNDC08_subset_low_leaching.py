@@ -1,7 +1,6 @@
 # in this script, the feature class containing subfield areas (single polygons) and several joined attributes
-# related to N loss is clipped to the delineation of a certain county. The county feature class is located in 
-# a different geodatabase, but can still be used to clip the subfield feature class in the work directory.
-# We just have to make sure to include the path to the county feature class.
+# related to N loss is used to select low leaching soils and their adjacent, normally leaching soils.
+# Unlike in the previous version I am not selecting certain counties but run the analysis on the whole Iowa area.
 
 print("Running script ...")
 print("")
@@ -14,27 +13,14 @@ arcpy.env.overwriteOutput=True
 # specify the workspace to avoid having to write the path for each feature class
 arcpy.env.workspace = "C:\\Users\\ebrandes\\Documents\\ia_clumu\\ia_clumu.gdb"
 
-# enter the fips of the county that should be selected
-fips_select = "('IA193', 'IA149', 'IA119')"
-
-# make a feature layer from the county selected from the county feature class
-in_features = "C:\\Users\\ebrandes\\Documents\\DNDC\\switchgrass_integration.gdb\\Counties"
-out_layer = "county_selection_layer"
-where_clause = '"fips"' + " IN " + str(fips_select)
-arcpy.MakeFeatureLayer_management(in_features, out_layer, where_clause)
-
-
-print("Clipping subfield feature class to county feature class ...")
+print("List attribute data in original feature class ...")
 print("")
 
 in_features = "ia_clumu_2016_single"
-clip_features = out_layer
-out_feature_class = "clumu_county_selection"
-arcpy.Clip_analysis(in_features, clip_features, out_feature_class)
 
 # list the fields and types of the clipped feature class
 
-field_list = arcpy.ListFields(out_feature_class)
+field_list = arcpy.ListFields(in_features)
 
 for field in field_list:
     print("{0} is of type {1}"
@@ -47,13 +33,12 @@ for field in field_list:
 print("Deleting polygons with <Null> values ...")
 print("")
 
-feature_class = out_feature_class
 area_field = "SHAPE_Area"
 value_field_1 = "ave_no3_leach_change_perc_10000_12"
 value_field_2 = "ave_no3_leach_change_perc_10000_2"
 where_clause = '"' + value_field_1 + '" IS NULL'
 
-with arcpy.da.UpdateCursor(feature_class, (value_field_1, value_field_2), where_clause) as cursor:
+with arcpy.da.UpdateCursor(in_features, (value_field_1, value_field_2), where_clause) as cursor:
     for row in cursor:
         cursor.deleteRow()
         
@@ -62,10 +47,10 @@ print("Creating feature layer with low leaching polygons...")
 print("")
 # make a feature layer of all polygons that show < 0.1 kg/ha nitrate leaching
 out_layer = "low_leach_polygons"
-where_clause = '"ave_no3_leach_ha_cgsb" < 0.1 AND "fips" IN' + str(fips_select)
-arcpy.MakeFeatureLayer_management(feature_class, out_layer, where_clause)
+where_clause = '"ave_no3_leach_ha_cgsb" < 0.1'
+arcpy.MakeFeatureLayer_management(in_features, out_layer, where_clause)
 
-# make a feature class from the layer "norm_leach_polygons"
+# make a feature class from the layer "low_leach_polygons"
 in_feature = "low_leach_polygons"
 out_feature = "low_leach_polygons_fc"
 arcpy.CopyFeatures_management(in_feature, out_feature)
@@ -75,14 +60,14 @@ print("")
 # dissolve the selected cluid_mukey polygons in the feature layer, resulting in a feature class
 in_feature = out_layer
 out_feature_class = "low_leach_dissolved"
-arcpy.Dissolve_management(in_feature, out_feature_class, "", "","SINGLE_PART", "DISSOLVE_LINES")
+arcpy.Dissolve_management(in_features, out_feature_class, "", "","SINGLE_PART", "DISSOLVE_LINES")
 
 print("Creating feature layer with not low leaching polygons...")
 print("")
 # create a layer that contains all the polygons that do not belong to the low leaching cohort
 out_layer = "high_leach_polygons"
-where_clause = '"ave_no3_leach_ha_cgsb" >= 0.1 AND "fips" IN' + str(fips_select)
-arcpy.MakeFeatureLayer_management(feature_class, out_layer, where_clause)
+where_clause = '"ave_no3_leach_ha_cgsb" >= 0.1'
+arcpy.MakeFeatureLayer_management(in_features, out_layer, where_clause)
 
 print("Selecting adjacent polygons...")
 print("")

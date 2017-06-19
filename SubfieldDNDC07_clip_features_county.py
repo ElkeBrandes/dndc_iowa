@@ -1,5 +1,5 @@
 # in this script, the feature class containing subfield areas (single polygons) and several joined attributes
-# related to N loss is clipped to the delineation of a certain county. THe county feature class is located in 
+# related to N loss is clipped to the delineation of a certain county. The county feature class is located in 
 # a different geodatabase, but can still be used to clip the subfield feature class in the work directory.
 # We just have to make sure to include the path to the county feature class.
 
@@ -15,7 +15,7 @@ arcpy.env.overwriteOutput=True
 arcpy.env.workspace = "C:\\Users\\ebrandes\\Documents\\ia_clumu\\ia_clumu.gdb"
 
 # enter the fips of the county that should be selected
-fips_select = "IA193"
+fips_select = "IA013"
 
 # make a feature layer from the county selected from the county feature class
 in_features = "C:\\Users\\ebrandes\\Documents\\DNDC\\switchgrass_integration.gdb\\Counties"
