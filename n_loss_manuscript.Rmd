@@ -197,7 +197,7 @@ theme_b_border <- function (base_size = 12, base_family = "")
       colour = "grey50", size = 0.2))
 }
 
-theme_gcbb <- function (base_size = 12, base_family = "") 
+theme_gcbb <- function (base_size = 11, base_family = "") 
 {
   theme_grey(base_size = base_size, base_family = base_family) %+replace% 
     theme(
@@ -309,7 +309,7 @@ plot_profit <- ggplot(data = profit, aes(profit_ha_rounded, weight = area_Mha)) 
        y=expression(Area~(Mha))) +
   scale_x_continuous(lim = c(-1000,1000)) +
   scale_y_continuous() +
-  annotate("text", x = -970, y = .4, label = "(a)", size = 5) +
+  annotate("text", x = -970, y = .4, label = "(a)", size = 4) +
   geom_vline(aes(xintercept= -100), linetype= "solid", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles[1]), linetype = "dashed", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles[2]), linetype = "dashed", show.legend = FALSE) +
@@ -334,7 +334,7 @@ plot_leach <- ggplot(cgsb_no3_leach, aes(ave_no3_leach_cgsb_round, weight = area
        y=expression(Area~(Mha))) +
   scale_x_continuous(lim = c(-1,200)) +
   scale_y_continuous() +
-  annotate("text", x = 3.5, y = .52, label = "(b)", size = 5) +
+  annotate("text", x = 3.5, y = .52, label = "(b)", size = 4) +
   geom_vline(aes(xintercept= 50), linetype= "solid", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles_leach[1]), linetype = "dashed", show.legend = FALSE) +
   geom_vline(aes(xintercept = percentiles_leach[2]), linetype = "dashed", show.legend = FALSE) +
@@ -394,6 +394,10 @@ ditch_the_axes_with_border <- theme(
 ```
 
 ```{r figure_profit, fig.height=4, fig.width=9,  fig.cap="Figure 3: Area of corn and soybean cropland in Iowa with a mean 2012-2015 profitability of < US$ -100 ha^-1^ per county in the baseline scenario. Cardinal circles show the absolute amount of land, gold shades indicate the relative area  per county."}
+
+png('fig3.tiff', width = 169, height = 80, units = "mm", res = 300)
+
+
 ggplot() +
   geom_polygon(data = counties_profit_df, aes(long, lat, group = group, fill=area_in_swg_perc), color = "grey") +
   geom_point(data = counties_profit_df, aes(V1, V2, size = area_in_swg), color = "#C8102E") +
@@ -402,7 +406,10 @@ ggplot() +
   theme_gcbb() +
   ditch_the_axes +
   labs(fill = expression(Relative~area~losing~"US$"~">100"~ha^{-1}~yr^{-1}~("%"))) +
-  scale_fill_gradient(low = "white", high="#F1BE48", guide = "colourbar") 
+  scale_fill_gradient(low = "white", high="#F1BE48", guide = "colourbar") +
+  scale_size(range = c(0, 4.5)) 
+
+dev.off()
 ```
 
 ```{r counties_attributes}
@@ -454,16 +461,20 @@ counties_swg_df <- left_join(counties_df, counties_swg, by = "id") %>%
 
 counties_baseline_df <- filter(counties_swg_df, scenario == "baseline")
 
+png('fig4.tiff', width = 169, height = 100, units = "mm", res = 300)
+
 ggplot(counties_baseline_df) +
   geom_polygon(aes(long, lat, group = group, fill=ave_no3_leach), color = "grey") +
   scale_fill_gradient(low = "white", high="dark green", guide = "colourbar") +  
   labs(fill = expression(atop(Mean~annual~NO[3]-N, paste("leached (kg N ha"^{-1}~yr^{-1},")")))) +  
   geom_point(aes(V1, V2, size = tot_no3_leach), color = "yellow") +
   labs(size = expression(Total~leached~NO[3]-N~(Mg~N~yr^{-1}))) +
-  scale_size(range = c(0, 6)) +
+  scale_size(range = c(0, 4.5)) +
   coord_equal() +
   theme_gcbb() +
   ditch_the_axes 
+
+dev.off()
 ```
 
 ```{sql, connection=con, cache=TRUE, include=FALSE}
@@ -479,6 +490,9 @@ sample_leach <- tbl(HeatonAgsolver_db, "r_dndc_clumu_cgsb_swg_sample") %>%
 ```
 
 ```{r scatterplot_no3_leach, fig.width=4.5, fig.height=3, fig.cap="Figure 5: Scatterplot of a subsample (n=10,000) of subfield areas, showing profitability and NO~3~-N leached in the baseline scenario (mean values for corn and soybean fields 2012-2015) in Iowa. The red lines and shaded areas indicate the threshold values for the 'conservative' scenario (solid lines and deep red shade: < US$ -100 ha^-1^ profitability and > 50 kg N ha^-1^ NO~3~-N leached) and for the 'nutrient reduction' scenario (dashed lines and light red shade: < US$ 0 ha^-1^ profitability and > 20 kg N ha^-1^ NO~3~-N leached)."}
+
+png('fig5.tiff', width = 80, height = 70, units = "mm", res = 300)
+
 ggplot() +
   geom_rect(aes(xmin = -Inf, xmax = -100, ymin = 50, ymax = Inf), fill = "red", alpha= 0.3) +
   geom_rect(aes(xmin = -Inf, xmax = 0, ymin = 20, ymax = Inf), fill = "red", alpha= 0.2) +
@@ -491,7 +505,7 @@ ggplot() +
     geom_vline(xintercept= 0, linetype= "dashed", color = "red",  show.legend = FALSE) +
   geom_hline(yintercept= 20, linetype= "dashed", color = "red",  show.legend = FALSE) 
 
-  
+ dev.off() 
 ```
 
 ### Profitability, NO~3~-N loss, and biomass provisioning: switchgrass integration scenarios vs. baseline
@@ -628,6 +642,9 @@ tot_area <- 9.373430
 swg_matrix_perc <- (swg_matrix/tot_area)*100
 z <- swg_matrix_perc
 
+
+png('fig5.tiff', width = 250, height = 250, units = "mm", res = 300)
+
 # create figure with three plots 
 plot.new()
 
@@ -695,6 +712,7 @@ ticktype = "detailed")
 
 text3D(x=900,y=150, z=89, "(c)", cex = 1.2, font = 2, phi = 10, theta = -150, add= TRUE)
 
+dev.off()
 ```
 
 
@@ -743,6 +761,8 @@ n_state <- bind_rows(n_state_cgsb, n_state_cons, n_state_nutr) %>%
 n_state <- bind_rows(n_state_cgsb, n_state_cons, n_state_nutr) %>%
   filter(in_out == "out") -> n_state_out
 
+png('fig7.tiff', width = 169, height = 100, units = "mm", res = 300)
+
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#000000")
 
 
@@ -765,6 +785,8 @@ annotate("text", x = 6, y = -5, label = "out", size = 3) +
 annotate("text", x = 1.6, y = 200, label = balance_n_state_cgsb, size = 3) +
 annotate("text", x = 3.6, y = 200, label = balance_n_state_cons, size = 3) +
 annotate("text", x = 5.6, y = 200, label = balance_n_state_nutr, size = 3) 
+
+dev.off()
 ```
 
 
@@ -780,6 +802,8 @@ counties_red_swg_df <- filter(counties_swg_df, scenario %in% c("conservative", "
 
 scenarios <- c('conservative'= "(a) 'conservative' scenario",'nutrient reduction'= "(b) 'nutrient reduction' scenario")
 
+png('fig8.tiff', width = 169, height = 100, units = "mm", res = 300)
+
 ggplot(counties_red_swg_df) +
   theme_gcbb() +
   ditch_the_axes_with_border +
@@ -789,6 +813,7 @@ ggplot(counties_red_swg_df) +
   labs(fill = expression(NO[3]-N~leaching~reduction~("%"))) +
   facet_wrap(~scenario, ncol = 2, labeller = as_labeller(scenarios))
 
+dev.off()
 ```
 
 The subfield resolution maps of NO~3~-N leaching reduction (Fig. 9) illustrate the spatial heterogeneity of environmental outcomes under the biomass crop integration scenarios. In the 'conservative' scenario, the areas in switchgrass are not evenly distributed across Iowa but clustered along the Raccoon, Upper South Skunk, and Cedar Watersheds (Fig. 9a). The 'nutrient reduction' scenario would convert much more cropland to switchgrass, but some regions in the north west and south east would not see significant management changes (Fig. 9b).
@@ -940,8 +965,11 @@ plot3 <- ggplot(leach_weather) +
   scale_colour_manual(name="Year", values=cbPalette, guide = FALSE) +
   scale_shape_discrete(name="Year", guide = FALSE)
 
+png('figS1.tiff', width = 169, height = 169, units = "mm", res = 300)
+
 grid.arrange(plot2, plot3, plot1, ncol = 2)
 
+dev.off()
 ```
 
 ```{r subfield_n_loss_maps, fig.height=5.981, fig.width=4.592, fig.cap="Figure S2: Subfield-scale NO~3~-N leaching (a) and ammonia (NH~3~)-N volatilization on annual cropland in Iowa, USA. Values are annual rates averaged over the years 2012-2015."}
@@ -1021,6 +1049,8 @@ leach <- data.frame(scenario, leaching, area = area*1e-6) # this factor to show 
 
 scenarios <- c('cgsb_n_loss'= "(a) N loss (corn/soybeans)",'cgsb_no3_leach'= "(b) NO3 leach. (corn/soybeans)", 'cgsb_nh3_vol'= "(c) NH3 vol. (corn/soybeans)",'swg_low' = "(d) Low yielding switchgrass", 'swg_med' = "(e) Medium yielding switchgrass", 'swg_hi' = "(f) High yielding switchgrass")
 
+png('figS3.tiff', width = 169, height = 100, units = "mm", res = 300)
+
 ggplot(leach, aes(leaching, weight = area)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_gcbb() +
@@ -1030,11 +1060,13 @@ ggplot(leach, aes(leaching, weight = area)) +
   scale_y_continuous() +
   geom_vline(data = medians_df, aes(xintercept=median), color = "black", linetype = "dashed") +
   facet_wrap( ~ scenario, ncol=3, labeller = as_labeller(scenarios)) 
+
+dev.off()
 ```
 
 ```{r area_contourplot, fig.height=7, fig.width=8, fig.cap="Figure S4: Contour plots (vertical projections of Figure 6) showing (a) the resulting areas converted to switchgrass (in % of row cropland), (b) total switchgrass biomass production (in million Mg), and (c) total NO~3~-N leaching reduction (in % of the baseline) as a function of NO~3~-N leaching and profitability threshold values of the baseline scenario. In each plot, isolines with numbers 10-70 show the threshold combinations with similar resulting values. The grey dashed lines show an example how to read the plot: If cropland losing > 50 kg N ha^-1^ and losing > US$ 100 ha^-1^ was considered for conversion to switchgrass ('conservative' scenario), a little over 10% of cropland currently in row crop would be in switchgrass (a), approx. 10 million Mg of biomass would be produced (b), and the N loss through leaching would be reduced by almost 20% (c). Similarly, the solid lines show the outcomes for the 'nutrient reduction' scenario."}
 
-
+png('figS4.tiff', width = 169, height = 169, units = "mm", res = 300)
 
 # multiple panel plot with the modified function filled.contour3()
 
@@ -1124,7 +1156,7 @@ abline(v = 0, col = "dark gray", lty = 1)
 par(xpd = NA)
 text(x=-360,y=107,expression((c)~NO[3]-N~reduction),cex = 1,font = 2, adj = c(0,0))
 
-
+dev.off()
 
 ```
 
@@ -1150,6 +1182,8 @@ leach_red <- filter(leach_red, leach_red > 0)
 
 scenarios <- c('nutred'= "'nutrient Reduction' scenario",'tweak'= "'conservative' scenario")
 
+png('figS5.tiff', width = 120, height = 70, units = "mm", res = 300)
+
 ggplot(leach_red, aes(leach_red, weight = area_ha)) + 
   geom_histogram(binwidth=2, alpha = .5, position="identity") +
   theme_gcbb() +
@@ -1158,6 +1192,8 @@ ggplot(leach_red, aes(leach_red, weight = area_ha)) +
   scale_x_continuous(limits = c(0,100)) +
   scale_y_continuous() +
   facet_wrap(~scenario, labeller = as_labeller(scenarios))
+
+dev.off()
 
 ```
 
@@ -1240,7 +1276,7 @@ plot1 <- ggplot() +
   scale_x_continuous() +
   scale_y_continuous() +
 #  scale_color_discrete(name="Switchgrass\nYield (kg/ha)",  guide = FALSE) +
-  annotate("text", x = 0, y = 40, label = "(a)", size = 5) +
+  annotate("text", x = 2, y = 42, label = "(a)", size = 5) +
   scale_colour_manual(name="Switchgrass\nYield (kg/ha)",  guide = FALSE, values=cbPalette)
 
 plot2 <- ggplot() +
@@ -1251,11 +1287,15 @@ plot2 <- ggplot() +
   scale_x_continuous(breaks=seq(from=-500, to=200, by= 100)) +
   scale_y_continuous() +
 #  scale_color_discrete(name="Switchgrass\nYield (kg/ha)") +
-  theme(legend.position=c(0.25,0.65))+
-  annotate("text", x = -500, y = 40, label = "(b)", size = 5) +
+  theme(legend.position=c(0.25,0.55))+
+  annotate("text", x = -460, y = 42, label = "(b)", size = 5) +
     scale_colour_manual(name="Switchgrass\nYield (kg/ha)", values=cbPalette)
 
+png('figS6.tiff', width = 169, height = 80, units = "mm", res = 300)
+
 grid.arrange(plot1, plot2, ncol = 2)
+
+dev.off()
 ```
 
 ```{r decision_matrices}
